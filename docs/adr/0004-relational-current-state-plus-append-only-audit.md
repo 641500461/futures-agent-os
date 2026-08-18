@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 ---
 
 # 采用关系型当前态加追加式审计

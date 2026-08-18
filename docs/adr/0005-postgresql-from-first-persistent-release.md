@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 ---
 
 # 从首个持久化版本开始使用 PostgreSQL

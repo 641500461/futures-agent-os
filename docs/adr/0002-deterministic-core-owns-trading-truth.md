@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 ---
 
 # 确定性内核独占交易真值

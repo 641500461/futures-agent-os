@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 ---
 
 # 定义逻辑多 Agent，按需执行专门角色

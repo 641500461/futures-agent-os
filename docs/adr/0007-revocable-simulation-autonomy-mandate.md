@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 ---
 
 # 采用可撤销的 Simulation Autonomy Mandate，而非默认逐笔批准

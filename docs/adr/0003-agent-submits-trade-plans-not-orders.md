@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 ---
 
 # Agent 以 TradePlan 或 RiskReductionRequest 表达意图，不直接提交 Order

@@ -1,5 +1,5 @@
 ---
-status: proposed
+status: accepted
 ---
 
 # 建设独立绿地项目，运行时零依赖旧系统
