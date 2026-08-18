@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：`V0-001` 至 `V0-012` 已完成；下一任务为 `V0-013`。
+当前状态：`V0-001` 至 `V0-013` 已完成；下一任务为 `V0-014`。
 
 ## 全局依赖原则
 
@@ -63,9 +63,9 @@
 - [x] `V0-012` 建立新项目 synthetic/golden 数据集与边界案例库；首批验收宇宙明确选择 AG、CU、RB、JM、I、MA、SA、M、P、SR、SC、JD。
   Acceptance: 品种选择有产品理由；夜盘、规则变更、涨跌停、跳空、无流动性、乱序和缺失数据均有样本。  
   Evidence: 2026-08-19 按常规开发路由使用 `gpt-5.6-terra` / `medium` 实现，统筹对话使用独立 `gpt-5.6-sol` / `high` 三轮验收并修正版本身份漂移、全局到达顺序、bundle lineage 和语义伪阳性。已建立 AG/CU/RB/JM/I/MA/SA/M/P/SR/SC/JD 的可复现 Q2 synthetic 低频数据、非冗余产品选择理由和案例目录；夜盘交易日归属、历史规则变更、上/下涨跌停、Decimal 跳空、无 OHLCV/报价流动性、按 `available_time` 有序但事件时间逆序的迟到数据、显式缺失区间均有严格契约。事件、事件 manifest、catalog 和 bundle 四份资产由 bundle hash 与独立 release oracle 锁定，manifest-only 篡改也 fail closed；Dataset 与 Bundle 分别使用首版 revision 1 且无虚构 predecessor。`make check` 通过（contract `89 passed`），全量 `uv run pytest` 为 `91 passed, 2 skipped`，Ruff、mypy、secret scan 与 diff check 通过；Sol/high 最终复核无 P0–P3。数据明确不声称 tick、订单簿、成交或执行保真度。
-- [ ] `V0-013` 按 `LEGACY-ASSET-REUSE.md` 对 donor 候选逐项做资格评估，不迁移运行状态。  
+- [x] `V0-013` 按 `LEGACY-ASSET-REUSE.md` 对 donor 候选逐项做资格评估，不迁移运行状态。
   Acceptance: 每个采用项有 provenance、新接口、隔离性、安全扫描和新项目测试；拒绝项有理由。  
-  Evidence: 待补。
+  Evidence: 2026-08-19 按常规开发路由使用 `gpt-5.6-terra` / `medium` 实现，统筹对话使用独立 `gpt-5.6-terra` / `high` 安全复核并修正两项 SQLite/绝对路径/DB 写入扫描误报、自洽假阳性与 `ABSENT` 未验真。机器可校验清单完整覆盖 `LEGACY-ASSET-REUSE.md` 的 34 个候选，固定 donor commit `b9f3bb9d185a6d659e096d615b5afb435769134d`、34 项 ID→R1/R2/R3/R4→source 基准、manifest digest、license 门禁和全部 provenance/gate/next-action。结果为 20 `CANDIDATE`、3 `DEFERRED`、9 `EVIDENCE_ONLY`、2 `REJECTED`、0 `QUALIFIED`；`futures_sim_trade_bridge` 与 `db_manager` 的 R4 拒绝理由已记录，未验证许可证阻断任何后续 qualification。显式人工参数脚本仅使用 `git rev-parse/cat-file/ls-tree` 对 `/Users/qiu/futures_workflow` 固定 commit 做只读复验，38 个 blob 与 1 个 `ABSENT` 均通过；29 个 tracked 修改和 3 个 untracked 工作树项不影响 Git object snapshot。未运行 donor 代码/测试，未读取数据库或运行状态，无 donor 运行时依赖。`make check` 通过（contract `98 passed`），全量 `uv run pytest` 为 `100 passed, 2 skipped`，diff check 通过；Terra/high 最终复核无 P0–P3。
 - [ ] `V0-014` 定义 Simulation Autonomy Mandate、Mandate Scope、AutonomyModeBinding、AuthorizationBasis/PlanApproval、两阶段 AutonomyGate、AutonomyGateReceipt、RiskBudgetReservation、DecisionJournal、TradeEpisode 投影与监督控制契约。  
   Acceptance: Mandate 必须版本化并绑定模拟账户、品种/策略/时段范围、有效期、风险引用、通知和升级规则；Mandate 九态 `DRAFT/VALIDATED/APPROVED/ACTIVE/SUSPENDED/EXPIRED/REVOKED/HALTED/RECOVERING` 完整，除 DRAFT 外所有非终态受 expiry 约束，APPROVED/ACTIVE/SUSPENDED/HALTED/RECOVERING 可 revoke；Mode 四态、Binding ACTIVE/EXPIRED/SUPERSEDED、EffectiveAutonomy、composite pause 与 V1 可空 account/mandate 语义明确；PlanApproval 五态和“GRANTED 原子消费为唯一 Basis”契约完整；Receipt 绑定 Plan/AuthorizationBasis/源授权 hash、`execution_origin`、快照、运行版本、预算预留、有效期、单次 nonce 及 AUTONOMOUS_AGENT 必需的 Mode id/version/hash；Reservation 归属 Portfolio & Risk；DecisionJournal 区分 DECISION_TIME/POST_HOC 且可重建，TradeEpisode 明确归 Learning & Review 且只投影源事件；并发与竞态契约测试通过；任何对象都不能放宽 Risk Constitution。  
   Evidence: 待补。
