@@ -3,9 +3,9 @@
 文档版本：`2.1-proposed`  
 最后更新：2026-08-19
 当前阶段：V0 绿地项目地基
-最近完成：`V0-012` synthetic/golden 数据与边界案例库
+最近完成：`V0-013` donor 资格审计
 当前开发任务：无
-建议下一步：执行 `V0-013`，按资格门禁评估 donor 候选，不迁移运行状态
+建议下一步：执行 `V0-014`，实现自治授权、风险预留、日志与监督控制契约
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-012` 已完成，其余任务仍为 `[ ]`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-013` 已完成，其余任务仍为 `[ ]`。
 
 ## 设计资料状态
 
@@ -110,9 +110,13 @@
 
 2026-08-19 使用 `gpt-5.6-terra` / `medium` 实现 12 品种 synthetic/golden 数据集、非冗余产品理由、严格边界语义、可复现生成器与四资产 hash/bundle/release oracle。统筹对话使用独立 `gpt-5.6-sol` / `high` 三轮复核，最终无 P0–P3。`make check` 的 contract 为 `89 passed`，全量测试为 `91 passed, 2 skipped`。这些资产仅为 Q2 研究/回放夹具，不声称 tick、订单簿、成交或执行保真度。
 
-## 下一任务：V0-013
+## 最近完成：V0-013
 
-按 `LEGACY-ASSET-REUSE.md` 对 donor 候选逐项执行 provenance、新接口、隔离性、安全扫描和新项目测试资格门禁；拒绝项必须记录理由，不迁移旧数据库或运行状态。
+2026-08-19 使用 `gpt-5.6-terra` / `medium` 建立 34 项 donor 资格清单、固定 Git provenance、强制 license/新接口/隔离/安全/新项目测试门禁与显式只读验证脚本；独立 `gpt-5.6-terra` / `high` 安全复核最终无 P0–P3。38 blob 与 1 ABSENT 通过固定 commit 复验；结果为 20 CANDIDATE、3 DEFERRED、9 EVIDENCE_ONLY、2 REJECTED、0 QUALIFIED。未修改 donor，未运行 donor 副作用，未读取旧 DB/状态。`make check` 的 contract 为 `98 passed`，全量为 `100 passed, 2 skipped`。
+
+## 下一任务：V0-014
+
+实现 Simulation Autonomy Mandate、Mandate Scope、AutonomyModeBinding、AuthorizationBasis/PlanApproval、两阶段 AutonomyGate/Receipt、RiskBudgetReservation、DecisionJournal、TradeEpisode 投影和监督控制契约。该任务包含安全关键授权与并发竞态，按模型路由使用 Terra/high。
 
 ## 固定工作流程
 
