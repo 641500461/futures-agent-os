@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：`V0-001` 至 `V0-009` 已完成；下一任务为 `V0-010`。
+当前状态：`V0-001` 至 `V0-010` 已完成；下一任务为 `V0-011`。
 
 ## 全局依赖原则
 
@@ -54,9 +54,9 @@
 - [x] `V0-009` 建立身份、密钥、日志脱敏、Prompt Injection、代码执行沙箱、网络出口和供应链威胁模型。
   Acceptance: Git/日志无凭据；不可信文本不能改变权限；研究执行有 CPU/内存/时间/文件/网络上限。  
   Evidence: 2026-08-18 按安全关键路由使用 `gpt-5.6-terra` / `high` 实现，统筹对话发现并修正“冻结对象接受可变 collection”的授权/沙箱 TOCTOU 漏洞；commit `4810527f049f1d0bc5c82b4b9a5d05035064dea6`。已提供 ServiceIdentity、只允许 `secret://` reference 的 credential binding、递归结构化日志脱敏、不可信内容与 AuthorityContext 隔离、资源/文件/精确出口 allowlist 的 default-deny 研究沙箱 validator，以及供应链威胁模型。V0 不解析 secret、不运行代码、不读取外部数据或联网；未来 executor 仍需独立 OS/container 强制隔离。`uv run pytest` 为 `60 passed, 1 skipped`，compileall、health 与 diff check 通过。
-- [ ] `V0-010` 建立统一 correlation/causation、命令幂等、追加审计、metrics/logs/traces 和最小告警框架。  
+- [x] `V0-010` 建立统一 correlation/causation、命令幂等、追加审计、metrics/logs/traces 和最小告警框架。
   Acceptance: 从请求到工具调用和领域事件可关联；重复命令最多产生一个业务效果。  
-  Evidence: 待补。
+  Evidence: 2026-08-19 按安全关键路由使用 `gpt-5.6-terra` / `high` 加固并完成实现，统筹对话两轮复核修正 caller-owned mutable payload、迁移测试混线、ToolCall trace 断点以及告警缺少 runbook/影响范围；commit `50cd1b756ea301a5d4b4ea59a821956b08eb1df4`。已实现统一 `TraceContext` 与真实 AgentTask/ToolCall/ToolAuthorization correlation/causation 传播、稳定 canonical request hash、并发安全的单效果幂等参考模型、深度不可变追加审计 hash chain、递归脱敏且不可变的本地 metrics/logs/traces、threshold/absence 告警及 `runbook_ref/impact_scope`。PostgreSQL migration `0002_v0_010` 增加全局 idempotency-effect 唯一约束、audit append-only trigger、telemetry 与 alert 表；在隔离 PostgreSQL 17 数据库强制 `downgrade base → upgrade head` 后，全量 `FAO_DATABASE_URL=postgresql+psycopg://qiu@/futures_agent_os_v0_007?host=/tmp uv run pytest` 为 `74 passed`，compileall、health、migration history 与 diff check 通过。
 - [ ] `V0-011` 建立 CI、依赖锁、类型/静态检查、单元/属性/契约测试、schema 兼容检查和敏感信息扫描。  
   Acceptance: 新仓库主分支保护启用；本地与 CI 使用相同锁定环境。  
   Evidence: 待补。

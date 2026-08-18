@@ -3,9 +3,9 @@
 文档版本：`2.1-proposed`  
 最后更新：2026-08-18  
 当前阶段：V0 绿地项目地基
-最近完成：`V0-009` 安全与研究执行隔离基础
+最近完成：`V0-010` 幂等、审计与可观测性基础
 当前开发任务：无
-建议下一步：执行 `V0-010`，建立 correlation/causation、幂等、审计和可观测性基础
+建议下一步：执行 `V0-011`，建立完整 CI 与质量门禁
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-009` 已完成，其余任务仍为 `[ ]`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-010` 已完成，其余任务仍为 `[ ]`。
 
 ## 设计资料状态
 
@@ -98,9 +98,13 @@
 
 已使用 `gpt-5.6-terra` / `high` 建立 V0 安全契约，实现 commit 为 `4810527f049f1d0bc5c82b4b9a5d05035064dea6`。服务身份只绑定 versioned `secret://` 引用；结构化日志递归脱敏；外部文本被固定为数据且无法更改 ToolGrant/Policy authority；研究沙箱在 V0 仅作 default-deny 限额校验而不执行工作负载。统筹复核后强制所有权限和 sandbox collection 使用不可变容器，防止校验后篡改。`uv run pytest` 为 `60 passed, 1 skipped`。真实 secret manager、代码执行和网络连接仍未启用。
 
-## 下一任务：V0-010
+## 最近完成：V0-010
 
-建立统一 correlation/causation、命令幂等、追加审计、metrics/logs/traces 和最小告警框架。该任务涉及幂等和审计可靠性，按模型路由使用 Terra/high。
+已使用 `gpt-5.6-terra` / `high` 建立统一 correlation/causation、命令幂等、追加审计、metrics/logs/traces 与最小告警框架，实现 commit 为 `50cd1b756ea301a5d4b4ea59a821956b08eb1df4`。统筹复核补强深度不可变 payload、并发单效果、真实 ToolCall trace、数据库往返隔离以及告警 runbook/用户影响范围。PostgreSQL `0002_v0_010` 已通过真实 downgrade/upgrade 与 append-only/idempotency 权限验证；全量测试为 `74 passed`。外部 tracing/exporter 尚未启用，本地审计与业务数据库仍是真值。
+
+## 下一任务：V0-011
+
+建立 CI、依赖锁、类型/静态检查、单元/属性/契约测试、schema 兼容检查和敏感信息扫描。该任务以可机械验证的工程质量为主，按模型路由使用 Terra/medium；涉及供应链和凭据扫描的部分由统筹对话按安全边界复核。
 
 ## 固定工作流程
 
