@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：`V0-001` 至 `V0-007` 已完成；下一任务为 `V0-008`。
+当前状态：`V0-001` 至 `V0-008` 已完成；下一任务为 `V0-009`。
 
 ## 全局依赖原则
 
@@ -48,9 +48,9 @@
 - [x] `V0-007` 建立 PostgreSQL 初始 schema、正式 schema migration、数据库角色、inbox/outbox、任务租约、Mandate/可选批准、调度、监督通知和 durable checkpoint 基础。
   Acceptance: 空库可重复建库、升级、降级演练；业务表与 Agent checkpoint schema 隔离；不包含旧表导入。  
   Evidence: 2026-08-18 按安全关键路由使用 `gpt-5.6-terra` / `high` 完成实现，统筹对话复核并修正 checkpoint 跨 schema 外键权限与 URL 编码凭据边界；实现 commit `64ceb630975fa46420875a8e8c383e8bfd9c1906`。已建立 PostgreSQL-only Alembic baseline、NOLOGIN 最小权限角色、`fao`/`agent_checkpoint` schema 隔离、inbox/outbox/dead-letter、命令/事件/审计、任务租约、schedule、监督通知、Mandate/PlanApproval 基础和 durable checkpoint；CI 与本地 runbook 均定义真实 PostgreSQL `upgrade → downgrade → upgrade` 验收。已通过 Homebrew PostgreSQL `17.11` 在隔离空库 `futures_agent_os_v0_007` 执行真实 `upgrade → downgrade → upgrade` 及 integration round-trip；随后 `FAO_DATABASE_URL=postgresql+psycopg://qiu@/futures_agent_os_v0_007?host=/tmp uv run pytest` 为 `48 passed`，health、compileall、离线 migration SQL、shell 语法和 diff check 通过。无旧表导入。
-- [ ] `V0-008` 建立行情/研究数据分层：raw immutable、normalized point-in-time、feature snapshot、dataset manifest 和 artifact store。  
+- [x] `V0-008` 建立行情/研究数据分层：raw immutable、normalized point-in-time、feature snapshot、dataset manifest 和 artifact store。
   Acceptance: 每份数据集具有来源、许可、schema、时间覆盖、`as_of`、摄取时间、hash、质量和修订信息。  
-  Evidence: 待补。
+  Evidence: 2026-08-18 按常规开发路由使用 `gpt-5.6-terra` / `medium` 实现，统筹对话使用 domain-modeling 审核并修正“内容 hash 与 manifest identity 必须分离”的数据所有权边界；commit `87bc6416eb367d6f9f754134eba5fac3205ea6b4`。Reference & Market Data 提供不可变 `DatasetManifest`、Provenance、License、Schema、Coverage、`as_of`/ingested time、Quality 与 Revision 契约；raw/normalized PIT/features/datasets/artifacts 分层，PIT 记录以 `available_time` 拒绝未来数据泄漏。内容按 SHA-256 去重，manifest 按 Dataset ID 独立不可变保存，读取时复验 hash；同内容可对应不同修订 manifest，冲突 identity 不可覆盖。`uv run pytest` 为 `53 passed, 1 skipped`，compileall 与 diff check 通过；未下载外部数据、未引入 donor 运行时依赖。
 - [ ] `V0-009` 建立身份、密钥、日志脱敏、Prompt Injection、代码执行沙箱、网络出口和供应链威胁模型。  
   Acceptance: Git/日志无凭据；不可信文本不能改变权限；研究执行有 CPU/内存/时间/文件/网络上限。  
   Evidence: 待补。

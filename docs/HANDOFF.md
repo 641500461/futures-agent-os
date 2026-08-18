@@ -3,9 +3,9 @@
 文档版本：`2.1-proposed`  
 最后更新：2026-08-18  
 当前阶段：V0 绿地项目地基
-最近完成：`V0-007` PostgreSQL 持久化地基
+最近完成：`V0-008` 行情/研究数据分层与 manifest
 当前开发任务：无
-建议下一步：执行 `V0-008`，建立行情/研究数据分层与数据集 manifest
+建议下一步：执行 `V0-009`，建立安全与研究执行隔离基础
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-007` 已完成，其余任务仍为 `[ ]`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-008` 已完成，其余任务仍为 `[ ]`。
 
 ## 设计资料状态
 
@@ -90,9 +90,13 @@
 
 已使用 `gpt-5.6-terra` / `high` 建立 PostgreSQL 初始 schema、正式 migration、数据库角色、inbox/outbox、任务租约、Mandate/可选批准、调度、监督通知和 durable checkpoint 基础，实现 commit 为 `64ceb630975fa46420875a8e8c383e8bfd9c1906`。已在 Homebrew PostgreSQL `17.11` 的隔离空库执行真实 `upgrade → downgrade → upgrade` 及 integration round-trip；`FAO_DATABASE_URL=postgresql+psycopg://qiu@/futures_agent_os_v0_007?host=/tmp uv run pytest` 为 `48 passed`。业务 schema 与 Agent checkpoint 已验证隔离，且无旧库导入。PostgreSQL 服务已作为本机开发依赖启动。
 
-## 下一任务：V0-008
+## 最近完成：V0-008
 
-建立行情/研究数据分层：raw immutable、normalized point-in-time、feature snapshot、dataset manifest 和 artifact store。每份数据集必须具有来源、许可、schema、时间覆盖、`as_of`、摄取时间、hash、质量和修订信息。该任务为常规开发，按模型路由使用 Terra/medium。
+已使用 `gpt-5.6-terra` / `medium` 建立本地、不可变的数据层契约与 content-addressed adapter，实现 commit 为 `87bc6416eb367d6f9f754134eba5fac3205ea6b4`。raw、normalized PIT、feature snapshot、dataset 与 artifact 都必须绑定完整 manifest。内容与 manifest identity 分离：相同 bytes 可服务多个独立修订，数据内容仍仅保存一次；读取一律验证内容 hash，PIT 记录必须在 `as_of` 前可用。`uv run pytest` 为 `53 passed, 1 skipped`；未接入外部数据源或 donor 运行时。
+
+## 下一任务：V0-009
+
+建立身份、密钥、日志脱敏、Prompt Injection、代码执行沙箱、网络出口和供应链威胁模型。此任务涉及安全边界，按模型路由使用 Terra/high。
 
 ## 固定工作流程
 
