@@ -1,0 +1,79 @@
+# Reference Market Data
+
+本上下文管理系统从交易所或数据供应方采用的带时点市场事实，包括合约标识、交易日历、交易规则、行情观测和结算参考。它不解释市场状态，也不产生研究或交易结论。
+
+## Language
+
+### Instruments and calendars
+
+**Variety**:
+共享交易标的与基础制度的一组期货合约，例如铁矿石 I。
+_Avoid_: Instrument、板块、品种代码字符串
+
+**Instrument**:
+可被观察或交易的具体期货合约，具有唯一交易所、Variety 和到期标识。
+_Avoid_: Variety、Continuous Series、股票代码
+
+**Contract Chain**:
+同一 Variety 按到期顺序排列的一组有效 Instrument。
+_Avoid_: Continuous Series、持仓组合、跨期策略
+
+**Dominant Contract**:
+在明确判定方法和有效区间下，被指定为某一 Variety 主要活跃合约的 Instrument。
+_Avoid_: Continuous Series、永远的主力、近月合约
+
+**Continuous Series**:
+按明确换月和调整规则拼接的研究价格序列，不是可直接成交的 Instrument。
+_Avoid_: Dominant Contract、真实合约、可交易代码
+
+**Trading Date**:
+交易所归属一段交易活动的业务日期，夜盘的 Calendar Date 可能与其不同。
+_Avoid_: Calendar Date、自然日、结算时间
+
+**Trading Session**:
+某个 Instrument 在一个 Trading Date 内允许特定交易活动的时间区间。
+_Avoid_: K 线区间、系统运行时间、持仓周期
+
+**Trading Calendar**:
+交易所对 Trading Date、Trading Session、节假日和特殊休市安排的带版本事实集合。
+_Avoid_: 普通日历、Cron、市场是否活跃的猜测
+
+### Rules and observations
+
+**Contract Rule**:
+在明确有效区间内适用于 Instrument 或 Variety 的交易、费用、保证金和交割约束集合。
+_Avoid_: 永久参数、默认保证金、Risk Policy
+
+**Contract Status**:
+Instrument 在指定时点是否可挂牌、开仓、平仓、停牌或进入交割限制期的交易所状态。
+_Avoid_: Market State、策略暂停、流动性判断
+
+**Market Observation**:
+数据源在特定事件时点发布的价格、数量、成交、持仓量或盘口事实。
+_Avoid_: Market State、Feature Observation、交易信号
+
+**Market Snapshot**:
+为某一用途在明确 `as_of` 时点冻结的一组 Market Observation、规则引用和质量声明。
+_Avoid_: 最新行情、Market State、缓存副本
+
+**Settlement Reference**:
+交易所或授权来源为特定 Instrument 与 Trading Date 发布的结算价格及关联规则事实。
+_Avoid_: Settlement、收盘价、账户估值
+
+### Data trust
+
+**Data Provenance**:
+一项参考事实来自何处、何时取得以及经历何种来源修订的可追溯说明。
+_Avoid_: 数据库记录、引用链接、Agent 解释
+
+**Data Quality Status**:
+一组参考事实在完整性、新鲜度、一致性和预定用途上的质量结论。
+_Avoid_: 接口成功、数据存在、Market Confidence
+
+**Data Revision**:
+来源方对已发布参考事实作出的带时间和原因的后续更正，不覆盖原事实的历史可见性。
+_Avoid_: 数据清洗、静默覆盖、账务更正
+
+**Dataset Snapshot**:
+为研究或重放冻结的参考数据版本集合，保持当时可见内容及其来源边界。
+_Avoid_: CSV 文件、查询结果、Experiment Run
