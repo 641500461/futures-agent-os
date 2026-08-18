@@ -51,7 +51,7 @@
 - PRD、技术方案、上下文地图和 ADR 已作为新仓库的设计基线入库；`docs/adr/0001` 至 `0007` 已由 `V0-002` 接受，后续实现必须遵守。
 - `LEGACY-ASSET-REUSE.md` 只记录 donor 资格，不是迁移计划，也不是进度基线。
 - 对旧项目执行过的测试仅是 donor 审计证据；新项目必须拥有自己的 CI、契约测试、属性测试、黄金回放和 Agent eval。
-- 新项目仓库为 `/Users/qiu/Documents/Codex/2026-08-18/new-chat/work/futures-agent-os`；项目名 `futures-agent-os`，包名 `futures_agent_os`，Python 3.14，uv，MIT License；首个基线 commit 为 `8d00a4331581026175270ae3bfa1414d438dc5df`。
+- 新项目仓库为 `/Users/qiu/work/futures-agent-os`；项目名 `futures-agent-os`，包名 `futures_agent_os`，Python 3.14，uv，MIT License；首个基线 commit 为 `8d00a4331581026175270ae3bfa1414d438dc5df`。
 - PostgreSQL 从新项目首个持久版本使用；不存在 SQLite 业务主库迁移阶段。
 
 ## 最近完成：V0-001
@@ -134,4 +134,4 @@ Next task:
 
 ## 新对话可直接使用的提示
 
-> 请先阅读 `/Users/qiu/Documents/Codex/2026-08-18/new-chat/work/futures-agent-os/docs/HANDOFF.md`、`ROADMAP.md`、仓库根 `README.md` 及当前任务引用的 PRD/技术章节。这是完全独立的绿地项目；`/Users/qiu/futures_workflow` 仅是 donor，不继承其运行状态，也不把其能力计作新项目进度。只执行路线图中首个已获授权的未完成任务，保持研究与模拟边界，并用新项目测试证据更新路线图和本交接文件。
+> 请先阅读 `/Users/qiu/work/futures-agent-os/docs/HANDOFF.md`、`ROADMAP.md`、仓库根 `README.md` 及当前任务引用的 PRD/技术章节。这是完全独立的绿地项目；`/Users/qiu/futures_workflow` 仅是 donor，不继承其运行状态，也不把其能力计作新项目进度。只执行路线图中首个已获授权的未完成任务，保持研究与模拟边界，并用新项目测试证据更新路线图和本交接文件。
