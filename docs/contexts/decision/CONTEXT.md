@@ -1,6 +1,6 @@
 # Decision
 
-本上下文把用户目标或自治扫描触发、市场解释和研究证据形成明确的 No Trade、Defer、Trade Plan 或针对已有暴露的 Risk Reduction Request，并管理一份 Trade Plan 进入模拟风险/执行链的授权依据与自治运行级别。它拥有机会候选、Trade Plan、Risk Reduction Request、Simulation Autonomy Mandate、Autonomy Mode Binding 和 Authorization Basis，但不分配风险预算、不产生订单，也不修改账户事实。
+本上下文把用户目标或自治扫描触发、市场解释和研究证据形成明确的 No Trade、Defer、Trade Plan 或针对已有暴露的 Risk Reduction Request，并管理一份 Trade Plan 进入模拟风险/执行链的授权依据与自治运行级别。它拥有机会候选、Trade Plan、Risk Reduction Request、Simulation Autonomy Mandate、Autonomy Mode Binding、Authorization Basis 和 Autonomy Gate Receipt，但不分配风险预算、不产生订单，也不修改账户事实。
 
 ## Language
 
