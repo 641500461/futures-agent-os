@@ -3,9 +3,9 @@
 文档版本：`2.1-proposed`  
 最后更新：2026-08-18  
 当前阶段：V0 绿地项目地基
-最近完成：`V0-001` 独立仓库与最小可运行骨架
+最近完成：`V0-002` 接受绿地架构决策基线
 当前开发任务：无  
-建议下一任务：执行 `V0-002`，确认并接受绿地 ADR 集
+建议下一任务：执行 `V0-003`，确认领域上下文与统一语言
 
 ## 给下一段对话的上下文胶囊
 
@@ -42,11 +42,11 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 已完成，其余任务仍为 `[ ]`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001`、`V0-002` 已完成，其余任务仍为 `[ ]`。
 
 ## 设计资料状态
 
-- PRD、技术方案、上下文地图和 ADR 已作为新仓库的设计基线入库；ADR 仍为 `proposed`，由 `V0-002` 正式确认状态。
+- PRD、技术方案、上下文地图和 ADR 已作为新仓库的设计基线入库；`docs/adr/0001` 至 `0007` 已由 `V0-002` 接受，后续实现必须遵守。
 - `LEGACY-ASSET-REUSE.md` 只记录 donor 资格，不是迁移计划，也不是进度基线。
 - 对旧项目执行过的测试仅是 donor 审计证据；新项目必须拥有自己的 CI、契约测试、属性测试、黄金回放和 Agent eval。
 - 新项目仓库为 `/Users/qiu/Documents/Codex/2026-08-18/new-chat/work/futures-agent-os`；项目名 `futures-agent-os`，包名 `futures_agent_os`，Python 3.14，uv，MIT License；首个基线 commit 为 `8d00a4331581026175270ae3bfa1414d438dc5df`。
@@ -64,9 +64,13 @@
 
 验证结果：clean clone 执行 `uv sync --locked` 成功，`uv run pytest` 为 `2 passed`，健康检查返回 `legacy_runtime_dependency=false`。未移植 donor 代码、未创建交易能力、未修改旧仓库、未启用外部消息。
 
-## 下一任务：V0-002
+## 最近完成：V0-002
 
-审阅并确认 `docs/adr/0001` 至 `0007` 的难逆转决策，将接受的 ADR 从 `proposed` 更新为 `accepted`，补充任何实现前必须解决的决策，并用链接与检查结果回写 `ROADMAP.md`。该任务不实现数据库、交易或 Agent 运行时。
+2026-08-18 按领域建模门槛审阅并接受 7 项绿地架构决策，建立 `docs/adr/README.md` 索引和 ADR 契约测试。基线 commit 为 `dad8c5802abba56fa285a53ee6b7e436daf093fd`，`uv run pytest` 为 `5 passed`。未实现数据库、交易或 Agent 运行时。
+
+## 下一任务：V0-003
+
+确认 9 个核心业务上下文和 1 个 supporting context 的统一语言与聚合所有权，把上下文地图转化为可自动检查的边界基线；重点验证 Mandate/Mode/Basis/Receipt、RiskDecision/ProtectionMandate、RiskReductionValidation/ProtectiveRiskAction、Position/Ledger、DecisionJournal/TradeEpisode 均只有一个权威所有者。该任务不提前实现跨上下文业务功能。
 
 ## 固定工作流程
 

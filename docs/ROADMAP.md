@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：`V0-001` 已完成；下一任务为 `V0-002`。
+当前状态：`V0-001`、`V0-002` 已完成；下一任务为 `V0-003`。
 
 ## 全局依赖原则
 
@@ -30,9 +30,9 @@
 - [x] `V0-001` 创建独立新仓库，确定项目名称、Python/runtime 版本、许可证、目录结构和本地开发入口。
   Acceptance: 不修改或依赖旧仓库即可完成 clean checkout、安装、启动和测试；记录新仓库 commit。  
   Evidence: 2026-08-18 在 `/Users/qiu/Documents/Codex/2026-08-18/new-chat/work/futures-agent-os` 创建独立 Git 仓库；项目名 `futures-agent-os`，包名 `futures_agent_os`，Python 3.14，uv 锁定依赖，MIT License；基线 commit `8d00a4331581026175270ae3bfa1414d438dc5df`。从该 commit 执行 clean clone 后，`uv sync --locked` 成功，`uv run pytest` 为 `2 passed`，`uv run futures-agent-os health` 返回 `status=ok` 与 `legacy_runtime_dependency=false`；契约测试通过 AST 检查禁止 `futures_workflow` 运行时 import。
-- [ ] `V0-002` 确认绿地 ADR 集：项目独立性、确定性内核真值、Agent 以 TradePlan/RiskReductionRequest 表达交易意图但不直接提交 Order、Simulation Autonomy Mandate、模块化 monorepo、PostgreSQL、审计模型和队列策略。  
+- [x] `V0-002` 确认绿地 ADR 集：项目独立性、确定性内核真值、Agent 以 TradePlan/RiskReductionRequest 表达交易意图但不直接提交 Order、Simulation Autonomy Mandate、模块化 monorepo、PostgreSQL、审计模型和队列策略。
   Acceptance: 所有难逆转决策有状态、理由、替代项和后果；不使用旧 ADR 编号暗示继承。  
-  Evidence: 待补。
+  Evidence: 2026-08-18 按领域建模 ADR 门槛复核并接受 `docs/adr/0001` 至 `0007`，索引见 `docs/adr/README.md`；commit `dad8c5802abba56fa285a53ee6b7e436daf093fd`。7 项决策均使用新项目连续编号，状态为 `accepted`，并包含 Context、Decision、Consequences 与 Considered Options；`tests/contract/test_adr_baseline.py` 自动检查编号连续、状态合法、V0 基线已接受及权衡/后果章节，`uv run pytest` 为 `5 passed`。
 - [ ] `V0-003` 建立领域上下文与统一语言：Reference/Market Data、Market Intelligence、Research & Experiment、Decision、Portfolio & Risk、Execution Simulation、Accounting & Settlement、Learning & Review、Governance & Registry。  
   Acceptance: 每个聚合只有一个权威上下文；Agent Orchestration 明确为 supporting context；Simulation Autonomy Mandate、AutonomyModeBinding 与 AuthorizationBasis 由 Decision 拥有，DecisionJournal 追加投影由 Learning & Review 拥有。  
   Evidence: 待补。
