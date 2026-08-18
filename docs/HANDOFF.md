@@ -3,9 +3,9 @@
 文档版本：`2.1-proposed`  
 最后更新：2026-08-18  
 当前阶段：V0 绿地项目地基
-最近完成：`V0-010` 幂等、审计与可观测性基础
-当前开发任务：`V0-011` CI 与质量门禁（代码完成，等待远端 main 分支保护）
-建议下一步：为仓库配置 GitHub remote 与 main branch protection；验收后勾选 V0-011 并进入 V0-012
+最近完成：`V0-011` CI 与质量门禁
+当前开发任务：无
+建议下一步：执行 `V0-012`，建立 synthetic/golden 数据集与期货边界案例库
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-010` 已完成，其余任务仍为 `[ ]`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-011` 已完成，其余任务仍为 `[ ]`。
 
 ## 设计资料状态
 
@@ -102,9 +102,13 @@
 
 已使用 `gpt-5.6-terra` / `high` 建立统一 correlation/causation、命令幂等、追加审计、metrics/logs/traces 与最小告警框架，实现 commit 为 `50cd1b756ea301a5d4b4ea59a821956b08eb1df4`。统筹复核补强深度不可变 payload、并发单效果、真实 ToolCall trace、数据库往返隔离以及告警 runbook/用户影响范围。PostgreSQL `0002_v0_010` 已通过真实 downgrade/upgrade 与 append-only/idempotency 权限验证；全量测试为 `74 passed`。外部 tracing/exporter 尚未启用，本地审计与业务数据库仍是真值。
 
-## 当前任务：V0-011
+## 最近完成：V0-011
 
-已使用 `gpt-5.6-terra` / `medium` 建立 CI、依赖锁、Ruff、mypy、Hypothesis、schema compatibility、detect-secrets 与分层测试门禁，候选实现 commit 为 `a2aaeeaba6ab102c3d55213005d0bb67604c4efb`。本地与 CI 共用 Make targets，第三方 Actions 固定 commit SHA；`make check`、真实 PostgreSQL integration 和 DB-backed 全量测试均通过，最终全量为 `80 passed`。当前唯一未满足项是 main branch protection：本地仓库没有 Git remote，不能配置或提供远端证据，因此 V0-011 仍保持未完成，且按单任务规则不进入 V0-012。
+已使用 `gpt-5.6-terra` / `medium` 建立 CI、依赖锁、Ruff、mypy、Hypothesis、schema compatibility、detect-secrets 与分层测试门禁，基础实现 commit 为 `a2aaeeaba6ab102c3d55213005d0bb67604c4efb`。本地与 CI 共用 Make targets，第三方 Actions 固定 commit SHA；`make check`、真实 PostgreSQL integration 和 DB-backed 全量测试均通过，最终全量为 `80 passed`。远端公开仓库 `https://github.com/641500461/futures-agent-os` 的五个 Quality gate job 全绿；main branch protection 已启用，要求 PR 和 strict checks，禁止 force push/delete，管理员也受约束。V0-011 Acceptance 已全部满足。
+
+## 下一任务：V0-012
+
+建立新项目 synthetic/golden 数据集与边界案例库，首批验收宇宙为 AG、CU、RB、JM、I、MA、SA、M、P、SR、SC、JD；覆盖夜盘、规则变更、涨跌停、跳空、无流动性、乱序和缺失数据。该任务为常规数据与测试开发，按模型路由使用 Terra/medium。
 
 ## 固定工作流程
 
