@@ -33,6 +33,7 @@ make check
 - `docs/`：PRD、技术方案、架构、ADR、上下文地图、Roadmap 与交接记录。
 
 开发进度只以 [`docs/ROADMAP.md`](docs/ROADMAP.md) 为准，跨任务交接先阅读 [`docs/HANDOFF.md`](docs/HANDOFF.md)。
+开发任务的模型选择与升级规则见 [`docs/DEVELOPMENT-MODEL-POLICY.md`](docs/DEVELOPMENT-MODEL-POLICY.md)。
 
 ## 产品边界
 
@@ -44,4 +45,3 @@ make check
 ## 许可证
 
 MIT，见 [LICENSE](LICENSE)。
-

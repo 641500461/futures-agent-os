@@ -7,6 +7,8 @@
 当前开发任务：无  
 建议下一任务：执行 `V0-003`，确认领域上下文与统一语言
 
+开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
+
 ## 给下一段对话的上下文胶囊
 
 本项目是从零建设的 **Agent Quant Research & Simulation OS**，不是 `futures_workflow` 的重构、迁移、兼容升级或替代分支。对用户呈现为一个能独立找机会、模拟交易、盯盘和复盘的 Agent，内部由受限的专业 Agent 与确定性内核协作。
