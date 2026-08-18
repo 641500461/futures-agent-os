@@ -3,9 +3,9 @@
 文档版本：`2.1-proposed`  
 最后更新：2026-08-18  
 当前阶段：V0 绿地项目地基
-最近完成：`V0-005` 建立 Agent Catalog 与有界协作契约
+最近完成：`V0-006` 建立 Tool Registry 与默认拒绝权限模型
 当前开发任务：无  
-建议下一任务：执行 `V0-006`，建立 Tool Registry 与默认拒绝权限模型
+建议下一任务：执行 `V0-007`，建立 PostgreSQL 持久化地基
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-005` 已完成，其余任务仍为 `[ ]`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-006` 已完成，其余任务仍为 `[ ]`。
 
 ## 设计资料状态
 
@@ -82,9 +82,13 @@
 
 2026-08-18 使用 `gpt-5.6-terra` / `medium` 完成版本化 Agent Catalog、任务信封、不可变 artifact 与有界 handoff 协议，统筹对话补强预算、输入、重复声明和失败结果边界。commit 为 `6070d236f0129de01455001870cdaf2b3f87b66a`，`uv run pytest` 为 `24 passed`。12 个逻辑角色不等于 12 个常驻服务，Catalog 声明也不等于 Tool Grant 或运行启用。
 
-## 下一任务：V0-006
+## 最近完成：V0-006
 
-建立版本化 Tool Registry、Tool Grant 与默认拒绝的授权判定，覆盖只读、研究请求、提案、Mandate Scope 内自治模拟变更、可选单 Plan Approval、晋升和启用权限，并按 Agent/节点/账户/策略/品种/环境收窄作用域。该任务触及权限与自治授权，按模型路由策略升级为 Terra/high；仍不执行真实模型调用或交易副作用。
+2026-08-18 使用 `gpt-5.6-terra` / `high` 完成 Tool Registry、ToolGrant、ToolScope 与默认拒绝授权判定，统筹对话修正 owner、交易/治理 scope 和受信 Grant 来源边界。commit 为 `2ed377491212de476ec20bc9521fe48f9affba1e`，`uv run pytest` 为 `39 passed`。Registry 与权限判定不执行工具，也不替代业务授权或风险许可。
+
+## 下一任务：V0-007
+
+建立 PostgreSQL 初始 schema、正式 migration、数据库角色、inbox/outbox、任务租约、Mandate/可选批准、调度、监督通知和 durable checkpoint 基础；空库必须可重复升级并完成降级演练，业务 schema 与 Agent checkpoint 隔离，禁止旧库导入。该任务涉及事务、权限与恢复，按模型路由策略使用 Terra/high。
 
 ## 固定工作流程
 

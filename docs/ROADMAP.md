@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：`V0-001` 至 `V0-005` 已完成；下一任务为 `V0-006`。
+当前状态：`V0-001` 至 `V0-006` 已完成；下一任务为 `V0-007`。
 
 ## 全局依赖原则
 
@@ -42,9 +42,9 @@
 - [x] `V0-005` 定义完整 Agent Catalog、`AgentTaskEnvelope`、结构化交接 artifact 和有界协作协议。
   Acceptance: 12 个目标逻辑角色均写明职责、非职责、用户/时间表/市场/账户/系统事件触发、输入、输出、工具、权限、预算、失败策略、指标和启用版本。  
   Evidence: 2026-08-18 使用 `gpt-5.6-terra` / `medium` 实现，统筹对话复核并收紧预算、输入和失败结果边界；commit `6070d236f0129de01455001870cdaf2b3f87b66a`。版本化 `AGENT_CATALOG` 机器可检查 12 个逻辑角色的职责/非职责、五类触发、输入输出、工具声明、权限边界、预算、失败策略、指标与启用版本；`AgentTaskEnvelope` 拒绝角色版本、输入、工具、输出或预算越界及重复声明。`ArtifactRef`/`StructuredArtifact`/`AgentHandoff` 只传递带 SHA-256、schema、as_of/expiry 的不可变引用，不转移权限；Main 与确定性 Workflow Orchestrator 保持分离。全量 `uv run pytest` 为 `24 passed`，compileall、健康检查与 diff check 通过；未实现模型调用、Tool Grant 或交易副作用。
-- [ ] `V0-006` 建立 Tool Registry 与权限模型：细分只读、研究请求、提案、Mandate Scope 内自治模拟变更、可选逐计划批准、晋升和启用权限，并支持账户/策略/品种/环境作用域。  
+- [x] `V0-006` 建立 Tool Registry 与权限模型：细分只读、研究请求、提案、Mandate Scope 内自治模拟变更、可选逐计划批准、晋升和启用权限，并支持账户/策略/品种/环境作用域。
   Acceptance: 默认拒绝；未授权 Agent、节点或作用域无法调用工具；权限矩阵有自动化测试。  
-  Evidence: 待补。
+  Evidence: 2026-08-18 按安全关键路由使用 `gpt-5.6-terra` / `high` 实现，统筹对话复核并修正工具 owner、交易/治理 scope 与受信 Grant 来源边界；commit `2ed377491212de476ec20bc9521fe48f9affba1e`。版本化 Tool Registry 仅精确解析 `tool_id@major.minor`，覆盖 READ_ONLY、RESEARCH_REQUEST、PROPOSAL、MANDATE_SCOPED_SIMULATION、PLAN_APPROVAL、PROMOTION、ACTIVATION 七类权限；确定性 ToolAuthorizer 默认拒绝，并校验 Agent Catalog、节点、工具版本、Grant 状态/有效期、账户/策略/品种/政策/环境或 governed artifact scope。每次判定产生稳定 reason code、request hash、call/correlation ID 与匹配 Grant 引用；ToolGrant 不替代 Mandate/Basis/Receipt/RiskDecision/Activation。`risk_check` 仅是非权威预检；正式 RiskDecision 仍归 Portfolio & Risk。全量 `uv run pytest` 为 `39 passed`，compileall、健康检查和 diff check 通过。
 - [ ] `V0-007` 建立 PostgreSQL 初始 schema、正式 schema migration、数据库角色、inbox/outbox、任务租约、Mandate/可选批准、调度、监督通知和 durable checkpoint 基础。  
   Acceptance: 空库可重复建库、升级、降级演练；业务表与 Agent checkpoint schema 隔离；不包含旧表导入。  
   Evidence: 待补。
