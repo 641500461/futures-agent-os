@@ -1,0 +1,35 @@
+name: PostgreSQL migration acceptance
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17.5-alpine
+        env:
+          POSTGRES_DB: futures_agent_os
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 54329:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d futures_agent_os"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    env:
+      FAO_DATABASE_URL: postgresql+psycopg://postgres:postgres@127.0.0.1:54329/futures_agent_os
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.14"
+      - run: uv sync --locked
+      - run: uv run pytest

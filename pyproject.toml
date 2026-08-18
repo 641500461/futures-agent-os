@@ -12,7 +12,11 @@ license = "MIT"
 authors = [
   { name = "futures-agent-os contributors" },
 ]
-dependencies = []
+dependencies = [
+  "alembic>=1.16,<2",
+  "psycopg[binary]>=3.2,<4",
+  "SQLAlchemy>=2.0,<3",
+]
 
 [project.scripts]
 futures-agent-os = "futures_agent_os.cli:main"
@@ -28,4 +32,3 @@ packages = ["src/futures_agent_os"]
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]
-
