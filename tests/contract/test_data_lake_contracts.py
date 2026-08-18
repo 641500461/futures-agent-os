@@ -4,9 +4,19 @@ from datetime import UTC, datetime, timedelta
 import pytest
 
 from futures_agent_os.reference_market_data import (
-    DataQualityLevel, DatasetLayer, DatasetManifest, LicenseTerms, LocalFileArtifactStore,
-    LocalFileDataStore, PointInTimeRecord, QualityReport, RevisionInfo, SourceProvenance,
-    StoredDataset, TimeCoverage, sha256_digest,
+    DataQualityLevel,
+    DatasetLayer,
+    DatasetManifest,
+    LicenseTerms,
+    LocalFileArtifactStore,
+    LocalFileDataStore,
+    PointInTimeRecord,
+    QualityReport,
+    RevisionInfo,
+    SourceProvenance,
+    StoredDataset,
+    TimeCoverage,
+    sha256_digest,
 )
 from futures_agent_os.shared_kernel import EntityId, RecordedAt, SchemaVersion
 
@@ -17,15 +27,26 @@ def _at(minutes: int) -> RecordedAt:
 
 def _manifest(layer: DatasetLayer = DatasetLayer.RAW, *, content: bytes = b"raw-response") -> DatasetManifest:
     return DatasetManifest(
-        dataset_id=EntityId.new("dataset"), layer=layer, object_uri="local://example/object",
-        content_hash=sha256_digest(content), schema_name="market.observation", schema_version=SchemaVersion(1, 0),
-        coverage=TimeCoverage(_at(1), _at(2)), instrument_universe=("SHFE.AG2609",),
+        dataset_id=EntityId.new("dataset"),
+        layer=layer,
+        object_uri="local://example/object",
+        content_hash=sha256_digest(content),
+        schema_name="market.observation",
+        schema_version=SchemaVersion(1, 0),
+        coverage=TimeCoverage(_at(1), _at(2)),
+        instrument_universe=("SHFE.AG2609",),
         provenance=SourceProvenance("synthetic-exchange", "synthetic://exchange/ag", _at(3), _at(2), "source-r1"),
         license=LicenseTerms("test-license", "research", "30d", "no redistribution", "development only"),
-        as_of=_at(4), ingested_at=_at(5), quality=QualityReport(DataQualityLevel.Q2_RESEARCH, "complete", _at(5)),
+        as_of=_at(4),
+        ingested_at=_at(5),
+        quality=QualityReport(DataQualityLevel.Q2_RESEARCH, "complete", _at(5)),
         revision=RevisionInfo(1, "initial ingest", _at(5)),
-        generated_by="unit-test" if layer in {DatasetLayer.FEATURE_SNAPSHOT, DatasetLayer.DATASET, DatasetLayer.ARTIFACT} else None,
-        upstream_manifest_ids=(EntityId.new("dataset"),) if layer in {DatasetLayer.FEATURE_SNAPSHOT, DatasetLayer.DATASET} else (),
+        generated_by="unit-test"
+        if layer in {DatasetLayer.FEATURE_SNAPSHOT, DatasetLayer.DATASET, DatasetLayer.ARTIFACT}
+        else None,
+        upstream_manifest_ids=(EntityId.new("dataset"),)
+        if layer in {DatasetLayer.FEATURE_SNAPSHOT, DatasetLayer.DATASET}
+        else (),
     )
 
 

@@ -62,7 +62,11 @@ class ToolScope:
 
     def __post_init__(self) -> None:
         for values in (
-            self.account_ids, self.strategy_ids, self.instrument_ids, self.policy_refs, self.governed_artifact_refs,
+            self.account_ids,
+            self.strategy_ids,
+            self.instrument_ids,
+            self.policy_refs,
+            self.governed_artifact_refs,
         ):
             if not isinstance(values, frozenset):
                 raise TypeError("tool scope selectors must be immutable frozensets")
@@ -139,13 +143,22 @@ class ToolGrant:
             raise ValueError("tool grant expiry must follow issuance")
         if not self.audit_ref:
             raise ValueError("tool grants require an audit reference")
-        if self.max_permission_tier in {
-            ToolPermissionTier.MANDATE_SCOPED_SIMULATION, ToolPermissionTier.PLAN_APPROVAL,
-        } and not self.scope.has_fully_bounded_trading_scope():
-            raise ValueError("simulation and plan-approval tool grants require bounded account, strategy, instrument, policy, and environment scope")
+        if (
+            self.max_permission_tier
+            in {
+                ToolPermissionTier.MANDATE_SCOPED_SIMULATION,
+                ToolPermissionTier.PLAN_APPROVAL,
+            }
+            and not self.scope.has_fully_bounded_trading_scope()
+        ):
+            raise ValueError(
+                "simulation and plan-approval tool grants require bounded account, strategy, instrument, policy, and environment scope"
+            )
         if self.max_permission_tier in {ToolPermissionTier.PROMOTION, ToolPermissionTier.ACTIVATION}:
             if not self.scope.has_fully_bounded_governed_artifact_scope():
-                raise ValueError("promotion and activation tool grants require bounded governed-artifact, policy, and environment scope")
+                raise ValueError(
+                    "promotion and activation tool grants require bounded governed-artifact, policy, and environment scope"
+                )
 
     def is_active_at(self, called_at: RecordedAt) -> bool:
         return self.status is ToolGrantStatus.ACTIVE and self.issued_at.value <= called_at.value < self.expires_at.value
@@ -185,10 +198,14 @@ class ToolCallRequest:
 
     def fingerprint(self) -> str:
         payload = {
-            "call_id": str(self.call_id), "agent_role_id": self.agent_role_id, "node_id": self.node_id,
-            "catalog_version": str(self.catalog_version), "registry_version": str(self.registry_version),
+            "call_id": str(self.call_id),
+            "agent_role_id": self.agent_role_id,
+            "node_id": self.node_id,
+            "catalog_version": str(self.catalog_version),
+            "registry_version": str(self.registry_version),
             "tool_ref": str(self.tool_ref),
-            "scope": self.scope.to_dict(), "called_at": self.called_at.to_dict()["recorded_at"],
+            "scope": self.scope.to_dict(),
+            "called_at": self.called_at.to_dict()["recorded_at"],
             "correlation_id": str(self.correlation_id),
             "trace_id": str(self.trace.trace_id),
             "causation_id": str(self.trace.causation_id) if self.trace.causation_id else None,
@@ -223,7 +240,7 @@ class ToolAuthorizationDecision:
         if self.outcome is ToolAuthorizationOutcome.DENY and self.matched_grant_id is not None:
             raise ValueError("denied tool calls must not imply that a ToolGrant was consumed")
 
-    def to_dict(self) -> dict[str, str]:
+    def to_dict(self) -> dict[str, str | None]:
         result = {
             "outcome": self.outcome.value,
             "reason_code": self.reason_code.value,
@@ -256,16 +273,28 @@ class ToolAuthorizer:
         """Fail closed with a stable reason code; never raises for authorization denial."""
 
         fingerprint = request.fingerprint()
-        deny = lambda reason: ToolAuthorizationDecision(
-            ToolAuthorizationOutcome.DENY, reason, request.call_id, request.correlation_id, request.trace, request.agent_role_id,
-            request.node_id, request.tool_ref, fingerprint, request.called_at,
-        )
+
+        def deny(reason: ReasonCode) -> ToolAuthorizationDecision:
+            return ToolAuthorizationDecision(
+                ToolAuthorizationOutcome.DENY,
+                reason,
+                request.call_id,
+                request.correlation_id,
+                request.trace,
+                request.agent_role_id,
+                request.node_id,
+                request.tool_ref,
+                fingerprint,
+                request.called_at,
+            )
+
         if request.registry_version != self._registry.version:
             return deny(ReasonCode.TOOL_REGISTRY_VERSION_MISMATCH)
         definition = self._registry.resolve_exact(request.tool_ref)
         if definition is None:
             return deny(
-                ReasonCode.TOOL_VERSION_MISMATCH if self._registry.has_tool_id(request.tool_ref.tool_id)
+                ReasonCode.TOOL_VERSION_MISMATCH
+                if self._registry.has_tool_id(request.tool_ref.tool_id)
                 else ReasonCode.TOOL_NOT_REGISTERED
             )
         try:
@@ -290,7 +319,8 @@ class ToolAuthorizer:
         if not active_role_grants:
             return deny(ReasonCode.TOOL_GRANT_INACTIVE)
         current_grants = tuple(
-            grant for grant in active_role_grants
+            grant
+            for grant in active_role_grants
             if grant.issued_at.value <= request.called_at.value < grant.expires_at.value
         )
         if not current_grants:
@@ -301,16 +331,22 @@ class ToolAuthorizer:
         exact_tool_grants = tuple(grant for grant in node_grants if request.tool_ref in grant.tool_refs)
         if not exact_tool_grants:
             return deny(ReasonCode.TOOL_VERSION_MISMATCH)
-        tier_grants = tuple(
-            grant for grant in exact_tool_grants if grant.permits_tier(definition.permission_tier)
-        )
+        tier_grants = tuple(grant for grant in exact_tool_grants if grant.permits_tier(definition.permission_tier))
         if not tier_grants:
             return deny(ReasonCode.TOOL_PERMISSION_TIER_DENIED)
         scope_grants = tuple(grant for grant in tier_grants if grant.scope.contains(request.scope))
         if not scope_grants:
             return deny(ReasonCode.TOOL_SCOPE_MISMATCH)
         return ToolAuthorizationDecision(
-            ToolAuthorizationOutcome.PERMIT, ReasonCode.TOOL_AUTHORIZED, request.call_id, request.correlation_id, request.trace,
-            request.agent_role_id, request.node_id, request.tool_ref, fingerprint, request.called_at,
+            ToolAuthorizationOutcome.PERMIT,
+            ReasonCode.TOOL_AUTHORIZED,
+            request.call_id,
+            request.correlation_id,
+            request.trace,
+            request.agent_role_id,
+            request.node_id,
+            request.tool_ref,
+            fingerprint,
+            request.called_at,
             matched_grant_id=scope_grants[0].grant_id,
         )

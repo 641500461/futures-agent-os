@@ -20,6 +20,16 @@ uv run pytest
 make check
 ```
 
+质量门禁的本地命令与 CI 完全相同：`make lock format lint type scan schema`，以及
+`make test-unit`、`make test-property`、`make test-contract`。真实 PostgreSQL 验收使用
+隔离数据库，例如：
+
+```bash
+FAO_DATABASE_URL='postgresql+psycopg://<local-user>@/futures_agent_os?host=/tmp' make test-integration
+```
+
+CI 使用无密码的临时 PostgreSQL `trust` 服务；本地连接串必须指向 disposable database。
+
 健康检查只验证新项目自身，不读取 `/Users/qiu/futures_workflow` 的代码、配置或数据库。
 
 ## 仓库结构

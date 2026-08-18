@@ -23,7 +23,11 @@ futures-agent-os = "futures_agent_os.cli:main"
 
 [dependency-groups]
 dev = [
+  "hypothesis>=6.151,<7",
+  "mypy>=1.19,<2",
   "pytest>=8.4,<9",
+  "ruff>=0.15,<1",
+  "detect-secrets>=1.5,<2",
 ]
 
 [tool.hatch.build.targets.wheel]
@@ -32,3 +36,23 @@ packages = ["src/futures_agent_os"]
 [tool.pytest.ini_options]
 addopts = "-q"
 testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 120
+extend-exclude = [".venv", "migrations/versions"]
+
+[tool.ruff.lint]
+# Keep the initial repository gate focused on correctness.  Broader style
+# migrations are deliberately separate from this quality-baseline task.
+select = ["E4", "E7", "E9", "F"]
+
+[tool.mypy]
+python_version = "3.14"
+files = ["src"]
+check_untyped_defs = true
+disallow_any_generics = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_unused_ignores = true

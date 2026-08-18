@@ -45,7 +45,9 @@ def canonical_sha256(value: JsonValue) -> str:
     """Hash canonical JSON so replay comparisons do not depend on key order."""
 
     try:
-        encoded = json.dumps(_canonical_json_value(value), sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False)
+        encoded = json.dumps(
+            _canonical_json_value(value), sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False
+        )
     except (TypeError, ValueError) as error:
         raise ValueError("value must be finite JSON-compatible data") from error
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
@@ -94,7 +96,11 @@ class IdempotentCommand:
     request_sha256: str = field(init=False)
 
     def __post_init__(self) -> None:
-        if not isinstance(self.idempotency_key, str) or not self.idempotency_key.strip() or len(self.idempotency_key) > 255:
+        if (
+            not isinstance(self.idempotency_key, str)
+            or not self.idempotency_key.strip()
+            or len(self.idempotency_key) > 255
+        ):
             raise ValueError("idempotency key must be non-empty and at most 255 characters")
         if not isinstance(self.trace, TraceContext):
             raise TypeError("idempotent commands require a TraceContext")
@@ -117,7 +123,9 @@ class BusinessEffect:
     def __post_init__(self) -> None:
         if not self.effect_type:
             raise ValueError("business effects require an effect type")
-        if len(self.effect_sha256) != 64 or any(character not in "0123456789abcdef" for character in self.effect_sha256):
+        if len(self.effect_sha256) != 64 or any(
+            character not in "0123456789abcdef" for character in self.effect_sha256
+        ):
             raise ValueError("business effect hash must be a lowercase SHA-256 digest")
 
 
@@ -203,7 +211,9 @@ class AuditDraft:
         if self.object_version is not None and self.object_version < 0:
             raise ValueError("audit object versions cannot be negative")
         for value in (self.before_sha256, self.after_sha256):
-            if value is not None and (len(value) != 64 or any(character not in "0123456789abcdef" for character in value)):
+            if value is not None and (
+                len(value) != 64 or any(character not in "0123456789abcdef" for character in value)
+            ):
                 raise ValueError("audit state hashes must be lowercase SHA-256 digests")
         if not isinstance(self.trace, TraceContext):
             raise TypeError("audit drafts require a TraceContext")

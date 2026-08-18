@@ -8,4 +8,3 @@ def test_health_is_local_and_greenfield() -> None:
     assert health.project == "futures-agent-os"
     assert health.version == "0.0.1"
     assert health.legacy_runtime_dependency is False
-

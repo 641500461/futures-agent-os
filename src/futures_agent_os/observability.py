@@ -48,7 +48,9 @@ class AlertStatus(StrEnum):
 def _labels(labels: Mapping[str, str]) -> tuple[tuple[str, str], ...]:
     if not isinstance(labels, Mapping):
         raise TypeError("metric labels must be a mapping when created from labels")
-    if any(not isinstance(key, str) or not isinstance(value, str) or not key or not value for key, value in labels.items()):
+    if any(
+        not isinstance(key, str) or not isinstance(value, str) or not key or not value for key, value in labels.items()
+    ):
         raise ValueError("metric labels must have non-empty names and values")
     return tuple(sorted(labels.items()))
 
@@ -103,7 +105,11 @@ class StructuredLogRecord:
     def __post_init__(self) -> None:
         if not isinstance(self.event_code, str) or not self.event_code:
             raise ValueError("structured logs require an event code")
-        if not isinstance(self.severity, LogSeverity) or not isinstance(self.trace, TraceContext) or not isinstance(self.recorded_at, RecordedAt):
+        if (
+            not isinstance(self.severity, LogSeverity)
+            or not isinstance(self.trace, TraceContext)
+            or not isinstance(self.recorded_at, RecordedAt)
+        ):
             raise TypeError("structured logs require severity, trace, and recorded-at contract values")
         # A log record is safe to persist only after recursive security redaction
         # and detachment from any caller-owned nested collection.
@@ -133,15 +139,24 @@ class MetricSample:
             raise TypeError("metric labels must be an immutable tuple of pairs")
         if any(not isinstance(pair, tuple) or len(pair) != 2 for pair in self.labels):
             raise TypeError("metric labels must be immutable name/value pairs")
-        if any(not isinstance(key, str) or not isinstance(value, str) or not key or not value for key, value in self.labels):
+        if any(
+            not isinstance(key, str) or not isinstance(value, str) or not key or not value for key, value in self.labels
+        ):
             raise ValueError("metric labels must be unique non-empty pairs")
         if len({key for key, _ in self.labels}) != len(self.labels):
             raise ValueError("metric labels must be unique non-empty pairs")
 
     @classmethod
     def create(
-        cls, *, metric_id: EntityId, name: str, kind: MetricKind, value: Decimal, recorded_at: RecordedAt,
-        labels: Mapping[str, str] | None = None, trace: TraceContext | None = None,
+        cls,
+        *,
+        metric_id: EntityId,
+        name: str,
+        kind: MetricKind,
+        value: Decimal,
+        recorded_at: RecordedAt,
+        labels: Mapping[str, str] | None = None,
+        trace: TraceContext | None = None,
     ) -> MetricSample:
         return cls(metric_id, name, kind, value, recorded_at, _labels(labels or {}), trace)
 
@@ -156,7 +171,12 @@ class TraceSpan:
     attributes: Mapping[str, TelemetryValue]
 
     def __post_init__(self) -> None:
-        if not isinstance(self.span_id, EntityId) or not isinstance(self.name, str) or not self.name or not isinstance(self.trace, TraceContext):
+        if (
+            not isinstance(self.span_id, EntityId)
+            or not isinstance(self.name, str)
+            or not self.name
+            or not isinstance(self.trace, TraceContext)
+        ):
             raise ValueError("trace spans require a name and TraceContext")
         if not isinstance(self.started_at, RecordedAt) or not isinstance(self.finished_at, RecordedAt):
             raise TypeError("trace spans require recorded-at contract values")
@@ -178,7 +198,12 @@ class AlertPolicy:
     absence_after: timedelta | None = None
 
     def __post_init__(self) -> None:
-        if not isinstance(self.policy_id, str) or not self.policy_id or not isinstance(self.metric_name, str) or not self.metric_name:
+        if (
+            not isinstance(self.policy_id, str)
+            or not self.policy_id
+            or not isinstance(self.metric_name, str)
+            or not self.metric_name
+        ):
             raise ValueError("alert policies require an id and metric name")
         if not isinstance(self.severity, LogSeverity):
             raise TypeError("alert policies require a LogSeverity")
@@ -216,7 +241,9 @@ class AlertRecord:
             raise TypeError("alert records require status and severity enums")
         if not isinstance(self.observed_at, RecordedAt):
             raise TypeError("alert records require a RecordedAt observation time")
-        if self.observed_value is not None and (not isinstance(self.observed_value, Decimal) or not self.observed_value.is_finite()):
+        if self.observed_value is not None and (
+            not isinstance(self.observed_value, Decimal) or not self.observed_value.is_finite()
+        ):
             raise ValueError("alert observed values must be finite Decimals when present")
         if self.correlation_id is not None and not isinstance(self.correlation_id, EntityId):
             raise TypeError("alert correlations must be EntityIds")
@@ -239,31 +266,55 @@ class AlertEvaluator:
 
     @staticmethod
     def evaluate(
-        policy: AlertPolicy, samples: Iterable[MetricSample], now: RecordedAt, alert_id: EntityId,
+        policy: AlertPolicy,
+        samples: Iterable[MetricSample],
+        now: RecordedAt,
+        alert_id: EntityId,
     ) -> AlertRecord:
         if not isinstance(policy, AlertPolicy) or not isinstance(now, RecordedAt) or not isinstance(alert_id, EntityId):
             raise TypeError("alert evaluation requires policy, current time, and alert-id contract values")
         all_samples = tuple(samples)
         if any(not isinstance(sample, MetricSample) for sample in all_samples):
             raise TypeError("alert evaluation requires MetricSample values")
-        matching = tuple(sample for sample in all_samples if sample.name == policy.metric_name and sample.recorded_at.value <= now.value)
+        matching = tuple(
+            sample
+            for sample in all_samples
+            if sample.name == policy.metric_name and sample.recorded_at.value <= now.value
+        )
         if policy.threshold is not None:
             observed = max((sample.value for sample in matching), default=None)
             status = AlertStatus.FIRING if observed is not None and observed >= policy.threshold else AlertStatus.OK
-            correlated = next((sample.trace.correlation_id for sample in reversed(matching) if sample.trace is not None), None)
+            correlated = next(
+                (sample.trace.correlation_id for sample in reversed(matching) if sample.trace is not None), None
+            )
             return AlertRecord(
-                alert_id, policy.policy_id, status, policy.severity, now, observed,
-                policy.runbook_ref, policy.impact_scope, correlated,
+                alert_id,
+                policy.policy_id,
+                status,
+                policy.severity,
+                now,
+                observed,
+                policy.runbook_ref,
+                policy.impact_scope,
+                correlated,
             )
 
         assert policy.absence_after is not None
         cutoff = now.value - policy.absence_after
         recent = tuple(sample for sample in matching if sample.recorded_at.value >= cutoff)
-        correlated = next((sample.trace.correlation_id for sample in reversed(recent) if sample.trace is not None), None)
+        correlated = next(
+            (sample.trace.correlation_id for sample in reversed(recent) if sample.trace is not None), None
+        )
         return AlertRecord(
-            alert_id, policy.policy_id, AlertStatus.OK if recent else AlertStatus.FIRING,
-            policy.severity, now, recent[-1].value if recent else None,
-            policy.runbook_ref, policy.impact_scope, correlated,
+            alert_id,
+            policy.policy_id,
+            AlertStatus.OK if recent else AlertStatus.FIRING,
+            policy.severity,
+            now,
+            recent[-1].value if recent else None,
+            policy.runbook_ref,
+            policy.impact_scope,
+            correlated,
         )
 
 

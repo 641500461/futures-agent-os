@@ -1,2 +1,1 @@
 """Execution simulation bounded context."""
-

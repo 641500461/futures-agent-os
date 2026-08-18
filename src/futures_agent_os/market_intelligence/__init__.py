@@ -1,2 +1,1 @@
 """Market intelligence bounded context."""
-

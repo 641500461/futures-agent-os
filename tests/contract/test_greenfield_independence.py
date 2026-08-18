@@ -24,4 +24,3 @@ def test_source_has_no_legacy_runtime_imports() -> None:
                     violations.append(f"{source_file.relative_to(PROJECT_ROOT)} imports {name}")
 
     assert violations == []
-

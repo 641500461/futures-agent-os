@@ -160,7 +160,10 @@ class DatasetManifest:
             raise ValueError("dataset as_of cannot be after ingestion")
         if self.coverage.end.value > self.as_of.value:
             raise ValueError("dataset coverage cannot extend beyond as_of")
-        if self.layer in {DatasetLayer.FEATURE_SNAPSHOT, DatasetLayer.DATASET, DatasetLayer.ARTIFACT} and not self.generated_by:
+        if (
+            self.layer in {DatasetLayer.FEATURE_SNAPSHOT, DatasetLayer.DATASET, DatasetLayer.ARTIFACT}
+            and not self.generated_by
+        ):
             raise ValueError("derived datasets require generated_by provenance")
         if self.layer in {DatasetLayer.FEATURE_SNAPSHOT, DatasetLayer.DATASET} and not self.upstream_manifest_ids:
             raise ValueError("derived datasets require upstream manifests")
@@ -267,20 +270,42 @@ def _manifest_json(manifest: DatasetManifest) -> bytes:
 
 def _manifest_dict(manifest: DatasetManifest) -> dict[str, object]:
     return {
-        "dataset_id": str(manifest.dataset_id), "layer": manifest.layer.value, "object_uri": manifest.object_uri,
-        "content_hash": manifest.content_hash, "schema_name": manifest.schema_name,
+        "dataset_id": str(manifest.dataset_id),
+        "layer": manifest.layer.value,
+        "object_uri": manifest.object_uri,
+        "content_hash": manifest.content_hash,
+        "schema_name": manifest.schema_name,
         "schema_version": str(manifest.schema_version),
         "coverage": {"start": _time(manifest.coverage.start), "end": _time(manifest.coverage.end)},
         "instrument_universe": list(manifest.instrument_universe),
-        "provenance": {"source_name": manifest.provenance.source_name, "source_uri": manifest.provenance.source_uri,
-                       "acquired_at": _time(manifest.provenance.acquired_at), "source_published_at": _time(manifest.provenance.source_published_at) if manifest.provenance.source_published_at else None,
-                       "source_revision": manifest.provenance.source_revision},
-        "license": asdict(manifest.license), "as_of": _time(manifest.as_of), "ingested_at": _time(manifest.ingested_at),
-        "quality": {"level": manifest.quality.level.value, "summary": manifest.quality.summary,
-                    "checked_at": _time(manifest.quality.checked_at), "issues": list(manifest.quality.issues)},
-        "revision": {"revision": manifest.revision.revision, "reason": manifest.revision.reason,
-                     "revised_at": _time(manifest.revision.revised_at), "supersedes_dataset_id": str(manifest.revision.supersedes_dataset_id) if manifest.revision.supersedes_dataset_id else None},
-        "generated_by": manifest.generated_by, "upstream_manifest_ids": [str(value) for value in manifest.upstream_manifest_ids],
+        "provenance": {
+            "source_name": manifest.provenance.source_name,
+            "source_uri": manifest.provenance.source_uri,
+            "acquired_at": _time(manifest.provenance.acquired_at),
+            "source_published_at": _time(manifest.provenance.source_published_at)
+            if manifest.provenance.source_published_at
+            else None,
+            "source_revision": manifest.provenance.source_revision,
+        },
+        "license": asdict(manifest.license),
+        "as_of": _time(manifest.as_of),
+        "ingested_at": _time(manifest.ingested_at),
+        "quality": {
+            "level": manifest.quality.level.value,
+            "summary": manifest.quality.summary,
+            "checked_at": _time(manifest.quality.checked_at),
+            "issues": list(manifest.quality.issues),
+        },
+        "revision": {
+            "revision": manifest.revision.revision,
+            "reason": manifest.revision.reason,
+            "revised_at": _time(manifest.revision.revised_at),
+            "supersedes_dataset_id": str(manifest.revision.supersedes_dataset_id)
+            if manifest.revision.supersedes_dataset_id
+            else None,
+        },
+        "generated_by": manifest.generated_by,
+        "upstream_manifest_ids": [str(value) for value in manifest.upstream_manifest_ids],
     }
 
 
@@ -289,13 +314,38 @@ def _manifest_from_json(content: bytes) -> DatasetManifest:
     provenance = data["provenance"]
     revision = data["revision"]
     return DatasetManifest(
-        dataset_id=EntityId.parse(data["dataset_id"]), layer=DatasetLayer(data["layer"]), object_uri=data["object_uri"], content_hash=data["content_hash"], schema_name=data["schema_name"], schema_version=SchemaVersion.parse(data["schema_version"]),
-        coverage=TimeCoverage(_at(data["coverage"]["start"]), _at(data["coverage"]["end"])), instrument_universe=tuple(data["instrument_universe"]),
-        provenance=SourceProvenance(provenance["source_name"], provenance["source_uri"], _at(provenance["acquired_at"]), _at(provenance["source_published_at"]) if provenance["source_published_at"] else None, provenance["source_revision"]),
-        license=LicenseTerms(**data["license"]), as_of=_at(data["as_of"]), ingested_at=_at(data["ingested_at"]),
-        quality=QualityReport(DataQualityLevel(data["quality"]["level"]), data["quality"]["summary"], _at(data["quality"]["checked_at"]), tuple(data["quality"]["issues"])),
-        revision=RevisionInfo(revision["revision"], revision["reason"], _at(revision["revised_at"]), EntityId.parse(revision["supersedes_dataset_id"]) if revision["supersedes_dataset_id"] else None),
-        generated_by=data["generated_by"], upstream_manifest_ids=tuple(EntityId.parse(value) for value in data["upstream_manifest_ids"]),
+        dataset_id=EntityId.parse(data["dataset_id"]),
+        layer=DatasetLayer(data["layer"]),
+        object_uri=data["object_uri"],
+        content_hash=data["content_hash"],
+        schema_name=data["schema_name"],
+        schema_version=SchemaVersion.parse(data["schema_version"]),
+        coverage=TimeCoverage(_at(data["coverage"]["start"]), _at(data["coverage"]["end"])),
+        instrument_universe=tuple(data["instrument_universe"]),
+        provenance=SourceProvenance(
+            provenance["source_name"],
+            provenance["source_uri"],
+            _at(provenance["acquired_at"]),
+            _at(provenance["source_published_at"]) if provenance["source_published_at"] else None,
+            provenance["source_revision"],
+        ),
+        license=LicenseTerms(**data["license"]),
+        as_of=_at(data["as_of"]),
+        ingested_at=_at(data["ingested_at"]),
+        quality=QualityReport(
+            DataQualityLevel(data["quality"]["level"]),
+            data["quality"]["summary"],
+            _at(data["quality"]["checked_at"]),
+            tuple(data["quality"]["issues"]),
+        ),
+        revision=RevisionInfo(
+            revision["revision"],
+            revision["reason"],
+            _at(revision["revised_at"]),
+            EntityId.parse(revision["supersedes_dataset_id"]) if revision["supersedes_dataset_id"] else None,
+        ),
+        generated_by=data["generated_by"],
+        upstream_manifest_ids=tuple(EntityId.parse(value) for value in data["upstream_manifest_ids"]),
     )
 
 
@@ -309,5 +359,9 @@ def _at(value: str) -> RecordedAt:
 
 def _validate_hash(content_hash: str) -> None:
     digest = content_hash.removeprefix("sha256:")
-    if not content_hash.startswith("sha256:") or len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
+    if (
+        not content_hash.startswith("sha256:")
+        or len(digest) != 64
+        or any(character not in "0123456789abcdef" for character in digest)
+    ):
         raise ValueError("content_hash must be a canonical sha256 digest")

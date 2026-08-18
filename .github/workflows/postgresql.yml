@@ -1,4 +1,4 @@
-name: PostgreSQL migration acceptance
+name: Quality gate
 
 on:
   pull_request:
@@ -8,14 +8,64 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.14"
+      - run: uv sync --locked
+      - run: make lock
+      - run: make format
+      - run: make lint
+      - run: make type
+      - run: make scan
+      - run: make schema
+      - run: make health
+
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.14"
+      - run: uv sync --locked
+      - run: make test-unit
+
+  property:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.14"
+      - run: uv sync --locked
+      - run: make test-property
+
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.14"
+      - run: uv sync --locked
+      - run: make test-contract
+
+  integration:
     runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres:17.5-alpine
         env:
           POSTGRES_DB: futures_agent_os
-          POSTGRES_PASSWORD: postgres
+          POSTGRES_HOST_AUTH_METHOD: trust
         ports:
           - 54329:5432
         options: >-
@@ -24,12 +74,12 @@ jobs:
           --health-timeout 3s
           --health-retries 30
     env:
-      FAO_DATABASE_URL: postgresql+psycopg://postgres:postgres@127.0.0.1:54329/futures_agent_os
+      FAO_DATABASE_URL: postgresql+psycopg://postgres@127.0.0.1:54329/futures_agent_os
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v7
-      - uses: actions/setup-python@v6
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: astral-sh/setup-uv@37802adc94f370d6bfd71619e3f0bf239e1f3b78 # v7
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
           python-version: "3.14"
       - run: uv sync --locked
-      - run: uv run pytest
+      - run: make test-integration

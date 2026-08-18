@@ -29,4 +29,3 @@ def get_health_status() -> HealthStatus:
         version="0.0.1",
         legacy_runtime_dependency=False,
     )
-

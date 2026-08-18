@@ -70,7 +70,9 @@ class ToolRegistry:
         if len(by_ref) != len(definitions):
             raise ValueError("tool registry cannot contain duplicate tool versions")
         self._version = version
-        self._definitions = tuple(sorted(definitions, key=lambda definition: (definition.ref.tool_id, definition.ref.version)))
+        self._definitions = tuple(
+            sorted(definitions, key=lambda definition: (definition.ref.tool_id, definition.ref.version))
+        )
         self._by_ref = by_ref
 
     @property
@@ -93,11 +95,17 @@ _V1 = SchemaVersion(1, 0)
 
 
 def _tool(
-    tool_id: str, tier: ToolPermissionTier, owner_context: str, description: str | None = None,
+    tool_id: str,
+    tier: ToolPermissionTier,
+    owner_context: str,
+    description: str | None = None,
 ) -> ToolDefinition:
     return ToolDefinition(
-        ref=ToolRef(tool_id, _V1), permission_tier=tier,
-        request_schema=_V1, response_schema=_V1, owner_context=owner_context,
+        ref=ToolRef(tool_id, _V1),
+        permission_tier=tier,
+        request_schema=_V1,
+        response_schema=_V1,
+        owner_context=owner_context,
         description=description or f"V0 static contract for {tool_id}",
     )
 
@@ -105,41 +113,87 @@ def _tool(
 # This covers every catalog declaration plus the later governed lifecycle
 # contracts.  Definitions describe potential capability only; nothing here is
 # enabled or executable in V0.
-TOOL_REGISTRY = ToolRegistry(TOOL_REGISTRY_VERSION, (
-    *(_tool(name, ToolPermissionTier.READ_ONLY, "Reference & Market Data") for name in (
-        "market_snapshot", "historical_data", "contract_info",
-    )),
-    *(_tool(name, ToolPermissionTier.READ_ONLY, "Market Intelligence") for name in (
-        "feature_query", "regime_analysis", "news_evidence_query", "liquidity_profile",
-    )),
-    *(_tool(name, ToolPermissionTier.READ_ONLY, "Research & Experiment") for name in (
-        "strategy_compare", "cost_analysis", "scenario_replay", "parameter_stability", "experiment_search",
-    )),
-    *(_tool(name, ToolPermissionTier.READ_ONLY, "Portfolio & Risk") for name in (
-        "portfolio_state", "exposure_analysis", "correlation_analysis",
-    )),
-    _tool(
-        "risk_check", ToolPermissionTier.READ_ONLY, "Portfolio & Risk",
-        "Non-authoritative read-only Risk Constitution preview; only Portfolio & Risk may issue a formal RiskDecision.",
+TOOL_REGISTRY = ToolRegistry(
+    TOOL_REGISTRY_VERSION,
+    (
+        *(
+            _tool(name, ToolPermissionTier.READ_ONLY, "Reference & Market Data")
+            for name in (
+                "market_snapshot",
+                "historical_data",
+                "contract_info",
+            )
+        ),
+        *(
+            _tool(name, ToolPermissionTier.READ_ONLY, "Market Intelligence")
+            for name in (
+                "feature_query",
+                "regime_analysis",
+                "news_evidence_query",
+                "liquidity_profile",
+            )
+        ),
+        *(
+            _tool(name, ToolPermissionTier.READ_ONLY, "Research & Experiment")
+            for name in (
+                "strategy_compare",
+                "cost_analysis",
+                "scenario_replay",
+                "parameter_stability",
+                "experiment_search",
+            )
+        ),
+        *(
+            _tool(name, ToolPermissionTier.READ_ONLY, "Portfolio & Risk")
+            for name in (
+                "portfolio_state",
+                "exposure_analysis",
+                "correlation_analysis",
+            )
+        ),
+        _tool(
+            "risk_check",
+            ToolPermissionTier.READ_ONLY,
+            "Portfolio & Risk",
+            "Non-authoritative read-only Risk Constitution preview; only Portfolio & Risk may issue a formal RiskDecision.",
+        ),
+        _tool("execution_simulator", ToolPermissionTier.READ_ONLY, "Execution & Simulation"),
+        *(
+            _tool(name, ToolPermissionTier.READ_ONLY, "Learning & Review")
+            for name in (
+                "trade_replay",
+                "attribution",
+                "memory_search",
+                "lesson_conflict_check",
+                "lesson_decay_check",
+            )
+        ),
+        *(
+            _tool(name, ToolPermissionTier.READ_ONLY, "Governance & Registry")
+            for name in (
+                "registry_query",
+                "audit_query",
+                "deployment_evidence_query",
+            )
+        ),
+        _tool("autonomy_mandate_status", ToolPermissionTier.READ_ONLY, "Decision"),
+        *(
+            _tool(name, ToolPermissionTier.RESEARCH_REQUEST, "Research & Experiment")
+            for name in (
+                "backtest",
+                "walk_forward_test",
+                "stress_test",
+                "counterfactual_test",
+            )
+        ),
+        _tool("create_trade_plan_draft", ToolPermissionTier.PROPOSAL, "Decision"),
+        _tool("create_change_proposal", ToolPermissionTier.PROPOSAL, "Governance & Registry"),
+        _tool("request_authorization_preflight", ToolPermissionTier.MANDATE_SCOPED_SIMULATION, "Decision"),
+        _tool("reserve_risk_budget", ToolPermissionTier.MANDATE_SCOPED_SIMULATION, "Portfolio & Risk"),
+        _tool("request_final_autonomy_gate", ToolPermissionTier.MANDATE_SCOPED_SIMULATION, "Decision"),
+        _tool("submit_trade_plan", ToolPermissionTier.MANDATE_SCOPED_SIMULATION, "Execution & Simulation"),
+        _tool("request_plan_approval", ToolPermissionTier.PLAN_APPROVAL, "Decision"),
+        _tool("submit_improvement_proposal", ToolPermissionTier.PROMOTION, "Governance & Registry"),
+        _tool("request_activation", ToolPermissionTier.ACTIVATION, "Governance & Registry"),
     ),
-    _tool("execution_simulator", ToolPermissionTier.READ_ONLY, "Execution & Simulation"),
-    *(_tool(name, ToolPermissionTier.READ_ONLY, "Learning & Review") for name in (
-        "trade_replay", "attribution", "memory_search", "lesson_conflict_check", "lesson_decay_check",
-    )),
-    *(_tool(name, ToolPermissionTier.READ_ONLY, "Governance & Registry") for name in (
-        "registry_query", "audit_query", "deployment_evidence_query",
-    )),
-    _tool("autonomy_mandate_status", ToolPermissionTier.READ_ONLY, "Decision"),
-    *(_tool(name, ToolPermissionTier.RESEARCH_REQUEST, "Research & Experiment") for name in (
-        "backtest", "walk_forward_test", "stress_test", "counterfactual_test",
-    )),
-    _tool("create_trade_plan_draft", ToolPermissionTier.PROPOSAL, "Decision"),
-    _tool("create_change_proposal", ToolPermissionTier.PROPOSAL, "Governance & Registry"),
-    _tool("request_authorization_preflight", ToolPermissionTier.MANDATE_SCOPED_SIMULATION, "Decision"),
-    _tool("reserve_risk_budget", ToolPermissionTier.MANDATE_SCOPED_SIMULATION, "Portfolio & Risk"),
-    _tool("request_final_autonomy_gate", ToolPermissionTier.MANDATE_SCOPED_SIMULATION, "Decision"),
-    _tool("submit_trade_plan", ToolPermissionTier.MANDATE_SCOPED_SIMULATION, "Execution & Simulation"),
-    _tool("request_plan_approval", ToolPermissionTier.PLAN_APPROVAL, "Decision"),
-    _tool("submit_improvement_proposal", ToolPermissionTier.PROMOTION, "Governance & Registry"),
-    _tool("request_activation", ToolPermissionTier.ACTIVATION, "Governance & Registry"),
-))
+)

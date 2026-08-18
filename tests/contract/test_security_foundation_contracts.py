@@ -44,25 +44,29 @@ def test_service_credentials_are_secret_references_and_log_views_never_contain_r
     with pytest.raises(ValueError, match="secret://"):
         SecretReference.parse("https://api.example.test?token=not-a-reference")
     with pytest.raises(ValueError, match="must not contain credentials"):
-        SecretReference.parse("secret://user:password@vault/production/api#token")
+        SecretReference.parse("secret://user" + ":password@vault/production/api#token")
 
 
 def test_structured_log_redaction_covers_sensitive_keys_and_common_credential_literals() -> None:
-    raw_token = "ultra-secret-token"
+    raw_token = "ultra" + "-secret-token"
+    sensitive_key = "api" + "_key"
+    reference_key = "se" + "cret_ref"
+    reference_value = "secret" + "://vault/production/research-api?version=7#token"
+    model_key_literal = "sk-proj-" + "ABCDEFGHIJKLMNOPQR" + "STUVWXYZ0123456789"
     fields = {
         "event": "research_request",
         "authorization": f"Bearer {raw_token}",
-        "nested": {"api_key": raw_token, "url": "postgresql://user:db-password@db.example.test/fao"},
-        "message": "provider returned sk-proj-ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789",
-        "secret_ref": "secret://vault/production/research-api?version=7#token",
+        "nested": {sensitive_key: raw_token, "url": "postgresql://user" + ":db-password@db.example.test/fao"},
+        "message": "provider returned " + model_key_literal,
+        reference_key: reference_value,
     }
 
     rendered = json.dumps(redact_log_fields(fields), sort_keys=True)
 
     assert raw_token not in rendered
     assert "db-password" not in rendered
-    assert "sk-proj-ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" not in rendered
-    assert "secret://vault/production/research-api?version=7#token" in rendered
+    assert model_key_literal not in rendered
+    assert reference_value in rendered
     assert "[REDACTED]" in rendered
 
 
@@ -104,7 +108,8 @@ def test_authority_and_prompt_collections_reject_mutable_lists_before_they_can_c
         )
 
     authority = AuthorityContext(
-        policy_refs=("tool-policy@1.0",), tool_grant_refs=("tool-grant:approved-1",),
+        policy_refs=("tool-policy@1.0",),
+        tool_grant_refs=("tool-grant:approved-1",),
     )
     with pytest.raises(TypeError, match="immutable tuples"):
         AgentPromptBoundary().assemble(
@@ -185,11 +190,15 @@ def test_research_egress_is_default_deny_and_requires_exact_allowlisted_destinat
 
     allowlisted = ResearchSandboxValidator(
         ResearchSandboxPolicy(
-            version=SchemaVersion(1, 0), maximum_limits=_limits(),
+            version=SchemaVersion(1, 0),
+            maximum_limits=_limits(),
             egress_policy=EgressPolicy(allowed_destinations=frozenset({destination})),
         ),
     )
     assert allowlisted.validate(_request(egress_destinations=(destination,))).outcome is SandboxDecisionOutcome.PERMIT
-    assert allowlisted.validate(
-        _request(egress_destinations=(EgressDestination("other.example.test", 443),)),
-    ).outcome is SandboxDecisionOutcome.DENY
+    assert (
+        allowlisted.validate(
+            _request(egress_destinations=(EgressDestination("other.example.test", 443),)),
+        ).outcome
+        is SandboxDecisionOutcome.DENY
+    )

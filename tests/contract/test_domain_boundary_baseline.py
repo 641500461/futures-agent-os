@@ -88,7 +88,7 @@ def test_ubiquitous_language_terms_are_unique_and_have_avoid_guidance() -> None:
         for index, match in enumerate(matches):
             term = match.group(1)
             end = matches[index + 1].start() if index + 1 < len(matches) else len(content)
-            definition = content[match.end():end]
+            definition = content[match.end() : end]
             relative_path = str(context_file.relative_to(PROJECT_ROOT))
             definitions.setdefault(term, []).append(relative_path)
             assert "_Avoid_:" in definition, f"{term} in {relative_path} has no _Avoid_ guidance"
@@ -101,12 +101,15 @@ def test_ubiquitous_language_terms_are_unique_and_have_avoid_guidance() -> None:
 def test_critical_owner_separation_is_explicit() -> None:
     owners = {aggregate: owner for aggregate, owner, _ in _table_rows("Aggregate ownership")}
 
-    assert {owners[name] for name in (
-        "Simulation Autonomy Mandate",
-        "Autonomy Mode Binding",
-        "Authorization Basis",
-        "Autonomy Gate Receipt",
-    )} == {"Decision"}
+    assert {
+        owners[name]
+        for name in (
+            "Simulation Autonomy Mandate",
+            "Autonomy Mode Binding",
+            "Authorization Basis",
+            "Autonomy Gate Receipt",
+        )
+    } == {"Decision"}
     assert owners["Risk Decision"] == owners["Protection Mandate"] == "Portfolio & Risk"
     assert owners["Risk Reduction Validation"] == owners["Protective Risk Action"] == "Execution & Simulation"
     assert owners["Position"] == owners["Ledger"] == "Accounting & Settlement"

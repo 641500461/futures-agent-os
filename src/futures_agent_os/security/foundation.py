@@ -18,8 +18,12 @@ from futures_agent_os.shared_kernel import ReasonCode, SchemaVersion
 
 _IDENTIFIER = re.compile(r"^[a-z][a-z0-9_-]{0,62}$")
 _REFERENCE = re.compile(r"^[a-z][a-z0-9_.:@/-]{0,255}$")
-_HOSTNAME = re.compile(r"^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\.(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?))*$")
-_SENSITIVE_KEY = re.compile(r"(?:password|passwd|secret|token|api[_-]?key|authorization|credential|cookie|private[_-]?key)", re.IGNORECASE)
+_HOSTNAME = re.compile(
+    r"^(?=.{1,253}$)(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)(?:\.(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?))*$"
+)
+_SENSITIVE_KEY = re.compile(
+    r"(?:password|passwd|secret|token|api[_-]?key|authorization|credential|cookie|private[_-]?key)", re.IGNORECASE
+)
 _BEARER_LITERAL = re.compile(r"\bBearer\s+[^\s,;]+", re.IGNORECASE)
 _OPENAI_KEY_LITERAL = re.compile(r"\bsk-(?:proj-)?[A-Za-z0-9_-]{16,}\b")
 _URL_USERINFO = re.compile(r"([a-z][a-z0-9+.-]*://[^\s/@:]+:)([^@\s]+)(@)", re.IGNORECASE)
@@ -153,7 +157,9 @@ class BoundedAgentPrompt:
             raise TypeError("bounded prompt collections must be immutable tuples")
         if not isinstance(self.authority, AuthorityContext):
             raise TypeError("bounded prompts require an immutable AuthorityContext")
-        if any(not isinstance(instruction, str) or not instruction.strip() for instruction in self.trusted_instructions):
+        if any(
+            not isinstance(instruction, str) or not instruction.strip() for instruction in self.trusted_instructions
+        ):
             raise ValueError("bounded prompts require trusted instructions")
         if any(not isinstance(item, UntrustedContent) for item in self.untrusted):
             raise TypeError("bounded prompts require classified untrusted content")
@@ -234,8 +240,13 @@ class ResearchSandboxLimits:
 
     def __post_init__(self) -> None:
         values = (
-            self.cpu_seconds, self.memory_mib, self.wall_time_seconds, self.max_files,
-            self.max_file_bytes, self.max_total_file_bytes, self.max_output_bytes,
+            self.cpu_seconds,
+            self.memory_mib,
+            self.wall_time_seconds,
+            self.max_files,
+            self.max_file_bytes,
+            self.max_total_file_bytes,
+            self.max_output_bytes,
         )
         if any(isinstance(value, bool) or not isinstance(value, int) or value <= 0 for value in values):
             raise ValueError("research sandbox limits must be positive integers")
@@ -249,12 +260,22 @@ class ResearchSandboxLimits:
             actual <= maximum
             for actual, maximum in zip(
                 (
-                    requested.cpu_seconds, requested.memory_mib, requested.wall_time_seconds, requested.max_files,
-                    requested.max_file_bytes, requested.max_total_file_bytes, requested.max_output_bytes,
+                    requested.cpu_seconds,
+                    requested.memory_mib,
+                    requested.wall_time_seconds,
+                    requested.max_files,
+                    requested.max_file_bytes,
+                    requested.max_total_file_bytes,
+                    requested.max_output_bytes,
                 ),
                 (
-                    self.cpu_seconds, self.memory_mib, self.wall_time_seconds, self.max_files,
-                    self.max_file_bytes, self.max_total_file_bytes, self.max_output_bytes,
+                    self.cpu_seconds,
+                    self.memory_mib,
+                    self.wall_time_seconds,
+                    self.max_files,
+                    self.max_file_bytes,
+                    self.max_total_file_bytes,
+                    self.max_output_bytes,
                 ),
             )
         )
@@ -286,9 +307,13 @@ class ResearchExecutionRequest:
             for values in (self.read_only_input_refs, self.writable_paths, self.egress_destinations)
         ):
             raise TypeError("research request collections must be immutable tuples")
-        if not self.read_only_input_refs or any(not _REFERENCE.fullmatch(reference) for reference in self.read_only_input_refs):
+        if not self.read_only_input_refs or any(
+            not _REFERENCE.fullmatch(reference) for reference in self.read_only_input_refs
+        ):
             raise ValueError("research requests require only immutable input references")
-        if len(set(self.writable_paths)) != len(self.writable_paths) or any(not isinstance(path, str) for path in self.writable_paths):
+        if len(set(self.writable_paths)) != len(self.writable_paths) or any(
+            not isinstance(path, str) for path in self.writable_paths
+        ):
             raise ValueError("research output paths must be unique strings")
         if len(self.writable_paths) > self.limits.max_files:
             raise ValueError("research output paths exceed the requested file limit")
@@ -345,8 +370,10 @@ class ResearchSandboxValidator:
         if any(not self._policy.egress_policy.permits(destination) for destination in request.egress_destinations):
             return self._deny(request, ReasonCode.SANDBOX_EGRESS_DENIED)
         return ResearchSandboxDecision(
-            SandboxDecisionOutcome.PERMIT, ReasonCode.SANDBOX_POLICY_PERMITTED,
-            request.request_id, self._policy.version,
+            SandboxDecisionOutcome.PERMIT,
+            ReasonCode.SANDBOX_POLICY_PERMITTED,
+            request.request_id,
+            self._policy.version,
         )
 
     def _deny(self, request: ResearchExecutionRequest, reason: ReasonCode) -> ResearchSandboxDecision:

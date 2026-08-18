@@ -19,7 +19,19 @@ from .data_lake import (
 )
 
 __all__ = [
-    "ArtifactStore", "DataQualityLevel", "DatasetLayer", "DatasetManifest", "DatasetStore", "LicenseTerms",
-    "LocalFileArtifactStore", "LocalFileDataStore", "PointInTimeRecord", "QualityReport", "RevisionInfo",
-    "SourceProvenance", "StoredDataset", "TimeCoverage", "sha256_digest",
+    "ArtifactStore",
+    "DataQualityLevel",
+    "DatasetLayer",
+    "DatasetManifest",
+    "DatasetStore",
+    "LicenseTerms",
+    "LocalFileArtifactStore",
+    "LocalFileDataStore",
+    "PointInTimeRecord",
+    "QualityReport",
+    "RevisionInfo",
+    "SourceProvenance",
+    "StoredDataset",
+    "TimeCoverage",
+    "sha256_digest",
 ]

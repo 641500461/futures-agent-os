@@ -148,25 +148,52 @@ def test_registry_and_catalog_version_drift_fail_closed_before_grant_matching() 
     grant = _grant()
     authorizer = ToolAuthorizer(TOOL_REGISTRY, (grant,))
 
-    assert _reason(authorizer, _request(tool_ref=ToolRef("request_authorization_preflight", SchemaVersion(1, 1)))) is ReasonCode.TOOL_VERSION_MISMATCH
-    assert _reason(authorizer, _request(catalog_version=SchemaVersion(1, 1))) is ReasonCode.TOOL_CATALOG_VERSION_MISMATCH
-    assert _reason(authorizer, _request(registry_version=SchemaVersion(1, 1))) is ReasonCode.TOOL_REGISTRY_VERSION_MISMATCH
-    assert _reason(
-        ToolAuthorizer(TOOL_REGISTRY, (_grant(catalog_version=SchemaVersion(1, 1)),)), _request(),
-    ) is ReasonCode.TOOL_CATALOG_VERSION_MISMATCH
-    assert _reason(
-        ToolAuthorizer(TOOL_REGISTRY, (_grant(registry_version=SchemaVersion(1, 1)),)), _request(),
-    ) is ReasonCode.TOOL_REGISTRY_VERSION_MISMATCH
+    assert (
+        _reason(authorizer, _request(tool_ref=ToolRef("request_authorization_preflight", SchemaVersion(1, 1))))
+        is ReasonCode.TOOL_VERSION_MISMATCH
+    )
+    assert (
+        _reason(authorizer, _request(catalog_version=SchemaVersion(1, 1))) is ReasonCode.TOOL_CATALOG_VERSION_MISMATCH
+    )
+    assert (
+        _reason(authorizer, _request(registry_version=SchemaVersion(1, 1))) is ReasonCode.TOOL_REGISTRY_VERSION_MISMATCH
+    )
+    assert (
+        _reason(
+            ToolAuthorizer(TOOL_REGISTRY, (_grant(catalog_version=SchemaVersion(1, 1)),)),
+            _request(),
+        )
+        is ReasonCode.TOOL_CATALOG_VERSION_MISMATCH
+    )
+    assert (
+        _reason(
+            ToolAuthorizer(TOOL_REGISTRY, (_grant(registry_version=SchemaVersion(1, 1)),)),
+            _request(),
+        )
+        is ReasonCode.TOOL_REGISTRY_VERSION_MISMATCH
+    )
 
 
 def test_expired_inactive_node_and_tier_mismatches_are_all_denied() -> None:
     request = _request()
-    assert _reason(ToolAuthorizer(TOOL_REGISTRY, (_grant(expires_at=_at(10)),)), request) is ReasonCode.TOOL_GRANT_EXPIRED
-    assert _reason(ToolAuthorizer(TOOL_REGISTRY, (_grant(status=ToolGrantStatus.REVOKED),)), request) is ReasonCode.TOOL_GRANT_INACTIVE
-    assert _reason(ToolAuthorizer(TOOL_REGISTRY, (_grant(grantee_node_id="agent_worker_b"),)), request) is ReasonCode.TOOL_NODE_SCOPE_MISMATCH
-    assert _reason(
-        ToolAuthorizer(TOOL_REGISTRY, (_grant(max_permission_tier=ToolPermissionTier.PROPOSAL),)), request,
-    ) is ReasonCode.TOOL_PERMISSION_TIER_DENIED
+    assert (
+        _reason(ToolAuthorizer(TOOL_REGISTRY, (_grant(expires_at=_at(10)),)), request) is ReasonCode.TOOL_GRANT_EXPIRED
+    )
+    assert (
+        _reason(ToolAuthorizer(TOOL_REGISTRY, (_grant(status=ToolGrantStatus.REVOKED),)), request)
+        is ReasonCode.TOOL_GRANT_INACTIVE
+    )
+    assert (
+        _reason(ToolAuthorizer(TOOL_REGISTRY, (_grant(grantee_node_id="agent_worker_b"),)), request)
+        is ReasonCode.TOOL_NODE_SCOPE_MISMATCH
+    )
+    assert (
+        _reason(
+            ToolAuthorizer(TOOL_REGISTRY, (_grant(max_permission_tier=ToolPermissionTier.PROPOSAL),)),
+            request,
+        )
+        is ReasonCode.TOOL_PERMISSION_TIER_DENIED
+    )
 
 
 @pytest.mark.parametrize(
@@ -192,18 +219,23 @@ def test_governed_artifact_scope_rejects_cross_artifact_and_allows_governance_gr
         environments=frozenset({SimulationEnvironment.STAGING}),
     )
     promotion_grant = _grant(
-        max_permission_tier=ToolPermissionTier.PROMOTION, scope=governance_scope,
+        max_permission_tier=ToolPermissionTier.PROMOTION,
+        scope=governance_scope,
         tool_refs=frozenset({ToolRef("submit_improvement_proposal", V1)}),
     )
 
     assert promotion_grant.scope.contains(governance_scope)
-    assert not promotion_grant.scope.contains(replace(governance_scope, governed_artifact_refs=frozenset({"agent:other@1.0"})))
+    assert not promotion_grant.scope.contains(
+        replace(governance_scope, governed_artifact_refs=frozenset({"agent:other@1.0"}))
+    )
     with pytest.raises(ValueError, match="governed-artifact"):
         _grant(
             max_permission_tier=ToolPermissionTier.ACTIVATION,
             scope=ToolScope(
-                account_ids=frozenset({"sim-account-a"}), strategy_ids=frozenset({"strategy-a@1.0"}),
-                instrument_ids=frozenset({"SHFE:CU"}), policy_refs=frozenset({"tool-policy@1.0"}),
+                account_ids=frozenset({"sim-account-a"}),
+                strategy_ids=frozenset({"strategy-a@1.0"}),
+                instrument_ids=frozenset({"SHFE:CU"}),
+                policy_refs=frozenset({"tool-policy@1.0"}),
                 environments=frozenset({SimulationEnvironment.STAGING}),
             ),
         )

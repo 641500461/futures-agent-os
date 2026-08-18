@@ -20,4 +20,3 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(json.dumps(get_health_status().as_dict(), ensure_ascii=False, sort_keys=True))
         return 0
     return 2
-
