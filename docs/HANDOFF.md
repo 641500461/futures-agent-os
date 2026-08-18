@@ -2,9 +2,10 @@
 
 文档版本：`2.1-proposed`  
 最后更新：2026-08-18  
-当前阶段：绿地方案评审，尚未进入 V0  
+当前阶段：V0 绿地项目地基
+最近完成：`V0-001` 独立仓库与最小可运行骨架
 当前开发任务：无  
-建议下一任务：经用户确认后执行 `V0-001`，创建独立新仓库
+建议下一任务：执行 `V0-002`，确认并接受绿地 ADR 集
 
 ## 给下一段对话的上下文胶囊
 
@@ -41,27 +42,31 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前所有新项目任务均为 `[ ]`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 已完成，其余任务仍为 `[ ]`。
 
 ## 设计资料状态
 
-- PRD、技术方案、上下文地图和 ADR 属于拟议设计，需在开发前完成绿地与自治运行口径一致性评审。
+- PRD、技术方案、上下文地图和 ADR 已作为新仓库的设计基线入库；ADR 仍为 `proposed`，由 `V0-002` 正式确认状态。
 - `LEGACY-ASSET-REUSE.md` 只记录 donor 资格，不是迁移计划，也不是进度基线。
 - 对旧项目执行过的测试仅是 donor 审计证据；新项目必须拥有自己的 CI、契约测试、属性测试、黄金回放和 Agent eval。
-- 新项目仓库名称、位置、技术运行版本和首个 commit 尚未确定，必须由 `V0-001` 产生。
+- 新项目仓库为 `/Users/qiu/Documents/Codex/2026-08-18/new-chat/work/futures-agent-os`；项目名 `futures-agent-os`，包名 `futures_agent_os`，Python 3.14，uv，MIT License；首个基线 commit 为 `8d00a4331581026175270ae3bfa1414d438dc5df`。
 - PostgreSQL 从新项目首个持久版本使用；不存在 SQLite 业务主库迁移阶段。
 
-## 下一任务：V0-001
+## 最近完成：V0-001
 
-开始前需要用户明确授权创建新仓库。任务范围只包括：
+2026-08-18 完成以下范围：
 
 1. 确认新项目名称和绝对路径。
 2. 初始化独立 Git 仓库、许可证、运行时、依赖管理和目录骨架。
 3. 建立最小健康检查与测试入口。
 4. 证明 clean checkout 不读取旧仓库代码、数据库或配置即可运行。
-5. 把新 commit 和验证命令作为 Evidence 写回 `ROADMAP.md`，再将 `V0-001` 勾选。
+5. 已把基线 commit 和验证命令作为 Evidence 写回 `ROADMAP.md` 并勾选 `V0-001`。
 
-不要在该任务中移植 donor 代码、创建交易能力、修改旧仓库或启用外部消息。
+验证结果：clean clone 执行 `uv sync --locked` 成功，`uv run pytest` 为 `2 passed`，健康检查返回 `legacy_runtime_dependency=false`。未移植 donor 代码、未创建交易能力、未修改旧仓库、未启用外部消息。
+
+## 下一任务：V0-002
+
+审阅并确认 `docs/adr/0001` 至 `0007` 的难逆转决策，将接受的 ADR 从 `proposed` 更新为 `accepted`，补充任何实现前必须解决的决策，并用链接与检查结果回写 `ROADMAP.md`。该任务不实现数据库、交易或 Agent 运行时。
 
 ## 固定工作流程
 
@@ -95,4 +100,4 @@ Next task:
 
 ## 新对话可直接使用的提示
 
-> 请先阅读 `/Users/qiu/Documents/Codex/2026-08-18/new-chat/outputs/futures-agent-system-design/HANDOFF.md`、`ROADMAP.md`、`README.md` 及当前任务引用的 PRD/技术章节。这是完全独立的绿地项目；`/Users/qiu/futures_workflow` 仅是 donor，不继承其运行状态，也不把其能力计作新项目进度。只执行路线图中首个已获授权的未完成任务，保持研究与模拟边界，并用新项目测试证据更新路线图和本交接文件。
+> 请先阅读 `/Users/qiu/Documents/Codex/2026-08-18/new-chat/work/futures-agent-os/docs/HANDOFF.md`、`ROADMAP.md`、仓库根 `README.md` 及当前任务引用的 PRD/技术章节。这是完全独立的绿地项目；`/Users/qiu/futures_workflow` 仅是 donor，不继承其运行状态，也不把其能力计作新项目进度。只执行路线图中首个已获授权的未完成任务，保持研究与模拟边界，并用新项目测试证据更新路线图和本交接文件。

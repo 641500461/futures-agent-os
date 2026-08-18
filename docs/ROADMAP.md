@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：所有新项目任务均未开始。
+当前状态：`V0-001` 已完成；下一任务为 `V0-002`。
 
 ## 全局依赖原则
 
@@ -27,9 +27,9 @@
 
 目标：建立独立仓库、完整领域边界、Agent/Tool 契约、数据底座、安全边界和工程质量门槛，不承接任何旧运行状态。
 
-- [ ] `V0-001` 创建独立新仓库，确定项目名称、Python/runtime 版本、许可证、目录结构和本地开发入口。  
+- [x] `V0-001` 创建独立新仓库，确定项目名称、Python/runtime 版本、许可证、目录结构和本地开发入口。
   Acceptance: 不修改或依赖旧仓库即可完成 clean checkout、安装、启动和测试；记录新仓库 commit。  
-  Evidence: 待补。
+  Evidence: 2026-08-18 在 `/Users/qiu/Documents/Codex/2026-08-18/new-chat/work/futures-agent-os` 创建独立 Git 仓库；项目名 `futures-agent-os`，包名 `futures_agent_os`，Python 3.14，uv 锁定依赖，MIT License；基线 commit `8d00a4331581026175270ae3bfa1414d438dc5df`。从该 commit 执行 clean clone 后，`uv sync --locked` 成功，`uv run pytest` 为 `2 passed`，`uv run futures-agent-os health` 返回 `status=ok` 与 `legacy_runtime_dependency=false`；契约测试通过 AST 检查禁止 `futures_workflow` 运行时 import。
 - [ ] `V0-002` 确认绿地 ADR 集：项目独立性、确定性内核真值、Agent 以 TradePlan/RiskReductionRequest 表达交易意图但不直接提交 Order、Simulation Autonomy Mandate、模块化 monorepo、PostgreSQL、审计模型和队列策略。  
   Acceptance: 所有难逆转决策有状态、理由、替代项和后果；不使用旧 ADR 编号暗示继承。  
   Evidence: 待补。
