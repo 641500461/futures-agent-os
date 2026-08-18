@@ -4,8 +4,8 @@
 最后更新：2026-08-18  
 当前阶段：V0 绿地项目地基
 最近完成：`V0-010` 幂等、审计与可观测性基础
-当前开发任务：无
-建议下一步：执行 `V0-011`，建立完整 CI 与质量门禁
+当前开发任务：`V0-011` CI 与质量门禁（代码完成，等待远端 main 分支保护）
+建议下一步：为仓库配置 GitHub remote 与 main branch protection；验收后勾选 V0-011 并进入 V0-012
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -102,9 +102,9 @@
 
 已使用 `gpt-5.6-terra` / `high` 建立统一 correlation/causation、命令幂等、追加审计、metrics/logs/traces 与最小告警框架，实现 commit 为 `50cd1b756ea301a5d4b4ea59a821956b08eb1df4`。统筹复核补强深度不可变 payload、并发单效果、真实 ToolCall trace、数据库往返隔离以及告警 runbook/用户影响范围。PostgreSQL `0002_v0_010` 已通过真实 downgrade/upgrade 与 append-only/idempotency 权限验证；全量测试为 `74 passed`。外部 tracing/exporter 尚未启用，本地审计与业务数据库仍是真值。
 
-## 下一任务：V0-011
+## 当前任务：V0-011
 
-建立 CI、依赖锁、类型/静态检查、单元/属性/契约测试、schema 兼容检查和敏感信息扫描。该任务以可机械验证的工程质量为主，按模型路由使用 Terra/medium；涉及供应链和凭据扫描的部分由统筹对话按安全边界复核。
+已使用 `gpt-5.6-terra` / `medium` 建立 CI、依赖锁、Ruff、mypy、Hypothesis、schema compatibility、detect-secrets 与分层测试门禁，候选实现 commit 为 `a2aaeeaba6ab102c3d55213005d0bb67604c4efb`。本地与 CI 共用 Make targets，第三方 Actions 固定 commit SHA；`make check`、真实 PostgreSQL integration 和 DB-backed 全量测试均通过，最终全量为 `80 passed`。当前唯一未满足项是 main branch protection：本地仓库没有 Git remote，不能配置或提供远端证据，因此 V0-011 仍保持未完成，且按单任务规则不进入 V0-012。
 
 ## 固定工作流程
 
