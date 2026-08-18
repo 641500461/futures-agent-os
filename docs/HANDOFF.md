@@ -3,9 +3,9 @@
 文档版本：`2.1-proposed`  
 最后更新：2026-08-18  
 当前阶段：V0 绿地项目地基
-最近完成：`V0-006` 建立 Tool Registry 与默认拒绝权限模型
-当前开发任务：`V0-007` PostgreSQL 持久化地基（实现已提交，等待真实 PostgreSQL 往返验收）
-建议下一步：在可用的 PostgreSQL 17 隔离实例上执行 V0-007 `upgrade → downgrade → upgrade`；通过后勾选并进入 `V0-008`
+最近完成：`V0-007` PostgreSQL 持久化地基
+当前开发任务：无
+建议下一步：执行 `V0-008`，建立行情/研究数据分层与数据集 manifest
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-006` 已完成；`V0-007` 的实现已提交但实库 Acceptance 尚未完成，其余任务仍为 `[ ]`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-007` 已完成，其余任务仍为 `[ ]`。
 
 ## 设计资料状态
 
@@ -86,9 +86,13 @@
 
 2026-08-18 使用 `gpt-5.6-terra` / `high` 完成 Tool Registry、ToolGrant、ToolScope 与默认拒绝授权判定，统筹对话修正 owner、交易/治理 scope 和受信 Grant 来源边界。commit 为 `2ed377491212de476ec20bc9521fe48f9affba1e`，`uv run pytest` 为 `39 passed`。Registry 与权限判定不执行工具，也不替代业务授权或风险许可。
 
-## 当前任务：V0-007
+## 最近完成：V0-007
 
-已使用 `gpt-5.6-terra` / `high` 建立 PostgreSQL 初始 schema、正式 migration、数据库角色、inbox/outbox、任务租约、Mandate/可选批准、调度、监督通知和 durable checkpoint 基础，候选实现 commit 为 `64ceb630975fa46420875a8e8c383e8bfd9c1906`。当前 `47 passed, 1 skipped`；业务 schema 与 Agent checkpoint 已静态证明隔离，且无旧库导入。唯一未满足的 Acceptance 是在真实 PostgreSQL 空库执行可重复 `upgrade → downgrade → upgrade`：本机没有 PostgreSQL 服务，Docker CLI 存在但 daemon/socket 不可用。不得以 SQLite 或离线 SQL 代替该实库证据；环境可用后执行 `./scripts/postgres_v0_007.sh start && ./scripts/postgres_v0_007.sh exercise`，通过后才能勾选并进入 V0-008。
+已使用 `gpt-5.6-terra` / `high` 建立 PostgreSQL 初始 schema、正式 migration、数据库角色、inbox/outbox、任务租约、Mandate/可选批准、调度、监督通知和 durable checkpoint 基础，实现 commit 为 `64ceb630975fa46420875a8e8c383e8bfd9c1906`。已在 Homebrew PostgreSQL `17.11` 的隔离空库执行真实 `upgrade → downgrade → upgrade` 及 integration round-trip；`FAO_DATABASE_URL=postgresql+psycopg://qiu@/futures_agent_os_v0_007?host=/tmp uv run pytest` 为 `48 passed`。业务 schema 与 Agent checkpoint 已验证隔离，且无旧库导入。PostgreSQL 服务已作为本机开发依赖启动。
+
+## 下一任务：V0-008
+
+建立行情/研究数据分层：raw immutable、normalized point-in-time、feature snapshot、dataset manifest 和 artifact store。每份数据集必须具有来源、许可、schema、时间覆盖、`as_of`、摄取时间、hash、质量和修订信息。该任务为常规开发，按模型路由使用 Terra/medium。
 
 ## 固定工作流程
 

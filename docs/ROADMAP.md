@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：`V0-001` 至 `V0-006` 已完成；`V0-007` 实现完成、等待真实 PostgreSQL 往返验收。
+当前状态：`V0-001` 至 `V0-007` 已完成；下一任务为 `V0-008`。
 
 ## 全局依赖原则
 
@@ -45,9 +45,9 @@
 - [x] `V0-006` 建立 Tool Registry 与权限模型：细分只读、研究请求、提案、Mandate Scope 内自治模拟变更、可选逐计划批准、晋升和启用权限，并支持账户/策略/品种/环境作用域。
   Acceptance: 默认拒绝；未授权 Agent、节点或作用域无法调用工具；权限矩阵有自动化测试。  
   Evidence: 2026-08-18 按安全关键路由使用 `gpt-5.6-terra` / `high` 实现，统筹对话复核并修正工具 owner、交易/治理 scope 与受信 Grant 来源边界；commit `2ed377491212de476ec20bc9521fe48f9affba1e`。版本化 Tool Registry 仅精确解析 `tool_id@major.minor`，覆盖 READ_ONLY、RESEARCH_REQUEST、PROPOSAL、MANDATE_SCOPED_SIMULATION、PLAN_APPROVAL、PROMOTION、ACTIVATION 七类权限；确定性 ToolAuthorizer 默认拒绝，并校验 Agent Catalog、节点、工具版本、Grant 状态/有效期、账户/策略/品种/政策/环境或 governed artifact scope。每次判定产生稳定 reason code、request hash、call/correlation ID 与匹配 Grant 引用；ToolGrant 不替代 Mandate/Basis/Receipt/RiskDecision/Activation。`risk_check` 仅是非权威预检；正式 RiskDecision 仍归 Portfolio & Risk。全量 `uv run pytest` 为 `39 passed`，compileall、健康检查和 diff check 通过。
-- [ ] `V0-007` 建立 PostgreSQL 初始 schema、正式 schema migration、数据库角色、inbox/outbox、任务租约、Mandate/可选批准、调度、监督通知和 durable checkpoint 基础。  
+- [x] `V0-007` 建立 PostgreSQL 初始 schema、正式 schema migration、数据库角色、inbox/outbox、任务租约、Mandate/可选批准、调度、监督通知和 durable checkpoint 基础。
   Acceptance: 空库可重复建库、升级、降级演练；业务表与 Agent checkpoint schema 隔离；不包含旧表导入。  
-  Evidence: 2026-08-18 按安全关键路由使用 `gpt-5.6-terra` / `high` 完成候选实现，统筹对话复核并修正 checkpoint 跨 schema 外键权限与 URL 编码凭据边界；commit `64ceb630975fa46420875a8e8c383e8bfd9c1906`。已建立 PostgreSQL-only Alembic baseline、NOLOGIN 最小权限角色、`fao`/`agent_checkpoint` schema 隔离、inbox/outbox/dead-letter、命令/事件/审计、任务租约、schedule、监督通知、Mandate/PlanApproval 基础和 durable checkpoint；CI 与本地 runbook 均定义真实 PostgreSQL `upgrade → downgrade → upgrade` 验收。静态及无数据库回归为 `47 passed, 1 skipped`，compileall、health、离线 migration SQL、shell 语法和 diff check 通过；唯一 skipped 是实库往返测试，因为当前主机没有 PostgreSQL 服务且 Docker daemon 未运行。Acceptance 尚未全部证明，因此保持 `[ ]`。
+  Evidence: 2026-08-18 按安全关键路由使用 `gpt-5.6-terra` / `high` 完成实现，统筹对话复核并修正 checkpoint 跨 schema 外键权限与 URL 编码凭据边界；实现 commit `64ceb630975fa46420875a8e8c383e8bfd9c1906`。已建立 PostgreSQL-only Alembic baseline、NOLOGIN 最小权限角色、`fao`/`agent_checkpoint` schema 隔离、inbox/outbox/dead-letter、命令/事件/审计、任务租约、schedule、监督通知、Mandate/PlanApproval 基础和 durable checkpoint；CI 与本地 runbook 均定义真实 PostgreSQL `upgrade → downgrade → upgrade` 验收。已通过 Homebrew PostgreSQL `17.11` 在隔离空库 `futures_agent_os_v0_007` 执行真实 `upgrade → downgrade → upgrade` 及 integration round-trip；随后 `FAO_DATABASE_URL=postgresql+psycopg://qiu@/futures_agent_os_v0_007?host=/tmp uv run pytest` 为 `48 passed`，health、compileall、离线 migration SQL、shell 语法和 diff check 通过。无旧表导入。
 - [ ] `V0-008` 建立行情/研究数据分层：raw immutable、normalized point-in-time、feature snapshot、dataset manifest 和 artifact store。  
   Acceptance: 每份数据集具有来源、许可、schema、时间覆盖、`as_of`、摄取时间、hash、质量和修订信息。  
   Evidence: 待补。
