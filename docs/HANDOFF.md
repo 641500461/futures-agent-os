@@ -3,9 +3,9 @@
 文档版本：`2.1-proposed`  
 最后更新：2026-08-18  
 当前阶段：V0 绿地项目地基
-最近完成：`V0-003` 建立领域上下文与统一语言基线
+最近完成：`V0-004` 建立跨上下文共享契约
 当前开发任务：无  
-建议下一任务：执行 `V0-004`，定义跨上下文基础类型、时间与错误契约
+建议下一任务：执行 `V0-005`，定义 Agent Catalog 与有界协作协议
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-003` 已完成，其余任务仍为 `[ ]`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-004` 已完成，其余任务仍为 `[ ]`。
 
 ## 设计资料状态
 
@@ -74,9 +74,13 @@
 
 2026-08-18 使用 `gpt-5.6-terra` / `medium` 完成领域边界基线，统筹对话复核。9 个核心业务上下文、1 个 supporting context、16 个关键聚合 owner 和 201 个 canonical term 均纳入自动检查；commit 为 `8d53b4b2ae485848b25153d50ff1a0d8fb796412`，`uv run pytest` 为 `10 passed`。未提前实现跨上下文业务功能。
 
-## 下一任务：V0-004
+## 最近完成：V0-004
 
-定义跨上下文 ID、Money/Price/Quantity、时区、`trading_date`、schema version 与稳定错误码规范，并以契约测试证明 Decimal/定点精度、Asia/Shanghai 业务时间和 UTC 记录时间边界。按模型路由策略，该常规地基任务默认使用 Terra/medium；若设计触及资金精度或跨事务竞态的安全裁决，则升级为 Terra/high。
+2026-08-18 使用 `gpt-5.6-terra` / `medium` 完成共享内核契约，统筹对话补强定点 scale、极端 Decimal 与 Failure 序列化边界。commit 为 `eadb35640365a03759bcedf53446dbbfb8c0fb1e`，`uv run pytest` 为 `19 passed`。`TradingDate` 明确保留给交易日历赋值，夜盘归属不会由共享内核根据自然日猜测。
+
+## 下一任务：V0-005
+
+把 12 个目标逻辑 Agent 的职责、非职责、触发、输入输出、工具权限、预算、失败策略、指标和启用版本转化为版本化 Agent Catalog、`AgentTaskEnvelope` 与结构化交接契约，并建立自动化完整性检查。按模型路由策略使用 Terra/medium；该任务只定义受控协作协议，不实现模型调用或交易副作用。
 
 ## 固定工作流程
 

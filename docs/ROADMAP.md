@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：`V0-001`、`V0-002`、`V0-003` 已完成；下一任务为 `V0-004`。
+当前状态：`V0-001` 至 `V0-004` 已完成；下一任务为 `V0-005`。
 
 ## 全局依赖原则
 
@@ -36,9 +36,9 @@
 - [x] `V0-003` 建立领域上下文与统一语言：Reference/Market Data、Market Intelligence、Research & Experiment、Decision、Portfolio & Risk、Execution Simulation、Accounting & Settlement、Learning & Review、Governance & Registry。
   Acceptance: 每个聚合只有一个权威上下文；Agent Orchestration 明确为 supporting context；Simulation Autonomy Mandate、AutonomyModeBinding 与 AuthorizationBasis 由 Decision 拥有，DecisionJournal 追加投影由 Learning & Review 拥有。  
   Evidence: 2026-08-18 使用 `gpt-5.6-terra` / `medium` 实现，统筹对话复核；commit `8d53b4b2ae485848b25153d50ff1a0d8fb796412`。`docs/DOMAIN-BOUNDARY-BASELINE.md` 固化 9 个核心业务上下文、1 个 supporting context 和 16 个关键聚合的唯一 owner；Decision 词汇补齐 Autonomy Gate Receipt 所有权。`tests/contract/test_domain_boundary_baseline.py` 自动验证上下文数量/分类、关键 owner、projection/T4-SAFE 边界，以及全部 201 个 canonical term 跨上下文唯一且具有 `_Avoid_`；`uv run pytest` 为 `10 passed`，健康检查为 `status=ok`、`legacy_runtime_dependency=false`。模型路由规则另见 commit `8f4f63fa8c3a4b88c39ed342812c82f5f2671d60`。
-- [ ] `V0-004` 定义跨上下文 ID、Money/Price/Quantity、时区、`trading_date`、版本和错误码规范。  
+- [x] `V0-004` 定义跨上下文 ID、Money/Price/Quantity、时区、`trading_date`、版本和错误码规范。
   Acceptance: Decimal/定点、Asia/Shanghai、UTC 记录时间、schema version 和 reason code 均有契约测试。  
-  Evidence: 待补。
+  Evidence: 2026-08-18 使用 `gpt-5.6-terra` / `medium` 实现，统筹对话复核并补强极端定点数与 Failure 序列化边界；commit `eadb35640365a03759bcedf53446dbbfb8c0fb1e`。`shared_kernel` 提供不可变 UUIDv7 `EntityId`、拒绝 float 且绑定 unit/currency/scale 的 Money/Price/Quantity、UTC `RecordedAt`、Asia/Shanghai `ShanghaiTimestamp`、由交易日历显式赋值而不从自然日猜测的 `TradingDate`、`SchemaVersion`、稳定 `ReasonCode` 与 `Failure`。scale 限制为 0–18，异常 Decimal 统一为稳定 ValueError；`tests/contract/test_shared_kernel_contracts.py` 覆盖序列化、精度、时区和失败边界，全量 `uv run pytest` 为 `19 passed`，健康检查为 `status=ok`、`legacy_runtime_dependency=false`。
 - [ ] `V0-005` 定义完整 Agent Catalog、`AgentTaskEnvelope`、结构化交接 artifact 和有界协作协议。  
   Acceptance: 12 个目标逻辑角色均写明职责、非职责、用户/时间表/市场/账户/系统事件触发、输入、输出、工具、权限、预算、失败策略、指标和启用版本。  
   Evidence: 待补。
