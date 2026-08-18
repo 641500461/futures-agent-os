@@ -6,6 +6,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MIGRATION = PROJECT_ROOT / "migrations" / "versions" / "0001_v0_007_postgresql_foundation.py"
+OBSERVABILITY_MIGRATION = PROJECT_ROOT / "migrations" / "versions" / "0002_v0_010_observability_idempotency.py"
 ALEMBIC_ENV = PROJECT_ROOT / "migrations" / "env.py"
 RUNBOOK = PROJECT_ROOT / "scripts" / "postgres_v0_007.sh"
 CI_WORKFLOW = PROJECT_ROOT / ".github" / "workflows" / "postgresql.yml"
@@ -72,6 +73,20 @@ def test_schema_has_idempotency_and_append_only_primitives_without_legacy_import
     assert "sqlite" not in source
     assert "futures_workflow" not in source
     assert "legacy" not in source
+
+
+def test_v0_010_migration_makes_effect_keys_global_audit_append_only_and_telemetry_local() -> None:
+    source = OBSERVABILITY_MIGRATION.read_text(encoding="utf-8")
+    assert 'down_revision: str | Sequence[str] | None = "0001_v0_007"' in source
+    for required in (
+        "CREATE TABLE fao.idempotency_effect", "idempotency_key TEXT PRIMARY KEY",
+        "request_sha256", "effect_id UUID NOT NULL UNIQUE", "CREATE TRIGGER trg_audit_event_append_only",
+        "CREATE TABLE fao.trace_span", "CREATE TABLE fao.metric_sample", "CREATE TABLE fao.observability_log",
+        "CREATE TABLE fao.alert_policy", "CREATE TABLE fao.alert_record",
+        "runbook_ref TEXT NOT NULL", "impact_scope JSONB NOT NULL",
+    ):
+        assert required in source
+    assert "futures_workflow" not in source
 
 
 def test_local_postgres_runbook_uses_pinned_postgres_and_round_trip() -> None:

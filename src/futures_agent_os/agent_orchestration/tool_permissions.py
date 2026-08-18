@@ -16,7 +16,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from futures_agent_os.governance_registry import ToolPermissionTier, ToolRef, ToolRegistry
-from futures_agent_os.shared_kernel import EntityId, ReasonCode, RecordedAt, SchemaVersion
+from futures_agent_os.shared_kernel import EntityId, ReasonCode, RecordedAt, SchemaVersion, TraceContext
 
 from .catalog import definition_for
 
@@ -171,12 +171,17 @@ class ToolCallRequest:
     scope: ToolScope
     called_at: RecordedAt
     correlation_id: EntityId
+    trace: TraceContext
 
     def __post_init__(self) -> None:
         if not self.agent_role_id or not _SCOPE_TOKEN.fullmatch(self.node_id):
             raise ValueError("tool calls require a role and canonical node id")
         if not isinstance(self.scope, ToolScope):
             raise TypeError("tool calls require a ToolScope")
+        if not isinstance(self.trace, TraceContext):
+            raise TypeError("tool calls require a TraceContext")
+        if self.trace.correlation_id != self.correlation_id:
+            raise ValueError("tool call trace must carry the call correlation id")
 
     def fingerprint(self) -> str:
         payload = {
@@ -185,6 +190,8 @@ class ToolCallRequest:
             "tool_ref": str(self.tool_ref),
             "scope": self.scope.to_dict(), "called_at": self.called_at.to_dict()["recorded_at"],
             "correlation_id": str(self.correlation_id),
+            "trace_id": str(self.trace.trace_id),
+            "causation_id": str(self.trace.causation_id) if self.trace.causation_id else None,
         }
         encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
         return "sha256:" + hashlib.sha256(encoded).hexdigest()
@@ -198,6 +205,7 @@ class ToolAuthorizationDecision:
     reason_code: ReasonCode
     call_id: EntityId
     correlation_id: EntityId
+    trace: TraceContext
     agent_role_id: str
     node_id: str
     tool_ref: ToolRef
@@ -206,6 +214,10 @@ class ToolAuthorizationDecision:
     matched_grant_id: EntityId | None = None
 
     def __post_init__(self) -> None:
+        if not isinstance(self.trace, TraceContext):
+            raise TypeError("tool authorization decisions require a TraceContext")
+        if self.trace.correlation_id != self.correlation_id:
+            raise ValueError("tool authorization decision trace must carry the call correlation id")
         if self.outcome is ToolAuthorizationOutcome.PERMIT and self.matched_grant_id is None:
             raise ValueError("permitted tool calls require the matched ToolGrant audit reference")
         if self.outcome is ToolAuthorizationOutcome.DENY and self.matched_grant_id is not None:
@@ -217,6 +229,8 @@ class ToolAuthorizationDecision:
             "reason_code": self.reason_code.value,
             "call_id": str(self.call_id),
             "correlation_id": str(self.correlation_id),
+            "trace_id": str(self.trace.trace_id),
+            "causation_id": str(self.trace.causation_id) if self.trace.causation_id else None,
             "agent_role_id": self.agent_role_id,
             "node_id": self.node_id,
             "tool_ref": str(self.tool_ref),
@@ -243,7 +257,7 @@ class ToolAuthorizer:
 
         fingerprint = request.fingerprint()
         deny = lambda reason: ToolAuthorizationDecision(
-            ToolAuthorizationOutcome.DENY, reason, request.call_id, request.correlation_id, request.agent_role_id,
+            ToolAuthorizationOutcome.DENY, reason, request.call_id, request.correlation_id, request.trace, request.agent_role_id,
             request.node_id, request.tool_ref, fingerprint, request.called_at,
         )
         if request.registry_version != self._registry.version:
@@ -296,7 +310,7 @@ class ToolAuthorizer:
         if not scope_grants:
             return deny(ReasonCode.TOOL_SCOPE_MISMATCH)
         return ToolAuthorizationDecision(
-            ToolAuthorizationOutcome.PERMIT, ReasonCode.TOOL_AUTHORIZED, request.call_id, request.correlation_id,
+            ToolAuthorizationOutcome.PERMIT, ReasonCode.TOOL_AUTHORIZED, request.call_id, request.correlation_id, request.trace,
             request.agent_role_id, request.node_id, request.tool_ref, fingerprint, request.called_at,
             matched_grant_id=scope_grants[0].grant_id,
         )

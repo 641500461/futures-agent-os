@@ -18,7 +18,7 @@ from futures_agent_os.agent_orchestration import (
     ToolScope,
 )
 from futures_agent_os.governance_registry import TOOL_REGISTRY, TOOL_REGISTRY_VERSION, ToolPermissionTier, ToolRef
-from futures_agent_os.shared_kernel import EntityId, ReasonCode, RecordedAt, SchemaVersion
+from futures_agent_os.shared_kernel import EntityId, ReasonCode, RecordedAt, SchemaVersion, TraceContext
 
 
 V1 = SchemaVersion(1, 0)
@@ -42,6 +42,7 @@ def _scope(**changes: object) -> ToolScope:
 
 
 def _request(**changes: object) -> ToolCallRequest:
+    correlation_id = EntityId.new("correlation")
     values: dict[str, object] = {
         "call_id": EntityId.new("tool_call"),
         "agent_role_id": "main",
@@ -51,7 +52,8 @@ def _request(**changes: object) -> ToolCallRequest:
         "tool_ref": ToolRef("request_authorization_preflight", V1),
         "scope": _scope(),
         "called_at": _at(10),
-        "correlation_id": EntityId.new("correlation"),
+        "correlation_id": correlation_id,
+        "trace": TraceContext(correlation_id, EntityId.new("trace")),
     }
     values.update(changes)
     return ToolCallRequest(**values)  # type: ignore[arg-type]
@@ -120,6 +122,19 @@ def test_default_deny_and_unknown_or_undeclared_agents_are_stably_audited() -> N
     assert first.to_dict() == second.to_dict()
     assert _reason(authorizer, replace(request, agent_role_id="forged_agent")) is ReasonCode.TOOL_ROLE_MISMATCH
     assert _reason(authorizer, replace(request, agent_role_id="research")) is ReasonCode.TOOL_NOT_DECLARED_FOR_ROLE
+
+
+def test_tool_call_trace_must_match_correlation_and_fingerprints_immediate_causation() -> None:
+    request = _request()
+    with pytest.raises(ValueError, match="correlation"):
+        replace(request, trace=TraceContext(EntityId.new("correlation"), EntityId.new("trace")))
+
+    caused = replace(request, trace=request.trace.caused_by(request.call_id))
+    assert caused.fingerprint() != request.fingerprint()
+    decision = ToolAuthorizer(TOOL_REGISTRY, ()).authorize(caused)
+    assert decision.trace == caused.trace
+    assert decision.to_dict()["trace_id"] == str(caused.trace.trace_id)
+    assert decision.to_dict()["causation_id"] == str(request.call_id)
 
 
 def test_foreign_role_grant_cannot_authorize_another_agent() -> None:
@@ -203,6 +218,7 @@ def test_permitted_call_has_a_grant_reference_and_no_business_authorization_is_a
     assert decision.matched_grant_id is not None
     assert decision.to_dict()["tool_ref"] == "request_authorization_preflight@1.0"
     assert decision.to_dict()["call_id"] == str(request.call_id)
+    assert decision.to_dict()["trace_id"] == str(request.trace.trace_id)
     field_names = {field.name for field in fields(ToolGrant)}
     assert {"mandate_id", "plan_approval_id", "risk_decision_id", "activation_id"}.isdisjoint(field_names)
     assert _reason(ToolAuthorizer(TOOL_REGISTRY, ()), request) is ReasonCode.TOOL_GRANT_MISSING

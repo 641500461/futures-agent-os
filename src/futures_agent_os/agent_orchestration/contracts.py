@@ -11,7 +11,7 @@ import re
 from dataclasses import dataclass
 from enum import StrEnum
 
-from futures_agent_os.shared_kernel import EntityId, RecordedAt, SchemaVersion
+from futures_agent_os.shared_kernel import EntityId, RecordedAt, SchemaVersion, TraceContext
 
 
 _SHA256 = re.compile(r"^sha256:[0-9a-f]{64}$")
@@ -141,6 +141,7 @@ class AgentTaskEnvelope:
     task_id: EntityId
     session_id: EntityId
     correlation_id: EntityId
+    trace: TraceContext
     assigned_role_id: str
     catalog_version: SchemaVersion
     objective: str
@@ -157,6 +158,8 @@ class AgentTaskEnvelope:
     parent_task_id: EntityId | None = None
 
     def __post_init__(self) -> None:
+        if self.trace.correlation_id != self.correlation_id:
+            raise ValueError("task envelope trace must carry the task correlation id")
         if not self.assigned_role_id or not self.objective or not self.completion_definition:
             raise ValueError("task envelope requires role, objective, and completion definition")
         if not self.trigger_sources or not self.input_artifacts or not self.required_outputs:

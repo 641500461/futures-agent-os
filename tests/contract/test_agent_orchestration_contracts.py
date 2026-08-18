@@ -22,7 +22,7 @@ from futures_agent_os.agent_orchestration import (
     definition_for,
     validate_task_envelope,
 )
-from futures_agent_os.shared_kernel import EntityId, RecordedAt, SchemaVersion
+from futures_agent_os.shared_kernel import EntityId, RecordedAt, SchemaVersion, TraceContext
 
 
 def _at(minutes: int = 0) -> RecordedAt:
@@ -35,6 +35,10 @@ def _ref(kind: ArtifactKind = ArtifactKind.RESEARCH_BRIEF) -> ArtifactRef:
         schema_version=SchemaVersion(1, 0), content_hash="sha256:" + "a" * 64,
         created_at=_at(2), as_of=_at(1),
     )
+
+
+def _trace(correlation_id: EntityId) -> TraceContext:
+    return TraceContext(correlation_id, EntityId.new("trace"))
 
 
 def test_catalog_has_the_complete_machine_checkable_twelve_role_roster() -> None:
@@ -60,9 +64,10 @@ def test_main_and_deterministic_orchestrator_remain_separate() -> None:
 
 
 def test_task_envelope_is_bounded_by_the_versioned_role_contract() -> None:
+    correlation_id = EntityId.new("correlation")
     task = AgentTaskEnvelope(
         task_id=EntityId.new("agent_task"), session_id=EntityId.new("session"),
-        correlation_id=EntityId.new("correlation"), assigned_role_id=AgentRoleId.MARKET_REGIME.value,
+        correlation_id=correlation_id, trace=_trace(correlation_id), assigned_role_id=AgentRoleId.MARKET_REGIME.value,
         catalog_version=CATALOG_VERSION, objective="assess regime", completion_definition="return assessment",
         trigger_sources=(TriggerSource.MARKET,), input_artifacts=(_ref(),), policy_refs=(),
         allowed_tools=("market_snapshot",), budget=definition_for("market_regime").budget,
@@ -72,6 +77,7 @@ def test_task_envelope_is_bounded_by_the_versioned_role_contract() -> None:
 
     invalid_tool = AgentTaskEnvelope(
         task_id=task.task_id, session_id=task.session_id, correlation_id=task.correlation_id,
+        trace=task.trace,
         assigned_role_id=task.assigned_role_id, catalog_version=task.catalog_version, objective=task.objective,
         completion_definition=task.completion_definition, trigger_sources=task.trigger_sources,
         input_artifacts=task.input_artifacts, policy_refs=task.policy_refs, allowed_tools=("submit_trade_plan",),
@@ -82,6 +88,9 @@ def test_task_envelope_is_bounded_by_the_versioned_role_contract() -> None:
 
     with pytest.raises(ValueError, match="input artifact"):
         validate_task_envelope(replace(task, input_artifacts=(_ref(ArtifactKind.HYPOTHESIS),)))
+
+    with pytest.raises(ValueError, match="correlation"):
+        replace(task, trace=_trace(EntityId.new("correlation")))
 
     for budget in (
         AgentBudget(5, 16, 12_000, 120), AgentBudget(4, 17, 12_000, 120),
@@ -103,6 +112,7 @@ def test_task_envelope_is_bounded_by_the_versioned_role_contract() -> None:
         validate_task_envelope(
             AgentTaskEnvelope(
                 task_id=task.task_id, session_id=task.session_id, correlation_id=task.correlation_id,
+                trace=task.trace,
                 assigned_role_id=task.assigned_role_id, catalog_version=task.catalog_version, objective=task.objective,
                 completion_definition=task.completion_definition, trigger_sources=task.trigger_sources,
                 input_artifacts=task.input_artifacts, policy_refs=task.policy_refs, allowed_tools=task.allowed_tools,
