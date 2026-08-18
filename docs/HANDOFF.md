@@ -3,9 +3,9 @@
 文档版本：`2.1-proposed`  
 最后更新：2026-08-18  
 当前阶段：V0 绿地项目地基
-最近完成：`V0-004` 建立跨上下文共享契约
+最近完成：`V0-005` 建立 Agent Catalog 与有界协作契约
 当前开发任务：无  
-建议下一任务：执行 `V0-005`，定义 Agent Catalog 与有界协作协议
+建议下一任务：执行 `V0-006`，建立 Tool Registry 与默认拒绝权限模型
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-004` 已完成，其余任务仍为 `[ ]`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-005` 已完成，其余任务仍为 `[ ]`。
 
 ## 设计资料状态
 
@@ -78,9 +78,13 @@
 
 2026-08-18 使用 `gpt-5.6-terra` / `medium` 完成共享内核契约，统筹对话补强定点 scale、极端 Decimal 与 Failure 序列化边界。commit 为 `eadb35640365a03759bcedf53446dbbfb8c0fb1e`，`uv run pytest` 为 `19 passed`。`TradingDate` 明确保留给交易日历赋值，夜盘归属不会由共享内核根据自然日猜测。
 
-## 下一任务：V0-005
+## 最近完成：V0-005
 
-把 12 个目标逻辑 Agent 的职责、非职责、触发、输入输出、工具权限、预算、失败策略、指标和启用版本转化为版本化 Agent Catalog、`AgentTaskEnvelope` 与结构化交接契约，并建立自动化完整性检查。按模型路由策略使用 Terra/medium；该任务只定义受控协作协议，不实现模型调用或交易副作用。
+2026-08-18 使用 `gpt-5.6-terra` / `medium` 完成版本化 Agent Catalog、任务信封、不可变 artifact 与有界 handoff 协议，统筹对话补强预算、输入、重复声明和失败结果边界。commit 为 `6070d236f0129de01455001870cdaf2b3f87b66a`，`uv run pytest` 为 `24 passed`。12 个逻辑角色不等于 12 个常驻服务，Catalog 声明也不等于 Tool Grant 或运行启用。
+
+## 下一任务：V0-006
+
+建立版本化 Tool Registry、Tool Grant 与默认拒绝的授权判定，覆盖只读、研究请求、提案、Mandate Scope 内自治模拟变更、可选单 Plan Approval、晋升和启用权限，并按 Agent/节点/账户/策略/品种/环境收窄作用域。该任务触及权限与自治授权，按模型路由策略升级为 Terra/high；仍不执行真实模型调用或交易副作用。
 
 ## 固定工作流程
 
