@@ -3,9 +3,9 @@
 文档版本：`2.1-proposed`  
 最后更新：2026-08-18  
 当前阶段：V0 绿地项目地基
-最近完成：`V0-008` 行情/研究数据分层与 manifest
+最近完成：`V0-009` 安全与研究执行隔离基础
 当前开发任务：无
-建议下一步：执行 `V0-009`，建立安全与研究执行隔离基础
+建议下一步：执行 `V0-010`，建立 correlation/causation、幂等、审计和可观测性基础
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-008` 已完成，其余任务仍为 `[ ]`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-009` 已完成，其余任务仍为 `[ ]`。
 
 ## 设计资料状态
 
@@ -94,9 +94,13 @@
 
 已使用 `gpt-5.6-terra` / `medium` 建立本地、不可变的数据层契约与 content-addressed adapter，实现 commit 为 `87bc6416eb367d6f9f754134eba5fac3205ea6b4`。raw、normalized PIT、feature snapshot、dataset 与 artifact 都必须绑定完整 manifest。内容与 manifest identity 分离：相同 bytes 可服务多个独立修订，数据内容仍仅保存一次；读取一律验证内容 hash，PIT 记录必须在 `as_of` 前可用。`uv run pytest` 为 `53 passed, 1 skipped`；未接入外部数据源或 donor 运行时。
 
-## 下一任务：V0-009
+## 最近完成：V0-009
 
-建立身份、密钥、日志脱敏、Prompt Injection、代码执行沙箱、网络出口和供应链威胁模型。此任务涉及安全边界，按模型路由使用 Terra/high。
+已使用 `gpt-5.6-terra` / `high` 建立 V0 安全契约，实现 commit 为 `4810527f049f1d0bc5c82b4b9a5d05035064dea6`。服务身份只绑定 versioned `secret://` 引用；结构化日志递归脱敏；外部文本被固定为数据且无法更改 ToolGrant/Policy authority；研究沙箱在 V0 仅作 default-deny 限额校验而不执行工作负载。统筹复核后强制所有权限和 sandbox collection 使用不可变容器，防止校验后篡改。`uv run pytest` 为 `60 passed, 1 skipped`。真实 secret manager、代码执行和网络连接仍未启用。
+
+## 下一任务：V0-010
+
+建立统一 correlation/causation、命令幂等、追加审计、metrics/logs/traces 和最小告警框架。该任务涉及幂等和审计可靠性，按模型路由使用 Terra/high。
 
 ## 固定工作流程
 

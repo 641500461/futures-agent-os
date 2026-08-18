@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：`V0-001` 至 `V0-008` 已完成；下一任务为 `V0-009`。
+当前状态：`V0-001` 至 `V0-009` 已完成；下一任务为 `V0-010`。
 
 ## 全局依赖原则
 
@@ -51,9 +51,9 @@
 - [x] `V0-008` 建立行情/研究数据分层：raw immutable、normalized point-in-time、feature snapshot、dataset manifest 和 artifact store。
   Acceptance: 每份数据集具有来源、许可、schema、时间覆盖、`as_of`、摄取时间、hash、质量和修订信息。  
   Evidence: 2026-08-18 按常规开发路由使用 `gpt-5.6-terra` / `medium` 实现，统筹对话使用 domain-modeling 审核并修正“内容 hash 与 manifest identity 必须分离”的数据所有权边界；commit `87bc6416eb367d6f9f754134eba5fac3205ea6b4`。Reference & Market Data 提供不可变 `DatasetManifest`、Provenance、License、Schema、Coverage、`as_of`/ingested time、Quality 与 Revision 契约；raw/normalized PIT/features/datasets/artifacts 分层，PIT 记录以 `available_time` 拒绝未来数据泄漏。内容按 SHA-256 去重，manifest 按 Dataset ID 独立不可变保存，读取时复验 hash；同内容可对应不同修订 manifest，冲突 identity 不可覆盖。`uv run pytest` 为 `53 passed, 1 skipped`，compileall 与 diff check 通过；未下载外部数据、未引入 donor 运行时依赖。
-- [ ] `V0-009` 建立身份、密钥、日志脱敏、Prompt Injection、代码执行沙箱、网络出口和供应链威胁模型。  
+- [x] `V0-009` 建立身份、密钥、日志脱敏、Prompt Injection、代码执行沙箱、网络出口和供应链威胁模型。
   Acceptance: Git/日志无凭据；不可信文本不能改变权限；研究执行有 CPU/内存/时间/文件/网络上限。  
-  Evidence: 待补。
+  Evidence: 2026-08-18 按安全关键路由使用 `gpt-5.6-terra` / `high` 实现，统筹对话发现并修正“冻结对象接受可变 collection”的授权/沙箱 TOCTOU 漏洞；commit `4810527f049f1d0bc5c82b4b9a5d05035064dea6`。已提供 ServiceIdentity、只允许 `secret://` reference 的 credential binding、递归结构化日志脱敏、不可信内容与 AuthorityContext 隔离、资源/文件/精确出口 allowlist 的 default-deny 研究沙箱 validator，以及供应链威胁模型。V0 不解析 secret、不运行代码、不读取外部数据或联网；未来 executor 仍需独立 OS/container 强制隔离。`uv run pytest` 为 `60 passed, 1 skipped`，compileall、health 与 diff check 通过。
 - [ ] `V0-010` 建立统一 correlation/causation、命令幂等、追加审计、metrics/logs/traces 和最小告警框架。  
   Acceptance: 从请求到工具调用和领域事件可关联；重复命令最多产生一个业务效果。  
   Evidence: 待补。
