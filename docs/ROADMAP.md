@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：`V0-001`、`V0-002` 已完成；下一任务为 `V0-003`。
+当前状态：`V0-001`、`V0-002`、`V0-003` 已完成；下一任务为 `V0-004`。
 
 ## 全局依赖原则
 
@@ -33,9 +33,9 @@
 - [x] `V0-002` 确认绿地 ADR 集：项目独立性、确定性内核真值、Agent 以 TradePlan/RiskReductionRequest 表达交易意图但不直接提交 Order、Simulation Autonomy Mandate、模块化 monorepo、PostgreSQL、审计模型和队列策略。
   Acceptance: 所有难逆转决策有状态、理由、替代项和后果；不使用旧 ADR 编号暗示继承。  
   Evidence: 2026-08-18 按领域建模 ADR 门槛复核并接受 `docs/adr/0001` 至 `0007`，索引见 `docs/adr/README.md`；commit `dad8c5802abba56fa285a53ee6b7e436daf093fd`。7 项决策均使用新项目连续编号，状态为 `accepted`，并包含 Context、Decision、Consequences 与 Considered Options；`tests/contract/test_adr_baseline.py` 自动检查编号连续、状态合法、V0 基线已接受及权衡/后果章节，`uv run pytest` 为 `5 passed`。
-- [ ] `V0-003` 建立领域上下文与统一语言：Reference/Market Data、Market Intelligence、Research & Experiment、Decision、Portfolio & Risk、Execution Simulation、Accounting & Settlement、Learning & Review、Governance & Registry。  
+- [x] `V0-003` 建立领域上下文与统一语言：Reference/Market Data、Market Intelligence、Research & Experiment、Decision、Portfolio & Risk、Execution Simulation、Accounting & Settlement、Learning & Review、Governance & Registry。
   Acceptance: 每个聚合只有一个权威上下文；Agent Orchestration 明确为 supporting context；Simulation Autonomy Mandate、AutonomyModeBinding 与 AuthorizationBasis 由 Decision 拥有，DecisionJournal 追加投影由 Learning & Review 拥有。  
-  Evidence: 待补。
+  Evidence: 2026-08-18 使用 `gpt-5.6-terra` / `medium` 实现，统筹对话复核；commit `8d53b4b2ae485848b25153d50ff1a0d8fb796412`。`docs/DOMAIN-BOUNDARY-BASELINE.md` 固化 9 个核心业务上下文、1 个 supporting context 和 16 个关键聚合的唯一 owner；Decision 词汇补齐 Autonomy Gate Receipt 所有权。`tests/contract/test_domain_boundary_baseline.py` 自动验证上下文数量/分类、关键 owner、projection/T4-SAFE 边界，以及全部 201 个 canonical term 跨上下文唯一且具有 `_Avoid_`；`uv run pytest` 为 `10 passed`，健康检查为 `status=ok`、`legacy_runtime_dependency=false`。模型路由规则另见 commit `8f4f63fa8c3a4b88c39ed342812c82f5f2671d60`。
 - [ ] `V0-004` 定义跨上下文 ID、Money/Price/Quantity、时区、`trading_date`、版本和错误码规范。  
   Acceptance: Decimal/定点、Asia/Shanghai、UTC 记录时间、schema version 和 reason code 均有契约测试。  
   Evidence: 待补。

@@ -3,9 +3,9 @@
 文档版本：`2.1-proposed`  
 最后更新：2026-08-18  
 当前阶段：V0 绿地项目地基
-最近完成：`V0-002` 接受绿地架构决策基线
+最近完成：`V0-003` 建立领域上下文与统一语言基线
 当前开发任务：无  
-建议下一任务：执行 `V0-003`，确认领域上下文与统一语言
+建议下一任务：执行 `V0-004`，定义跨上下文基础类型、时间与错误契约
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001`、`V0-002` 已完成，其余任务仍为 `[ ]`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-003` 已完成，其余任务仍为 `[ ]`。
 
 ## 设计资料状态
 
@@ -70,9 +70,13 @@
 
 2026-08-18 按领域建模门槛审阅并接受 7 项绿地架构决策，建立 `docs/adr/README.md` 索引和 ADR 契约测试。基线 commit 为 `dad8c5802abba56fa285a53ee6b7e436daf093fd`，`uv run pytest` 为 `5 passed`。未实现数据库、交易或 Agent 运行时。
 
-## 下一任务：V0-003
+## 最近完成：V0-003
 
-确认 9 个核心业务上下文和 1 个 supporting context 的统一语言与聚合所有权，把上下文地图转化为可自动检查的边界基线；重点验证 Mandate/Mode/Basis/Receipt、RiskDecision/ProtectionMandate、RiskReductionValidation/ProtectiveRiskAction、Position/Ledger、DecisionJournal/TradeEpisode 均只有一个权威所有者。该任务不提前实现跨上下文业务功能。
+2026-08-18 使用 `gpt-5.6-terra` / `medium` 完成领域边界基线，统筹对话复核。9 个核心业务上下文、1 个 supporting context、16 个关键聚合 owner 和 201 个 canonical term 均纳入自动检查；commit 为 `8d53b4b2ae485848b25153d50ff1a0d8fb796412`，`uv run pytest` 为 `10 passed`。未提前实现跨上下文业务功能。
+
+## 下一任务：V0-004
+
+定义跨上下文 ID、Money/Price/Quantity、时区、`trading_date`、schema version 与稳定错误码规范，并以契约测试证明 Decimal/定点精度、Asia/Shanghai 业务时间和 UTC 记录时间边界。按模型路由策略，该常规地基任务默认使用 Terra/medium；若设计触及资金精度或跨事务竞态的安全裁决，则升级为 Terra/high。
 
 ## 固定工作流程
 
