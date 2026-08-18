@@ -17,6 +17,7 @@ from .data_lake import (
     TimeCoverage,
     sha256_digest,
 )
+from .golden_datasets import validate_golden_dataset, write_golden_dataset
 
 __all__ = [
     "ArtifactStore",
@@ -34,4 +35,6 @@ __all__ = [
     "StoredDataset",
     "TimeCoverage",
     "sha256_digest",
+    "validate_golden_dataset",
+    "write_golden_dataset",
 ]

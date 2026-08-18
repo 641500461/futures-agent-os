@@ -1,0 +1,20 @@
+{
+  "dataset": {
+    "version": "v0-012.1",
+    "id": "dataset_018f9b16-9a00-7abd-8000-000000000013",
+    "revision": 1,
+    "supersedes_dataset_id": null
+  },
+  "bundle": {
+    "version": "golden-bundle-v0-012.1",
+    "id": "dataset_bundle_018f9b16-9a00-7abe-8000-000000000014",
+    "revision": 1,
+    "supersedes_bundle_id": null
+  },
+  "digest_parts": {
+    "golden_market_events.jsonl": ["ccf9ac42", "5a0f052b", "41c0ffdb", "ad498b08", "56f4f8b2", "d5e61a17", "215596d1", "57f14ed6"],
+    "golden_market_events.manifest.json": ["48eed1bc", "55160289", "e2595262", "3b810f87", "b6bc3ffd", "cfb1458d", "968ab282", "f69faab5"],
+    "cases.json": ["1458915d", "42b438c7", "aea02587", "a3d5783e", "626f39b3", "063499bf", "fe6a1900", "785903d4"],
+    "golden_bundle.manifest.json": ["0cc6318c", "42b29b95", "6bed9d4a", "2fd6c93a", "48b6fd08", "61c66101", "1e742d10", "ecdf0dbd"]
+  }
+}
