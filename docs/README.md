@@ -55,6 +55,7 @@ Risk Constitution、Signal/Forecast Models、Position Sizing、Execution Planner
 8. [架构决策记录](./adr/)：需要确认的难逆转决策。
 9. [设计完整性与 Deep Research 覆盖审计](./DESIGN-COVERAGE-AUDIT.md)：来源需求、Agent、Tool、产品与技术覆盖矩阵。
 10. [系统架构、用户生命周期与盯盘调度](./SYSTEM-ARCHITECTURE-AND-LIFECYCLE.md)：从用户进入到交易结束、复盘、定时任务和持续盯盘的全链路图。
+11. [V0 安全基础与威胁模型](./SECURITY-THREAT-MODEL.md)：服务身份、密钥引用、日志脱敏、Prompt Injection、研究沙箱、网络出口与供应链策略。
 
 ## 推荐阅读顺序
 

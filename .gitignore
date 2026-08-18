@@ -1,5 +1,11 @@
 .DS_Store
 .env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
 .venv/
 .pytest_cache/
 .ruff_cache/
@@ -11,4 +17,3 @@ build/
 dist/
 .coverage
 htmlcov/
-
