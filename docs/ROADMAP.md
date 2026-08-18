@@ -1,7 +1,7 @@
 # 绿地版本路线图与可勾选任务
 
 版本：`2.1-proposed`  
-最后更新：2026-08-18  
+最后更新：2026-08-19
 任务状态唯一来源：本文件
 
 ## 状态约定
@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：`V0-001` 至 `V0-011` 已完成；下一任务为 `V0-012`。
+当前状态：`V0-001` 至 `V0-012` 已完成；下一任务为 `V0-013`。
 
 ## 全局依赖原则
 
@@ -60,9 +60,9 @@
 - [x] `V0-011` 建立 CI、依赖锁、类型/静态检查、单元/属性/契约测试、schema 兼容检查和敏感信息扫描。
   Acceptance: 新仓库主分支保护启用；本地与 CI 使用相同锁定环境。  
   Evidence: 2026-08-19 按常规开发路由使用 `gpt-5.6-terra` / `medium` 完成实现，统筹对话复核并将无密码本地 PostgreSQL 限定到 loopback、把 GitHub Actions 固定到官方仓库 commit SHA；基础实现 commit `a2aaeeaba6ab102c3d55213005d0bb67604c4efb`。uv.lock 已锁定 Ruff、mypy、Hypothesis、detect-secrets 与测试依赖；`Makefile` 是本地/CI 统一入口，覆盖 lock/format/lint/type/secret scan/schema compatibility/unit/property/contract/integration/health，workflow 使用相同 targets 与临时 PostgreSQL。`make check` 通过（mypy 29 source files、schema 2、unit 1、property 1、contract 76）；真实 PostgreSQL integration 为 `2 passed`，DB-backed 全量为 `80 passed`，diff check 通过。公开 GitHub 仓库 `641500461/futures-agent-os` 的远端 Quality gate 五个 job 均通过；`main` branch protection 已由 API 回读证明启用，strict required checks 为 `quality/unit/property/contract/integration`，要求 PR，管理员同样受约束，禁止 force push/delete，并要求线性历史与会话解决。
-- [ ] `V0-012` 建立新项目 synthetic/golden 数据集与边界案例库；首批验收宇宙明确选择 AG、CU、RB、JM、I、MA、SA、M、P、SR、SC、JD。  
+- [x] `V0-012` 建立新项目 synthetic/golden 数据集与边界案例库；首批验收宇宙明确选择 AG、CU、RB、JM、I、MA、SA、M、P、SR、SC、JD。
   Acceptance: 品种选择有产品理由；夜盘、规则变更、涨跌停、跳空、无流动性、乱序和缺失数据均有样本。  
-  Evidence: 待补。
+  Evidence: 2026-08-19 按常规开发路由使用 `gpt-5.6-terra` / `medium` 实现，统筹对话使用独立 `gpt-5.6-sol` / `high` 三轮验收并修正版本身份漂移、全局到达顺序、bundle lineage 和语义伪阳性。已建立 AG/CU/RB/JM/I/MA/SA/M/P/SR/SC/JD 的可复现 Q2 synthetic 低频数据、非冗余产品选择理由和案例目录；夜盘交易日归属、历史规则变更、上/下涨跌停、Decimal 跳空、无 OHLCV/报价流动性、按 `available_time` 有序但事件时间逆序的迟到数据、显式缺失区间均有严格契约。事件、事件 manifest、catalog 和 bundle 四份资产由 bundle hash 与独立 release oracle 锁定，manifest-only 篡改也 fail closed；Dataset 与 Bundle 分别使用首版 revision 1 且无虚构 predecessor。`make check` 通过（contract `89 passed`），全量 `uv run pytest` 为 `91 passed, 2 skipped`，Ruff、mypy、secret scan 与 diff check 通过；Sol/high 最终复核无 P0–P3。数据明确不声称 tick、订单簿、成交或执行保真度。
 - [ ] `V0-013` 按 `LEGACY-ASSET-REUSE.md` 对 donor 候选逐项做资格评估，不迁移运行状态。  
   Acceptance: 每个采用项有 provenance、新接口、隔离性、安全扫描和新项目测试；拒绝项有理由。  
   Evidence: 待补。
