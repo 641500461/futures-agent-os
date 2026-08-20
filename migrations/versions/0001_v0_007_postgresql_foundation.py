@@ -146,10 +146,7 @@ def downgrade() -> None:
         "DROP SCHEMA IF EXISTS fao CASCADE",
         "GRANT CREATE ON SCHEMA public TO PUBLIC",
         "REVOKE fao_business_owner, fao_checkpoint_owner FROM fao_migrator",
-        "DROP ROLE IF EXISTS fao_outbox_sender",
-        "DROP ROLE IF EXISTS fao_agent_worker",
-        "DROP ROLE IF EXISTS fao_runtime",
-        "DROP ROLE IF EXISTS fao_checkpoint_owner",
-        "DROP ROLE IF EXISTS fao_business_owner",
-        "DROP ROLE IF EXISTS fao_migrator",
+        # Roles are cluster-global.  A database-local downgrade must never
+        # drop identities that another database in the same Homebrew/CI
+        # cluster may still depend on; provisioning owns their lifecycle.
     ))

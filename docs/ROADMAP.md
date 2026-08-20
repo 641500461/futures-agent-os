@@ -1,7 +1,7 @@
 # 绿地版本路线图与可勾选任务
 
 版本：`2.1-proposed`  
-最后更新：2026-08-19
+最后更新：2026-08-21
 任务状态唯一来源：本文件
 
 ## 状态约定
@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：`V0-001` 至 `V0-013` 已完成；下一任务为 `V0-014`。
+当前状态：V0 已完成（`V0-001` 至 `V0-014`）；下一任务为 `V1-001`。
 
 ## 全局依赖原则
 
@@ -66,9 +66,9 @@
 - [x] `V0-013` 按 `LEGACY-ASSET-REUSE.md` 对 donor 候选逐项做资格评估，不迁移运行状态。
   Acceptance: 每个采用项有 provenance、新接口、隔离性、安全扫描和新项目测试；拒绝项有理由。  
   Evidence: 2026-08-19 按常规开发路由使用 `gpt-5.6-terra` / `medium` 实现，统筹对话使用独立 `gpt-5.6-terra` / `high` 安全复核并修正两项 SQLite/绝对路径/DB 写入扫描误报、自洽假阳性与 `ABSENT` 未验真。机器可校验清单完整覆盖 `LEGACY-ASSET-REUSE.md` 的 34 个候选，固定 donor commit `b9f3bb9d185a6d659e096d615b5afb435769134d`、34 项 ID→R1/R2/R3/R4→source 基准、manifest digest、license 门禁和全部 provenance/gate/next-action。结果为 20 `CANDIDATE`、3 `DEFERRED`、9 `EVIDENCE_ONLY`、2 `REJECTED`、0 `QUALIFIED`；`futures_sim_trade_bridge` 与 `db_manager` 的 R4 拒绝理由已记录，未验证许可证阻断任何后续 qualification。显式人工参数脚本仅使用 `git rev-parse/cat-file/ls-tree` 对 `/Users/qiu/futures_workflow` 固定 commit 做只读复验，38 个 blob 与 1 个 `ABSENT` 均通过；29 个 tracked 修改和 3 个 untracked 工作树项不影响 Git object snapshot。未运行 donor 代码/测试，未读取数据库或运行状态，无 donor 运行时依赖。`make check` 通过（contract `98 passed`），全量 `uv run pytest` 为 `100 passed, 2 skipped`，diff check 通过；Terra/high 最终复核无 P0–P3。
-- [ ] `V0-014` 定义 Simulation Autonomy Mandate、Mandate Scope、AutonomyModeBinding、AuthorizationBasis/PlanApproval、两阶段 AutonomyGate、AutonomyGateReceipt、RiskBudgetReservation、DecisionJournal、TradeEpisode 投影与监督控制契约。  
+- [x] `V0-014` 定义 Simulation Autonomy Mandate、Mandate Scope、AutonomyModeBinding、AuthorizationBasis/PlanApproval、两阶段 AutonomyGate、AutonomyGateReceipt、RiskBudgetReservation、DecisionJournal、TradeEpisode 投影与监督控制契约。
   Acceptance: Mandate 必须版本化并绑定模拟账户、品种/策略/时段范围、有效期、风险引用、通知和升级规则；Mandate 九态 `DRAFT/VALIDATED/APPROVED/ACTIVE/SUSPENDED/EXPIRED/REVOKED/HALTED/RECOVERING` 完整，除 DRAFT 外所有非终态受 expiry 约束，APPROVED/ACTIVE/SUSPENDED/HALTED/RECOVERING 可 revoke；Mode 四态、Binding ACTIVE/EXPIRED/SUPERSEDED、EffectiveAutonomy、composite pause 与 V1 可空 account/mandate 语义明确；PlanApproval 五态和“GRANTED 原子消费为唯一 Basis”契约完整；Receipt 绑定 Plan/AuthorizationBasis/源授权 hash、`execution_origin`、快照、运行版本、预算预留、有效期、单次 nonce 及 AUTONOMOUS_AGENT 必需的 Mode id/version/hash；Reservation 归属 Portfolio & Risk；DecisionJournal 区分 DECISION_TIME/POST_HOC 且可重建，TradeEpisode 明确归 Learning & Review 且只投影源事件；并发与竞态契约测试通过；任何对象都不能放宽 Risk Constitution。  
-  Evidence: 待补。
+  Evidence: 2026-08-21 按安全关键路由使用 `gpt-5.6-terra` / `high` 实现并多轮收紧，独立 `gpt-5.6-sol` / `high` 对每个失败反例重现和回归，最终无 P0–P3。新增内存参考契约与 PostgreSQL migrations `0003/0004`，覆盖 Mandate/Mode/Basis/Approval/两阶段 Gate/Receipt、原子风险预留、监督暂停/恢复/到期/撤销、DecisionJournal 与 TradeEpisode 确定性投影。真实 PostgreSQL 17.11 验证了 DB 权威时钟、最小权限角色、并发预算不超卖、单用途与幂等授权、scope/health/snapshot/actor 边界、源事件身份、旧数据 fail-closed 归一化、populated `0002 → head → 0002 → head` 及 legacy `0003` 往返。`make check` 通过（contract `118 passed`）；连接隔离 PostgreSQL 的全量测试为 `145 passed`；Ruff、mypy、secret scan、health 与 diff check 通过。未实现真实交易、Order/Fill/Ledger 或 LLM 运行时。
 
 Exit：新仓库可独立启动和恢复；领域、Agent、Tool、数据、安全、存储和测试基础全部有证据；旧项目不可用不会影响新项目。
 

@@ -8,6 +8,7 @@ from pathlib import Path
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 MIGRATION = PROJECT_ROOT / "migrations" / "versions" / "0001_v0_007_postgresql_foundation.py"
 OBSERVABILITY_MIGRATION = PROJECT_ROOT / "migrations" / "versions" / "0002_v0_010_observability_idempotency.py"
+AUTONOMY_MIGRATION = PROJECT_ROOT / "migrations" / "versions" / "0003_v0_014_autonomy_contracts.py"
 ALEMBIC_ENV = PROJECT_ROOT / "migrations" / "env.py"
 RUNBOOK = PROJECT_ROOT / "scripts" / "postgres_v0_007.sh"
 CI_WORKFLOW = PROJECT_ROOT / ".github" / "workflows" / "postgresql.yml"
@@ -115,6 +116,25 @@ def test_v0_010_migration_makes_effect_keys_global_audit_append_only_and_telemet
     ):
         assert required in source
     assert "futures_workflow" not in source
+
+
+def test_v0_014_migration_persists_single_use_authorization_and_rebuildable_projections() -> None:
+    source = AUTONOMY_MIGRATION.read_text(encoding="utf-8")
+    assert 'down_revision: str | Sequence[str] | None = "0002_v0_010"' in source
+    for required in (
+        "CREATE TABLE fao.authorization_basis",
+        "UNIQUE (source_approval_id)",
+        "CREATE TABLE fao.risk_budget_reservation",
+        "CREATE TABLE fao.autonomy_mode_binding",
+        "CREATE TABLE fao.autonomy_gate_receipt",
+        "nonce UUID NOT NULL UNIQUE",
+        "basis_id UUID NOT NULL UNIQUE",
+        "CREATE TABLE fao.decision_journal_entry",
+        "UNIQUE (journal_id, source_event_id, projection_version)",
+        "CREATE TABLE fao.trade_episode_projection",
+        "DROP TABLE IF EXISTS fao.autonomy_gate_receipt",
+    ):
+        assert required in source
 
 
 def test_local_postgres_runbook_uses_pinned_postgres_and_round_trip() -> None:

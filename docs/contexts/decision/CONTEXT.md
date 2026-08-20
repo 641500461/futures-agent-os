@@ -82,12 +82,24 @@ _Avoid_: No Trade、Risk Reject、系统失败
 针对一个研究/交易作用域与精确运行版本指定 `OBSERVE`、`SHADOW`、`AUTONOMOUS_SIMULATION` 或 `PAUSED` 的可审计绑定，并独立记录 `ACTIVE/EXPIRED/SUPERSEDED` Binding 生命周期。OBSERVE 的 Simulation Account 和 Mandate 引用可空；SHADOW 需要模拟账户但不可提交；只有 ACTIVE 的 AUTONOMOUS_SIMULATION Binding 才能参与 EffectiveAutonomy，且必须引用 Simulation Account 与 ACTIVE Mandate。expiry/supersession 会失效未消费授权但不停止已有保护。
 _Avoid_: Mandate Status、System Health State、Agent Task State、Strategy Activation
 
+**Effective Autonomy**:
+对某个范围内是否可由 Agent 发起新增模拟风险的合成事实，仅在 ACTIVE Mandate、ACTIVE AUTONOMOUS_SIMULATION Binding、合格运行绑定与健康许可同时成立时为真。
+_Avoid_: Autonomy Mode、Mandate Status、Agent Authority、Risk Decision
+
+**Composite Pause**:
+有权用户发出的联动暂停事实，在同一协调操作中暂停 Mandate 与运行 Mode、将已跟踪的未消费 Authorization Basis 标为 STALE、失效其未消费 Receipt 并由 Portfolio & Risk 释放相应 Risk Budget Reservation；返回的 ID 仅作审计，不替代这些实际状态变化。
+_Avoid_: Kill Switch、Mandate Revocation、暂停 Agent Run
+
+**Composite Resume**:
+有权用户在重新确认未过期 Mandate、精确合格运行版本与健康许可后，将用户联动暂停恢复为新的 ACTIVE Mandate 和 Autonomy Mode Binding 状态；恢复后的版本不能复用暂停前的 Authorization Basis、Receipt 或 Risk Budget Reservation。
+_Avoid_: 自动重试、Health Recovery、恢复旧 Receipt
+
 **Simulation Autonomy Mandate**:
 有权用户对指定 Simulation Account 授予系统的可暂停、可撤销、带版本与有效期的长期业务委托，允许 Agent 在 Mandate Scope 内自主发现机会、形成 Trade Plan 并请求模拟执行。
 _Avoid_: Plan Approval、Risk Decision、Risk Budget、Tool Grant、Strategy Activation
 
 **Mandate Scope**:
-Simulation Autonomy Mandate 明确允许的 Simulation Account、品种、策略、时段、有效期、风险引用、通知和升级边界。
+Simulation Autonomy Mandate 明确允许的 Simulation Account、品种、策略、时段、actions 集合、数量上限、有效期、风险引用、通知和升级边界；复数文本集合必须去重、词典序规范化且无空白别名，actions 的审计/hash 序列化始终排序。
 _Avoid_: Risk Budget、Activation Scope、Tool Grant
 
 **Mandate Pause**:
@@ -99,8 +111,12 @@ _Avoid_: Revocation、Kill Switch、暂停 Agent Run
 _Avoid_: Mandate Pause、删除历史、Kill Switch
 
 **Authorization Basis**:
-一份具体 Plan Version 请求进入模拟风险/执行链的有效授权依据，必须绑定当前有效且范围匹配的 Simulation Autonomy Mandate，或一份可选 Plan Approval。
+一份具体 Plan Version 请求进入模拟风险/执行链的有效授权依据，必须绑定当前有效且范围匹配的 Simulation Autonomy Mandate，或一份可选 Plan Approval；它选择并固定一项 action 与 quantity。Plan Approval 分支还固定 one-time token 和有效窗口，Mandate 分支不携带二者。
 _Avoid_: Risk Decision、Tool Grant、用户身份、Agent Authority
+
+**Authorization Basis Status**:
+Authorization Basis 对其源授权、范围和有效期的当前可用性事实；只有 ACTIVE Basis 可进入最终 Autonomy Gate，过期、失效或已消费状态不能重新授权。
+_Avoid_: Mandate Status、Plan Approval Status、Risk Decision
 
 **Autonomy Gate Receipt**:
 确定性 Autonomy Gate 针对一个具体 Plan Version、Authorization Basis、源授权（Mandate 或 Plan Approval）、最新快照、运行版本与 Risk Budget Reservation 签发的短期、单用途许可凭证；它绑定 Plan/Basis/源授权 hash、`execution_origin`，且 `AUTONOMOUS_AGENT` 路径还必须绑定 AutonomyModeBinding ID/Version/hash，证明该请求通过最终自治边界校验。
@@ -111,12 +127,20 @@ _Avoid_: Authorization Basis、Plan Approval、Risk Decision、Tool Grant
 _Avoid_: Plan Approval、Risk Decision、代码评审
 
 **Plan Approval**:
-在手动或例外路径下，有权用户在明确 Approval Scope 内对一个具体 Plan Version 作出的单次肯定许可；状态为 `REQUESTED/GRANTED/REJECTED/EXPIRED/CONSUMED`。GRANTED 只能在原子创建唯一 `basis_kind=PLAN_APPROVAL` Authorization Basis 时转为 CONSUMED，并记录 consumer basis 与 consumed_at；它不是自治运行的默认要求。
+在手动或例外路径下，真实人类 `user:*` 在明确 Approval Scope 内对一个具体 Plan Version 作出的单次肯定许可；状态为 `REQUESTED/GRANTED/REJECTED/EXPIRED/CONSUMED`。服务可拒绝或使其过期但不得 GRANT。GRANTED 只能在原子创建唯一 `basis_kind=PLAN_APPROVAL` Authorization Basis 时转为 CONSUMED，并记录 consumer basis 与 consumed_at；它不是自治运行的默认要求。
 _Avoid_: Plan Review、Risk Decision、口头同意
 
 **Approval Scope**:
-Plan Approval 明确允许的账户、数量上限、有效时段和其他不可外推边界。
+Plan Approval 明确允许的 Simulation Account、instrument/strategy/session/actions 集合、数量上限和有效时段；任何超出该范围的 Plan 或执行请求必须重新取得许可。
 _Avoid_: Risk Budget、用户角色、默认授权
+
+**Receipt Issuance**:
+对一个 Authorization Basis 至多形成一张确定性 Autonomy Gate Receipt 的授权事实；重复请求只能返回相同 Receipt，不能产生新的 nonce。
+_Avoid_: Receipt Consumption、重试产生新许可、Order Submission
+
+**State Version**:
+业务事实每次状态变化后的单调版本，用于拒绝基于旧状态的命令；它不替代对象内容版本或 Plan Version。
+_Avoid_: Schema Version、Plan Version、运行版本
 
 **Stale Plan**:
 因有效期、价格、市场状态、规则或关键证据变化而不能继续使用原 Authorization Basis 的 Trade Plan。

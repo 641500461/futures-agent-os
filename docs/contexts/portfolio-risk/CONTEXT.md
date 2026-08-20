@@ -49,7 +49,7 @@ Portfolio、策略或 Trade Plan 在指定范围和时段内可以承担的最�
 _Avoid_: Margin、Available Funds、止损距离
 
 **Risk Budget Reservation**:
-为一个候选 Plan Version 原子占用、带有效期且可缩小、消费、释放和对账的临时 Risk Budget 份额，用于防止并发计划合计突破组合上限。
+为一个候选 Plan Version 与其 Authorization Basis 原子占用、带有效期且可缩小、消费、释放和对账的临时 Risk Budget 份额；同一 `(Plan ID, Plan Version, Basis ID)` 至多一份，完全相同重试幂等，冲突必须拒绝，用于防止并发计划合计突破组合上限。
 _Avoid_: Risk Decision、Position、Margin Reservation、Authorization Basis
 
 **Risk Policy**:
