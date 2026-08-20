@@ -43,6 +43,10 @@ def test_empty_database_upgrade_downgrade_upgrade_preserves_schema_isolation() -
             ("fao", "idempotency_effect"),
             ("fao", "trace_span"),
             ("fao", "alert_record"),
+            ("fao", "authorization_basis"),
+            ("fao", "risk_budget_reservation"),
+            ("fao", "autonomy_gate_receipt"),
+            ("fao", "decision_journal_entry"),
             ("agent_checkpoint", "checkpoint"),
         ):
             assert _exists(connection, schema, table)
@@ -213,3 +217,204 @@ def test_v0_010_database_constraints_reject_second_effect_and_audit_mutation() -
             ).scalar_one()
             is False
         )
+
+
+def test_v0_014_downgrade_to_v0_010_preserves_v0_007_plan_approval_decision_columns() -> None:
+    _alembic("upgrade", "head")
+
+
+def test_v0_014_hardening_downgrade_restores_v0_014_table_select_acl_snapshot() -> None:
+    _alembic("downgrade", "0003_v0_014")
+    engine = create_engine(DATABASE_URL)
+    acl_sql = text("SELECT has_table_privilege('fao_runtime', 'fao.authorization_basis', 'SELECT')")
+    with engine.connect() as connection:
+        direct_0003_acl = connection.execute(acl_sql).scalar_one()
+    _alembic("upgrade", "head")
+    _alembic("downgrade", "0003_v0_014")
+    with engine.connect() as connection:
+        assert connection.execute(acl_sql).scalar_one() is direct_0003_acl is False
+    _alembic("upgrade", "head")
+
+
+def test_v0_014_replaced_reservations_are_fail_closed_normalized_on_upgrade() -> None:
+    """An old 0003 database can contain the unreachable REPLACED enum value."""
+    _alembic("upgrade", "head")
+    _alembic("downgrade", "0003_v0_014")
+    engine = create_engine(DATABASE_URL)
+    basis_id, mandate_id, reservation_id, binding_id = (uuid4() for _ in range(4))
+    account_id, plan_id = uuid4(), uuid4()
+    with engine.begin() as connection:
+        # Simulate the 0003 schema before this hardening revision removed the
+        # unreachable value.  There are no 0004 triggers at this revision.
+        connection.execute(text("ALTER TABLE fao.risk_budget_reservation DROP CONSTRAINT ck_v014_reservation_status"))
+        connection.execute(
+            text("""ALTER TABLE fao.risk_budget_reservation
+            ADD CONSTRAINT ck_v014_reservation_status
+            CHECK (reservation_status IN ('HELD','CONSUMED','RELEASED','EXPIRED','REPLACED','RECONCILED'))""")
+        )
+        connection.execute(
+            text("""INSERT INTO fao.authorization_basis
+            (basis_id,basis_kind,basis_status,basis_sha256,plan_id,plan_version,plan_sha256,account_id,
+             instrument_id,strategy_id,session_id,authorized_action,authorized_quantity,
+             source_mandate_id,source_mandate_version,source_sha256,scope_snapshot,scope_sha256,
+             issued_by,actor_audit_ref,expires_at)
+            VALUES (:basis,'MANDATE','ACTIVE',:basis_hash,:plan,1,:plan_hash,:account,
+                    'ES','strategy','session','OPEN',1,:mandate,1,:source_hash,'{}'::jsonb,:scope_hash,
+                    'service:legacy','audit://legacy',CURRENT_TIMESTAMP + INTERVAL '1 hour')"""),
+            {
+                "basis": basis_id,
+                "basis_hash": "a" * 64,
+                "plan": plan_id,
+                "plan_hash": "b" * 64,
+                "account": account_id,
+                "mandate": mandate_id,
+                "source_hash": "c" * 64,
+                "scope_hash": "d" * 64,
+            },
+        )
+        connection.execute(
+            text("""INSERT INTO fao.risk_budget_reservation
+            (reservation_id,reservation_version,state_version,reservation_status,reservation_sha256,
+             account_id,plan_id,plan_version,plan_sha256,basis_id,basis_sha256,
+             risk_constitution_ref,risk_constitution_version,risk_constitution_sha256,
+             instrument_id,strategy_id,session_id,risk_dimensions,quantity,worst_case_loss,margin,
+             source_kind,source_ref,source_sha256,expires_at,released_at)
+            VALUES (:reservation,1,1,'REPLACED',:reservation_hash,
+                    :account,:plan,1,:plan_hash,:basis,:basis_hash,
+                    'risk://legacy',1,:constitution_hash,
+                    'ES','strategy','session','{}'::jsonb,1,0,0,
+                    'MANDATE',:mandate,:source_hash,CURRENT_TIMESTAMP + INTERVAL '1 hour',
+                    CURRENT_TIMESTAMP - INTERVAL '1 minute')"""),
+            {
+                "reservation": reservation_id,
+                "reservation_hash": "e" * 64,
+                "account": account_id,
+                "plan": plan_id,
+                "plan_hash": "b" * 64,
+                "basis": basis_id,
+                "basis_hash": "a" * 64,
+                "constitution_hash": "f" * 64,
+                "mandate": mandate_id,
+                "source_hash": "c" * 64,
+            },
+        )
+        connection.execute(
+            text("ALTER TABLE fao.autonomy_mode_binding DROP CONSTRAINT ck_v014_binding_qualified_artifact_ref")
+        )
+        connection.execute(
+            text("""INSERT INTO fao.autonomy_mode_binding
+            (binding_id,version,mode,binding_status,run_versions_sha256,binding_sha256,
+             scope_snapshot,scope_sha256,qualified_artifact_ref,previous_mode,expires_at)
+            VALUES (:binding,1,'PAUSED','ACTIVE',:runs,:hash,'{}'::jsonb,:scope,
+                    ' artifact://legacy','OBSERVE',CURRENT_TIMESTAMP + INTERVAL '1 hour')"""),
+            {"binding": binding_id, "runs": "1" * 64, "hash": "2" * 64, "scope": "3" * 64},
+        )
+    _alembic("upgrade", "head")
+    with engine.connect() as connection:
+        assert connection.execute(
+            text("""SELECT reservation_status,reservation_version,state_version,released_at IS NOT NULL
+            FROM fao.risk_budget_reservation WHERE reservation_id=:reservation"""),
+            {"reservation": reservation_id},
+        ).one() == ("RELEASED", 2, 2, True)
+        constraint = connection.execute(
+            text("""SELECT pg_get_constraintdef(oid) FROM pg_constraint
+            WHERE conrelid='fao.risk_budget_reservation'::regclass
+              AND conname='ck_v014_reservation_status'""")
+        ).scalar_one()
+        assert "REPLACED" not in constraint
+        assert connection.execute(
+            text("""SELECT binding_status,qualified_artifact_ref,expires_at=recorded_at
+            FROM fao.autonomy_mode_binding WHERE binding_id=:binding"""),
+            {"binding": binding_id},
+        ).one() == ("EXPIRED", "legacy://untrusted-qualified-artifact", True)
+    _alembic("downgrade", "0003_v0_014")
+    with engine.connect() as connection:
+        constraint = connection.execute(
+            text("""SELECT pg_get_constraintdef(oid) FROM pg_constraint
+            WHERE conrelid='fao.risk_budget_reservation'::regclass
+              AND conname='ck_v014_reservation_status'""")
+        ).scalar_one()
+        assert "REPLACED" in constraint
+    _alembic("upgrade", "head")
+    with engine.connect() as connection:
+        assert connection.execute(
+            text("""SELECT reservation_status,reservation_version,state_version
+            FROM fao.risk_budget_reservation WHERE reservation_id=:reservation"""),
+            {"reservation": reservation_id},
+        ).one() == ("RELEASED", 2, 2)
+
+
+def test_v0_014_populated_v0_010_blank_risk_policy_migrates_fail_closed_and_round_trips() -> None:
+    _alembic("downgrade", "0002_v0_010")
+    mandate_id, spaced_mandate_id, internal_space_mandate_id, expired_mandate_id, approval_id = (
+        uuid4() for _ in range(5)
+    )
+    engine = create_engine(DATABASE_URL)
+    with engine.begin() as connection:
+        connection.execute(
+            text("""INSERT INTO fao.simulation_autonomy_mandate
+            (mandate_id,version,status,simulation_account_id,environment,scope,scope_sha256,risk_policy_ref,expires_at,recorded_by)
+            VALUES (:mandate,1,'ACTIVE',:account,'test','{}'::jsonb,'legacy-scope','',CURRENT_TIMESTAMP + INTERVAL '1 hour','user:legacy')"""),
+            {"mandate": mandate_id, "account": uuid4()},
+        )
+        connection.execute(
+            text("""INSERT INTO fao.simulation_autonomy_mandate
+            (mandate_id,version,status,simulation_account_id,environment,scope,scope_sha256,risk_policy_ref,expires_at,created_at,recorded_by)
+            VALUES (:mandate,1,'ACTIVE',:account,'test','{}'::jsonb,'legacy-scope','risk://legacy',CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,'user:legacy')"""),
+            {"mandate": expired_mandate_id, "account": uuid4()},
+        )
+        for mandate, risk_policy_ref in (
+            (spaced_mandate_id, " risk://legacy"),
+            (internal_space_mandate_id, "risk policy"),
+        ):
+            connection.execute(
+                text("""INSERT INTO fao.simulation_autonomy_mandate
+                (mandate_id,version,status,simulation_account_id,environment,scope,scope_sha256,risk_policy_ref,expires_at,recorded_by)
+                VALUES (:mandate,1,'ACTIVE',:account,'test','{}'::jsonb,'legacy-scope',:risk_policy_ref,CURRENT_TIMESTAMP + INTERVAL '1 hour','user:legacy')"""),
+                {"mandate": mandate, "account": uuid4(), "risk_policy_ref": risk_policy_ref},
+            )
+        connection.execute(
+            text("""INSERT INTO fao.plan_approval
+            (approval_id,version,status,plan_id,plan_version,plan_sha256,approval_scope,expires_at,requested_at)
+            VALUES (:approval,1,'REQUESTED',:plan,1,:hash,'{}'::jsonb,CURRENT_TIMESTAMP,CURRENT_TIMESTAMP)"""),
+            {"approval": approval_id, "plan": uuid4(), "hash": "a" * 64},
+        )
+    _alembic("upgrade", "head")
+    with engine.connect() as connection:
+        assert connection.execute(
+            text("SELECT status,risk_policy_ref FROM fao.simulation_autonomy_mandate WHERE mandate_id=:mandate"),
+            {"mandate": mandate_id},
+        ).one() == ("EXPIRED", "legacy://untrusted-risk-policy")
+        assert connection.execute(
+            text("SELECT status,expires_at>created_at FROM fao.simulation_autonomy_mandate WHERE mandate_id=:mandate"),
+            {"mandate": expired_mandate_id},
+        ).one() == ("EXPIRED", True)
+        for mandate in (spaced_mandate_id, internal_space_mandate_id):
+            assert connection.execute(
+                text("SELECT status,risk_policy_ref FROM fao.simulation_autonomy_mandate WHERE mandate_id=:mandate"),
+                {"mandate": mandate},
+            ).one() == ("EXPIRED", "legacy://untrusted-risk-policy")
+        assert connection.execute(
+            text("SELECT status,expires_at>requested_at FROM fao.plan_approval WHERE approval_id=:approval"),
+            {"approval": approval_id},
+        ).one() == ("EXPIRED", True)
+    _alembic("downgrade", "0002_v0_010")
+    _alembic("upgrade", "head")
+    with engine.connect() as connection:
+        assert connection.execute(
+            text("SELECT status,risk_policy_ref FROM fao.simulation_autonomy_mandate WHERE mandate_id=:mandate"),
+            {"mandate": mandate_id},
+        ).one() == ("EXPIRED", "legacy://untrusted-risk-policy")
+        assert connection.execute(
+            text("SELECT status,risk_policy_ref FROM fao.simulation_autonomy_mandate WHERE mandate_id=:mandate"),
+            {"mandate": internal_space_mandate_id},
+        ).one() == ("EXPIRED", "legacy://untrusted-risk-policy")
+    _alembic("downgrade", "0002_v0_010")
+    engine = create_engine(DATABASE_URL)
+    with engine.connect() as connection:
+        assert connection.execute(
+            text("""SELECT EXISTS (
+            SELECT 1 FROM information_schema.columns WHERE table_schema='fao'
+              AND table_name='plan_approval' AND column_name='decided_at')""")
+        ).scalar_one()
+    _alembic("upgrade", "head")

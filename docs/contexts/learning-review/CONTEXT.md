@@ -7,11 +7,15 @@
 ### Episodes and review
 
 **Decision Journal**:
-由已持久化的决策、授权、风险、执行、账务、监控与复盘事件构建的追加式时间投影，供审计、重放和用户学习；事后解释只能以新条目追加。
+由已持久化的决策、授权、风险、执行、账务、监控与复盘事件构建的追加式时间投影，供审计、重放和用户学习；同一 source event 的完全相同重放幂等，ID 指向不同不可变事实或不同投影内容必须失败关闭，事后解释只能以新条目追加。
 _Avoid_: Chat History、可编辑复盘文档、Decision Episode、源业务事实
 
+**Decision Cutoff**:
+某个决策当时允许进入 Decision Journal 的最后可用时点，用来区分 DECISION_TIME 事实与只能追加的 POST_HOC 事实。
+_Avoid_: Projected At、市场收盘、Review 时间
+
 **Trade Episode**:
-Learning & Review 基于各源上下文事件与 Decision Journal，从 Decision Episode 延伸到 Authorization Basis、风险裁决、执行、保护、账务结果和后续市场路径所构建的完整可追溯投影；它可重建且不取得源业务事实的写权限。
+Learning & Review 基于各源上下文事件与 Decision Journal，从 Decision Episode 延伸到 Authorization Basis、风险裁决、执行、保护、账务结果和后续市场路径所构建的完整可追溯投影；相同源事实重放幂等，冲突的 source event identity 必须失败关闭；它可重建且不取得源业务事实的写权限。
 _Avoid_: Decision Episode、Order、单次对话
 
 **Trade Review**:

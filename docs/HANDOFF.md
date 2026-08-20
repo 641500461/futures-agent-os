@@ -1,11 +1,11 @@
 # 跨对话交接
 
 文档版本：`2.1-proposed`  
-最后更新：2026-08-19
-当前阶段：V0 绿地项目地基
-最近完成：`V0-013` donor 资格审计
+最后更新：2026-08-21
+当前阶段：V0 绿地项目地基已完成，待进入 V1
+最近完成：`V0-014` 自治授权、风险预留、日志与监督控制契约
 当前开发任务：无
-建议下一步：执行 `V0-014`，实现自治授权、风险预留、日志与监督控制契约
+建议下一步：执行 `V1-001`，实现 Instrument/Variety/Exchange/Continuous Series 注册和解析
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-013` 已完成，其余任务仍为 `[ ]`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-014` 已完成，V1–V5 任务仍为 `[ ]`。
 
 ## 设计资料状态
 
@@ -114,9 +114,13 @@
 
 2026-08-19 使用 `gpt-5.6-terra` / `medium` 建立 34 项 donor 资格清单、固定 Git provenance、强制 license/新接口/隔离/安全/新项目测试门禁与显式只读验证脚本；独立 `gpt-5.6-terra` / `high` 安全复核最终无 P0–P3。38 blob 与 1 ABSENT 通过固定 commit 复验；结果为 20 CANDIDATE、3 DEFERRED、9 EVIDENCE_ONLY、2 REJECTED、0 QUALIFIED。未修改 donor，未运行 donor 副作用，未读取旧 DB/状态。`make check` 的 contract 为 `98 passed`，全量为 `100 passed, 2 skipped`。
 
-## 下一任务：V0-014
+## 最近完成：V0-014
 
-实现 Simulation Autonomy Mandate、Mandate Scope、AutonomyModeBinding、AuthorizationBasis/PlanApproval、两阶段 AutonomyGate/Receipt、RiskBudgetReservation、DecisionJournal、TradeEpisode 投影和监督控制契约。该任务包含安全关键授权与并发竞态，按模型路由使用 Terra/high。
+2026-08-21 使用 `gpt-5.6-terra` / `high` 实现自治授权与风险预留契约，独立 `gpt-5.6-sol` / `high` 多轮验收并最终确认无 P0–P3。内存参考模型与 PostgreSQL 持久语义已对齐；授权、预算、健康、快照、并发、到期、撤销、投影重建、迁移往返和最小权限反例全部关闭。`make check` 通过（contract `118 passed`），真实 PostgreSQL 全量测试 `145 passed`。V0 Exit 成立：新仓库可独立启动、测试、迁移与恢复，无 donor 运行时依赖。
+
+## 下一任务：V1-001
+
+实现 Instrument/Variety/Exchange/Continuous Series 注册和解析，严格区分研究连续序列与可交易合约。该任务按常规开发路由使用 Terra/medium。
 
 ## 固定工作流程
 
