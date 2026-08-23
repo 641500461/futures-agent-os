@@ -443,6 +443,30 @@ class RuleResolution:
     rule_content_sha256: str
     rule_set_ref: RuleSetRef
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.rule, ContractRuleVersion) or not isinstance(self.provenance, ReferenceProvenance):
+            raise TypeError("rule resolution requires complete rule and provenance")
+        if self.provenance != self.rule.provenance:
+            raise ValueError("rule resolution provenance must match its resolved rule")
+        if not isinstance(self.trading_date, TradingDate) or not isinstance(self.as_of, RecordedAt):
+            raise TypeError("rule resolution requires TradingDate and RecordedAt")
+        if not self.rule.effective.contains(self.trading_date) or not self.rule.provenance.is_visible_at(self.as_of):
+            raise ValueError("rule resolution must be effective and visible at its declared point in time")
+        if not isinstance(self.registry_id, EntityId) or self.registry_id.namespace != "contract_rule_registry":
+            raise ValueError("rule resolution registry_id must use contract_rule_registry namespace")
+        _require_version(self.registry_release_version, "registry_release_version")
+        if self.rule_content_sha256 != contract_rule_content_sha256(self.rule):
+            raise ValueError("rule resolution rule_content_sha256 must match its resolved rule")
+        if not isinstance(self.rule_set_ref, RuleSetRef) or self.rule_set_ref != RuleSetRef(
+            self.registry_id,
+            self.registry_release_version,
+            self.registry_content_sha256,
+            self.rule.rule_id,
+            self.rule.version,
+            self.rule_content_sha256,
+        ):
+            raise ValueError("rule resolution rule_set_ref must match resolved rule evidence")
+
 
 RuleResolutionOutcome: TypeAlias = RuleResolution | Failure
 

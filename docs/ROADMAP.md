@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-003`；下一任务为 `V1-004`。
+当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-004`；下一任务为 `V1-005`。
 
 ## 全局依赖原则
 
@@ -86,9 +86,9 @@ Exit：新仓库可独立启动和恢复；领域、Agent、Tool、数据、安�
 - [x] `V1-003` 实现交易日历与 `trading_date` 服务，覆盖夜盘、节假日、主力切换、临近交割和规则临时调整。
   Acceptance: 上期所、大商所、郑商所和中金所代表性夜盘/节假日边界测试通过。  
   Evidence: 2026-08-23 按时间归属安全边界使用 `gpt-5.6-terra` / `high` 实现，并由独立 `gpt-5.6-terra` / `high` 多轮对抗验收至无 P0–P3。新增不可变、版本化、Variety 精确作用域的 PIT `TradingCalendar/TradingDateService`，补齐 CFFEX；SHFE/DCE/CZCE 的代表性夜盘与四所日盘、集合竞价、午休、节假日、临时休市和提前收市均由显式 Asia/Shanghai session occurrence 绑定 TradingDate，不使用自然日或下一个工作日猜测。日历 revision 以不可变 ID 和显式 supersedes 建模，可按 `as_of` 重放 open→closure→reopen；future correction、可变集合、跨品种/跨日期 supersession、半开边界、错误时区、冲突和并发均 fail closed。主力切换、近交割和规则调整只保存跨 owner 引用，不在日历内解释或改变交易对象。固定 synthetic release id/version/hash oracle 已锁定。`make check` 通过（contract `161 passed`），连接 PostgreSQL 的全量测试为 `193 passed`，Ruff、mypy、secret scan、health 与 diff check 通过；未接入官方日历源、调度器或交易副作用。
-- [ ] `V1-004` 实现 point-in-time `MarketSnapshot`、数据新鲜度/完整性/冲突检测和稳定 reason code。  
+- [x] `V1-004` 实现 point-in-time `MarketSnapshot`、数据新鲜度/完整性/冲突检测和稳定 reason code。
   Acceptance: 缺失、陈旧、乱序或未来泄漏数据不会被静默采用。  
-  Evidence: 待补。
+  Evidence: 2026-08-23 按市场数据安全边界使用 `gpt-5.6-terra` / `high` 实现，并由独立 `gpt-5.6-terra` / `high` 多轮对抗验收至无 P0–P3。新增不可变、用途专属、内容寻址的 PIT `MarketObservation/MarketSnapshot`；快照只接受实际 Instrument Registry Resolution、ContractRuleRegistry/RuleResolution、TradingCalendar/TradingDateResolution、DatasetManifest 及逐记录 `DatasetRecordRef`，并将完整证据、policy/schema 版本和目的纳入哈希。支持 Quote/Bar/Trade/Settlement/Open Interest；缺失、陈旧、到达乱序、重复、冲突、未来可见、未完成 Bar、缺口、异常跳变、fallback 和不可信时间戳均产生结构化质量事实与稳定失败码。Observation 修订图验证前序、自然键、来源谱系、版本/时间单调、无环无分叉，并按 `as_of` 选择唯一 active leaf；完整历史仍进入快照哈希。DISPLAY/RESEARCH/BACKTEST/EXECUTION 独立准入，零深度或非主源报价、连续合约、跨合约规则、闭市/旧日历、过期规则均不能获得执行资格；精确触及规则涨跌停与未解释跳变分开处理。`make check` 通过（contract `175 passed`、property `9 passed`），连接 PostgreSQL 的全量测试为 `210 passed`，Ruff、mypy、secret scan、health 与 diff check 通过；未接入外部行情、特征模型、Agent 或交易副作用。
 - [ ] `V1-005` 实现版本化 Feature Engine 和确定性 Regime/Signal Model Service。  
   Acceptance: 特征输入、窗口、版本和快照可重现；模型输出不被当作交易许可。  
   Evidence: 待补。

@@ -286,6 +286,21 @@ class TradingDateResolution:
     schedule: TradingDaySchedule
     calendar_ref: TradingCalendarRef
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.exchange, Exchange) or not isinstance(self.trading_date, TradingDate):
+            raise TypeError("trading date resolution requires Exchange and TradingDate")
+        if not isinstance(self.market_time, ShanghaiTimestamp) or not isinstance(self.as_of, RecordedAt):
+            raise TypeError("trading date resolution requires market_time and as_of")
+        if not isinstance(self.phase, SessionPhase) or not isinstance(self.schedule, TradingDaySchedule):
+            raise TypeError("trading date resolution requires phase and schedule")
+        if not isinstance(self.calendar_ref, TradingCalendarRef):
+            raise TypeError("trading date resolution requires TradingCalendarRef")
+        if self.exchange is not self.schedule.exchange or self.trading_date != self.schedule.trading_date:
+            raise ValueError("trading date resolution must agree with its schedule scope")
+        matching = self.schedule.matching_phase(self.market_time)
+        if matching is None or matching[0] != self.session_name or matching[1].phase is not self.phase:
+            raise ValueError("trading date resolution market_time must match its declared schedule phase")
+
 
 TradingDateOutcome: TypeAlias = TradingDateResolution | Failure
 CalendarEventsOutcome: TypeAlias = tuple[CalendarReferenceEvent, ...] | Failure

@@ -197,6 +197,14 @@ def sha256_digest(content: bytes) -> str:
     return f"sha256:{hashlib.sha256(content).hexdigest()}"
 
 
+def dataset_manifest_sha256(manifest: DatasetManifest) -> str:
+    """Stable digest of complete manifest semantics, not just underlying bytes."""
+    if not isinstance(manifest, DatasetManifest):
+        raise TypeError("dataset_manifest_sha256 requires DatasetManifest")
+    encoded = json.dumps(_manifest_dict(manifest), sort_keys=True, separators=(",", ":"), ensure_ascii=True).encode()
+    return hashlib.sha256(encoded).hexdigest()
+
+
 class LocalFileDataStore:
     """Append-only local store with separately immutable objects and manifests."""
 
