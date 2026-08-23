@@ -254,6 +254,23 @@ class Resolution:
     mapping_version: int
     provenance: ReferenceProvenance
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.target, (Variety, Instrument, DominantContractReference, ContinuousSeries)):
+            raise TypeError("resolution requires a registered reference target")
+        _require_alias(self.alias)
+        if not isinstance(self.registry_id, EntityId) or self.registry_id.namespace != "instrument_registry":
+            raise ValueError("resolution registry_id must use the instrument_registry namespace")
+        _require_version(self.release_version)
+        _require_version(self.mapping_version)
+        if (
+            not isinstance(self.registry_content_sha256, str)
+            or len(self.registry_content_sha256) != 64
+            or any(character not in "0123456789abcdef" for character in self.registry_content_sha256)
+        ):
+            raise ValueError("resolution registry_content_sha256 must be a lowercase SHA-256 digest")
+        if not isinstance(self.provenance, ReferenceProvenance):
+            raise TypeError("resolution requires typed reference provenance")
+
     @property
     def kind(self) -> ReferenceKind:
         return _kind_of(self.target)

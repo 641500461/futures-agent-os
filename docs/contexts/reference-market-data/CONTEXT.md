@@ -92,9 +92,37 @@ _Avoid_: Market State、策略暂停、流动性判断
 数据源在特定事件时点发布的价格、数量、成交、持仓量或盘口事实。
 _Avoid_: Market State、Feature Observation、交易信号
 
+**Market Observation Revision**:
+对同一来源市场事实作出的不可变更正；它明确替代唯一前序事实，并在更晚的可用与入库时点后成为该事实的活动版本。
+_Avoid_: 就地更新、列表中最后一条、独立的新行情
+
+**Active Market Observation**:
+在明确 `as_of` 已可用且已入库、并且没有同样可见后继修订的 Market Observation 叶节点；质量与用途判断只使用活动观测。
+_Avoid_: 最新数据库记录、完整修订历史、调用方排序
+
+**Price-Limit-Confirmed Move**:
+价格变化超过质量阈值但新价格精确命中当日 Contract Rule 价格上下限的可追溯市场事实；它不被标为未解释的 Price Jump。
+_Avoid_: 四舍五入后的“接近涨跌停”、无规则依据的跳变豁免、交易许可
+
 **Market Snapshot**:
 为某一用途在明确 `as_of` 时点冻结的一组 Market Observation、规则引用和质量声明。
 _Avoid_: 最新行情、Market State、缓存副本
+
+**Market Snapshot Purpose**:
+使用一个 Market Snapshot 的明确边界，例如展示、研究、回测或执行；一种用途的可用性不自动提升为另一种用途的许可。
+_Avoid_: 线性数据等级、交易授权、Agent 偏好
+
+**Market Freshness**:
+在一个明确用途、Trading Date 与交易时段约束下，Market Observation 在 `as_of` 时点仍可被使用的时效结论。
+_Avoid_: 单纯墙钟延迟、最新数据、永远新鲜
+
+**Market Quality Issue**:
+关于一组 Market Observation 的可追溯缺失、陈旧、冲突、乱序、断层或来源可信度问题；它不等同于一次查询的失败结果。
+_Avoid_: 接口异常、主观置信度、Risk Decision
+
+**Dataset Manifest Reference**:
+标识生成某一 Market Snapshot 所用数据集版本、内容、schema 与修订的不可变引用。
+_Avoid_: 文件路径、最新数据集、隐式数据来源
 
 **Settlement Reference**:
 交易所或授权来源为特定 Instrument 与 Trading Date 发布的结算价格及关联规则事实。
