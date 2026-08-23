@@ -1,11 +1,11 @@
 # 跨对话交接
 
 文档版本：`2.1-proposed`  
-最后更新：2026-08-21
-当前阶段：V0 绿地项目地基已完成，待进入 V1
-最近完成：`V0-014` 自治授权、风险预留、日志与监督控制契约
+最后更新：2026-08-23
+当前阶段：V1 自主研究与机会雷达
+最近完成：`V1-001` Instrument/Variety/Exchange/Continuous Series 注册和解析
 当前开发任务：无
-建议下一步：执行 `V1-001`，实现 Instrument/Variety/Exchange/Continuous Series 注册和解析
+建议下一步：执行 `V1-002`，实现带有效期和来源追踪的 `ContractRuleVersion`
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-014` 已完成，V1–V5 任务仍为 `[ ]`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-014` 及 `V1-001` 已完成；下一任务为 `V1-002`。
 
 ## 设计资料状态
 
@@ -118,9 +118,13 @@
 
 2026-08-21 使用 `gpt-5.6-terra` / `high` 实现自治授权与风险预留契约，独立 `gpt-5.6-sol` / `high` 多轮验收并最终确认无 P0–P3。内存参考模型与 PostgreSQL 持久语义已对齐；授权、预算、健康、快照、并发、到期、撤销、投影重建、迁移往返和最小权限反例全部关闭。`make check` 通过（contract `118 passed`），真实 PostgreSQL 全量测试 `145 passed`。V0 Exit 成立：新仓库可独立启动、测试、迁移与恢复，无 donor 运行时依赖。
 
-## 下一任务：V1-001
+## 最近完成：V1-001
 
-实现 Instrument/Variety/Exchange/Continuous Series 注册和解析，严格区分研究连续序列与可交易合约。该任务按常规开发路由使用 Terra/medium。
+2026-08-23 使用 `gpt-5.6-terra` / `medium` 完成不可变、版本化的 Instrument Registry，独立 `gpt-5.6-terra` / `high` 最终复验无 P0–P3。首批 12 品种 synthetic contracts、交易所交割码、PIT 可见性、固定 release oracle、半开区间和 alias 冲突均已覆盖；Variety、Dominant 与 Continuous Series 不可进入可交易解析。`make check` 的 contract 为 `137 passed`，真实 PostgreSQL 全量测试为 `165 passed`。未接入外部行情、真实交易或 donor 运行时。
+
+## 下一任务：V1-002
+
+实现带有效期和来源追踪的 `ContractRuleVersion`：乘数、tick、保证金、手续费、涨跌停、交易时段、最后交易日、限仓和开平今。该任务涉及规则真值与资金计算边界，按安全关键路由使用 Terra/high，并安排独立复验。
 
 ## 固定工作流程
 

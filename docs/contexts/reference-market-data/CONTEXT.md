@@ -6,6 +6,10 @@
 
 ### Instruments and calendars
 
+**Exchange**:
+期货合约挂牌并定义其标识命名空间的交易所，例如 SHFE 或 DCE。
+_Avoid_: 市场、数据源、交易通道
+
 **Variety**:
 共享交易标的与基础制度的一组期货合约，例如铁矿石 I。
 _Avoid_: Instrument、板块、品种代码字符串
@@ -14,6 +18,14 @@ _Avoid_: Instrument、板块、品种代码字符串
 可被观察或交易的具体期货合约，具有唯一交易所、Variety 和到期标识。
 _Avoid_: Variety、Continuous Series、股票代码
 
+**Contract Delivery Code**:
+交易所赋予具体 Instrument 的到期标识。它是注册事实；三位代码不自行推断所属年代。
+_Avoid_: 当前年份推算的到期月、连续合约代码
+
+**Instrument Alias**:
+在明确交易所、有效区间、版本与来源下指向一个参考对象的外部标识。它不因字符串形状自动获得含义。
+_Avoid_: 永久代码、供应商默认映射
+
 **Contract Chain**:
 同一 Variety 按到期顺序排列的一组有效 Instrument。
 _Avoid_: Continuous Series、持仓组合、跨期策略
@@ -21,6 +33,10 @@ _Avoid_: Continuous Series、持仓组合、跨期策略
 **Dominant Contract**:
 在明确判定方法和有效区间下，被指定为某一 Variety 主要活跃合约的 Instrument。
 _Avoid_: Continuous Series、永远的主力、近月合约
+
+**Dominant Contract Reference**:
+在一个有效区间内把 Variety 指向具体 Instrument 的带来源主力映射。
+_Avoid_: 可交易的品种代码、Continuous Series、永久主力
 
 **Continuous Series**:
 按明确换月和调整规则拼接的研究价格序列，不是可直接成交的 Instrument。

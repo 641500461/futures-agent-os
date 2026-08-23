@@ -18,6 +18,25 @@ from .data_lake import (
     sha256_digest,
 )
 from .golden_datasets import validate_golden_dataset, write_golden_dataset
+from .instrument_registry import (
+    AliasMapping,
+    ContinuousAdjustment,
+    ContinuousSeries,
+    DominantContractReference,
+    EffectiveInterval,
+    Exchange,
+    Instrument,
+    InstrumentRegistry,
+    INITIAL_ACCEPTANCE_REGISTRY_ID,
+    INITIAL_ACCEPTANCE_REGISTRY_RELEASE_VERSION,
+    INITIAL_ACCEPTANCE_REGISTRY_SHA256,
+    ReferenceKind,
+    ReferenceProvenance,
+    Resolution,
+    Variety,
+    initial_acceptance_registry,
+    registry_content_sha256,
+)
 
 __all__ = [
     "ArtifactStore",
@@ -37,4 +56,21 @@ __all__ = [
     "sha256_digest",
     "validate_golden_dataset",
     "write_golden_dataset",
+    "AliasMapping",
+    "ContinuousAdjustment",
+    "ContinuousSeries",
+    "DominantContractReference",
+    "EffectiveInterval",
+    "Exchange",
+    "Instrument",
+    "InstrumentRegistry",
+    "INITIAL_ACCEPTANCE_REGISTRY_ID",
+    "INITIAL_ACCEPTANCE_REGISTRY_RELEASE_VERSION",
+    "INITIAL_ACCEPTANCE_REGISTRY_SHA256",
+    "ReferenceKind",
+    "ReferenceProvenance",
+    "Resolution",
+    "Variety",
+    "initial_acceptance_registry",
+    "registry_content_sha256",
 ]

@@ -1,7 +1,7 @@
 # 绿地版本路线图与可勾选任务
 
 版本：`2.1-proposed`  
-最后更新：2026-08-21
+最后更新：2026-08-23
 任务状态唯一来源：本文件
 
 ## 状态约定
@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：V0 已完成（`V0-001` 至 `V0-014`）；下一任务为 `V1-001`。
+当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001`；下一任务为 `V1-002`。
 
 ## 全局依赖原则
 
@@ -76,10 +76,10 @@ Exit：新仓库可独立启动和恢复；领域、Agent、Tool、数据、安�
 
 目标：Main、Market Regime、Research、Critic 和基础 Experiment Manager 除了回答用户问题，还能按 Trading Calendar、行情收盘、数据更新或市场事件主动扫描授权研究宇宙，形成可复现的机会候选与研究结果；本版本不产生交易副作用。
 
-- [ ] `V1-001` 实现 Instrument/Variety/Exchange/Continuous Series 注册和解析，严格区分研究连续序列与可交易合约。  
+- [x] `V1-001` 实现 Instrument/Variety/Exchange/Continuous Series 注册和解析，严格区分研究连续序列与可交易合约。
   Depends: V0。  
   Acceptance: 首批验收宇宙的别名、交易所和合约解析契约通过；Continuous Series 不能进入交易计划。  
-  Evidence: 待补。
+  Evidence: 2026-08-23 使用 `gpt-5.6-terra` / `medium` 实现不可变、版本化 Instrument Registry，并由独立 `gpt-5.6-terra` / `high` 反例审查至无 P0–P3。首批 AG/CU/RB/JM/I/MA/SA/M/P/SR/SC/JD 12 个 synthetic contract 均可按交易所规则解析；Alias 与 Dominant target 同时受 `acquired_at` PIT 门禁；SHFE/DCE/INE 四位、CZCE 三位交割码显式校验且不猜年代；Variety、Dominant、Continuous、8888/9999 均不能成为可交易目标。固定 registry id/version/content hash oracle、半开生效区间、重叠拒绝、Unicode/空白/畸形输入、不可变 snapshot 与并发读取均有契约/属性测试。`make check` 通过（contract `137 passed`），连接 PostgreSQL 的全量测试为 `165 passed`，health、Ruff、mypy、secret scan 与 diff check 通过；未接入外部行情、真实交易或 donor 运行时。
 - [ ] `V1-002` 实现带有效期的 `ContractRuleVersion` 和来源追踪：乘数、tick、保证金、手续费、涨跌停、交易时段、最后交易日、限仓、开平今。  
   Acceptance: 指定 Instrument 与 trading date 只能命中一个适用版本；缺失或冲突时返回稳定失败码。  
   Evidence: 待补。
