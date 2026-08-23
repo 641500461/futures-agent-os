@@ -323,6 +323,27 @@ def test_schedule_supersession_requires_the_same_touching_trading_date_scope() -
             (),
             trading_calendar_content_sha256((first, unrelated), (), ()),
         )
+    cross_date_closure = CalendarClosure(
+        Exchange.SHFE,
+        date(2026, 8, 26),
+        ClosureKind.SPECIAL_CLOSURE,
+        market_time("2026-08-20T08:00:00+08:00"),
+        2,
+        ReferenceProvenance(
+            "test://calendar", RecordedAt.parse("2026-08-20T00:00:00Z"), RecordedAt.parse("2026-08-20T00:00:00Z"), "v2"
+        ),
+        _revision(67),
+        (first.revision_id,),
+    )
+    with pytest.raises(ValueError, match="share an affected calendar date"):
+        TradingCalendar(
+            EntityId.new("trading_calendar"),
+            1,
+            (first,),
+            (cross_date_closure,),
+            (),
+            trading_calendar_content_sha256((first,), (cross_date_closure,), ()),
+        )
 
 
 def test_future_shortened_or_extended_schedule_correction_cannot_leak_into_prior_as_of() -> None:
