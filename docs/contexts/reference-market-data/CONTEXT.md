@@ -47,12 +47,28 @@ _Avoid_: Dominant Contract、真实合约、可交易代码
 _Avoid_: Calendar Date、自然日、结算时间
 
 **Trading Session**:
-某个 Instrument 在一个 Trading Date 内允许特定交易活动的时间区间。
-_Avoid_: K 线区间、系统运行时间、持仓周期
+某个明确 Variety 或 Instrument 在一个 Trading Date 内允许特定交易活动的时间区间；交易所相同不意味着时段相同。
+_Avoid_: 交易所级默认时段、K 线区间、系统运行时间、持仓周期
 
 **Trading Calendar**:
 交易所对 Trading Date、Trading Session、节假日和特殊休市安排的带版本事实集合。
 _Avoid_: 普通日历、Cron、市场是否活跃的猜测
+
+**Session Phase Occurrence**:
+一个在 Asia/Shanghai 时区内以明确起止时点给出的集合竞价、连续交易或休市阶段；它归属某一明确 Trading Date，不是按工作日重复的模板。
+_Avoid_: 固定开收盘时段、自然日推断、系统任务窗口
+
+**Calendar Closure**:
+交易所对一个明确 Calendar Date 发布的节假日或临时全日休市事实。
+_Avoid_: 没有来源的“周末不开盘”规则、策略暂停
+
+**Calendar Revision**:
+以唯一身份和来源可见时点记录的日历事实更正；它必须明确指出被替代的先前事实，使旧 as_of 可回放而不是按列表顺序选择最新值。
+_Avoid_: 就地覆盖、隐式闭市优先、最新记录优先
+
+**Calendar Reference Event**:
+发生在明确 Trading Date、只指向其他权威参考事实的日历事件，例如主力切换、临近交割或规则调整；它不拥有或解释被指向事实。
+_Avoid_: Dominant Contract、交割限制、Contract Rule
 
 ### Rules and observations
 
