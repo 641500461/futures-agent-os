@@ -60,6 +60,14 @@ _Avoid_: 普通日历、Cron、市场是否活跃的猜测
 在明确有效区间内适用于 Instrument 或 Variety 的交易、费用、保证金和交割约束集合。
 _Avoid_: 永久参数、默认保证金、Risk Policy
 
+**Contract Rule Version**:
+带唯一版本、适用 Trading Date 区间与来源说明的一组不可变 Contract Rule 事实；后续修订创建新版本，而不改写历史版本。
+_Avoid_: 当前默认参数、Risk Policy、可变配置项
+
+**Rule Resolution**:
+在指定 Instrument、Trading Date 和 as_of 下选出的唯一可见 Contract Rule Version 及其来源证据。
+_Avoid_: 最新规则、金额计算结果、风险许可
+
 **Contract Status**:
 Instrument 在指定时点是否可挂牌、开仓、平仓、停牌或进入交割限制期的交易所状态。
 _Avoid_: Market State、策略暂停、流动性判断

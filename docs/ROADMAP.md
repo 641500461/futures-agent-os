@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001`；下一任务为 `V1-002`。
+当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-002`；下一任务为 `V1-003`。
 
 ## 全局依赖原则
 
@@ -80,9 +80,9 @@ Exit：新仓库可独立启动和恢复；领域、Agent、Tool、数据、安�
   Depends: V0。  
   Acceptance: 首批验收宇宙的别名、交易所和合约解析契约通过；Continuous Series 不能进入交易计划。  
   Evidence: 2026-08-23 使用 `gpt-5.6-terra` / `medium` 实现不可变、版本化 Instrument Registry，并由独立 `gpt-5.6-terra` / `high` 反例审查至无 P0–P3。首批 AG/CU/RB/JM/I/MA/SA/M/P/SR/SC/JD 12 个 synthetic contract 均可按交易所规则解析；Alias 与 Dominant target 同时受 `acquired_at` PIT 门禁；SHFE/DCE/INE 四位、CZCE 三位交割码显式校验且不猜年代；Variety、Dominant、Continuous、8888/9999 均不能成为可交易目标。固定 registry id/version/content hash oracle、半开生效区间、重叠拒绝、Unicode/空白/畸形输入、不可变 snapshot 与并发读取均有契约/属性测试。`make check` 通过（contract `137 passed`），连接 PostgreSQL 的全量测试为 `165 passed`，health、Ruff、mypy、secret scan 与 diff check 通过；未接入外部行情、真实交易或 donor 运行时。
-- [ ] `V1-002` 实现带有效期的 `ContractRuleVersion` 和来源追踪：乘数、tick、保证金、手续费、涨跌停、交易时段、最后交易日、限仓、开平今。  
+- [x] `V1-002` 实现带有效期的 `ContractRuleVersion` 和来源追踪：乘数、tick、保证金、手续费、涨跌停、交易时段、最后交易日、限仓、开平今。
   Acceptance: 指定 Instrument 与 trading date 只能命中一个适用版本；缺失或冲突时返回稳定失败码。  
-  Evidence: 待补。
+  Evidence: 2026-08-23 按规则真值安全边界使用 `gpt-5.6-terra` / `high` 实现，并由独立 `gpt-5.6-terra` / `high` 对抗验收至无 P0–P3。新增不可变、Instrument 精确作用域的完整 `ContractRuleVersion`、双时维 `resolve(instrument, trading_date, as_of)`、release/rule content hash 与历史 `RuleSetRef`；明确不做 Exchange/Variety 字段继承或跨版本拼接。乘数、tick、最小量、保证金、开/平/平今费、涨跌停、sessions、最后交易日、交割限制、持仓/交易限额和 offset 规则均为完整显式事实；Decimal、scale、`<underlying>/lot` 与 `<currency>/<underlying>` 单位维度严格校验。缺失、冲突、未来不可见分别稳定返回 `RULE_MISSING/RULE_CONFLICT/REFERENCE_NOT_YET_VISIBLE`，半开区间、provenance、不可变并发和畸形输入有契约/属性回归。`make check` 通过（contract `146 passed`），连接 PostgreSQL 的全量测试为 `176 passed`，Ruff、mypy、secret scan、health 与 diff check 通过；未实现交易日推导、资金计算、外部规则源或交易副作用。
 - [ ] `V1-003` 实现交易日历与 `trading_date` 服务，覆盖夜盘、节假日、主力切换、临近交割和规则临时调整。  
   Acceptance: 上期所、大商所、郑商所和中金所代表性夜盘/节假日边界测试通过。  
   Evidence: 待补。
