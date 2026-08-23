@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-002`；下一任务为 `V1-003`。
+当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-003`；下一任务为 `V1-004`。
 
 ## 全局依赖原则
 
@@ -83,9 +83,9 @@ Exit：新仓库可独立启动和恢复；领域、Agent、Tool、数据、安�
 - [x] `V1-002` 实现带有效期的 `ContractRuleVersion` 和来源追踪：乘数、tick、保证金、手续费、涨跌停、交易时段、最后交易日、限仓、开平今。
   Acceptance: 指定 Instrument 与 trading date 只能命中一个适用版本；缺失或冲突时返回稳定失败码。  
   Evidence: 2026-08-23 按规则真值安全边界使用 `gpt-5.6-terra` / `high` 实现，并由独立 `gpt-5.6-terra` / `high` 对抗验收至无 P0–P3。新增不可变、Instrument 精确作用域的完整 `ContractRuleVersion`、双时维 `resolve(instrument, trading_date, as_of)`、release/rule content hash 与历史 `RuleSetRef`；明确不做 Exchange/Variety 字段继承或跨版本拼接。乘数、tick、最小量、保证金、开/平/平今费、涨跌停、sessions、最后交易日、交割限制、持仓/交易限额和 offset 规则均为完整显式事实；Decimal、scale、`<underlying>/lot` 与 `<currency>/<underlying>` 单位维度严格校验。缺失、冲突、未来不可见分别稳定返回 `RULE_MISSING/RULE_CONFLICT/REFERENCE_NOT_YET_VISIBLE`，半开区间、provenance、不可变并发和畸形输入有契约/属性回归。`make check` 通过（contract `146 passed`），连接 PostgreSQL 的全量测试为 `176 passed`，Ruff、mypy、secret scan、health 与 diff check 通过；未实现交易日推导、资金计算、外部规则源或交易副作用。
-- [ ] `V1-003` 实现交易日历与 `trading_date` 服务，覆盖夜盘、节假日、主力切换、临近交割和规则临时调整。  
+- [x] `V1-003` 实现交易日历与 `trading_date` 服务，覆盖夜盘、节假日、主力切换、临近交割和规则临时调整。
   Acceptance: 上期所、大商所、郑商所和中金所代表性夜盘/节假日边界测试通过。  
-  Evidence: 待补。
+  Evidence: 2026-08-23 按时间归属安全边界使用 `gpt-5.6-terra` / `high` 实现，并由独立 `gpt-5.6-terra` / `high` 多轮对抗验收至无 P0–P3。新增不可变、版本化、Variety 精确作用域的 PIT `TradingCalendar/TradingDateService`，补齐 CFFEX；SHFE/DCE/CZCE 的代表性夜盘与四所日盘、集合竞价、午休、节假日、临时休市和提前收市均由显式 Asia/Shanghai session occurrence 绑定 TradingDate，不使用自然日或下一个工作日猜测。日历 revision 以不可变 ID 和显式 supersedes 建模，可按 `as_of` 重放 open→closure→reopen；future correction、可变集合、跨品种/跨日期 supersession、半开边界、错误时区、冲突和并发均 fail closed。主力切换、近交割和规则调整只保存跨 owner 引用，不在日历内解释或改变交易对象。固定 synthetic release id/version/hash oracle 已锁定。`make check` 通过（contract `161 passed`），连接 PostgreSQL 的全量测试为 `193 passed`，Ruff、mypy、secret scan、health 与 diff check 通过；未接入官方日历源、调度器或交易副作用。
 - [ ] `V1-004` 实现 point-in-time `MarketSnapshot`、数据新鲜度/完整性/冲突检测和稳定 reason code。  
   Acceptance: 缺失、陈旧、乱序或未来泄漏数据不会被静默采用。  
   Evidence: 待补。

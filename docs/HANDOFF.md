@@ -3,9 +3,9 @@
 文档版本：`2.1-proposed`  
 最后更新：2026-08-23
 当前阶段：V1 自主研究与机会雷达
-最近完成：`V1-002` 带有效期和来源追踪的 `ContractRuleVersion`
+最近完成：`V1-003` 版本化 PIT 交易日历与 `trading_date` 服务
 当前开发任务：无
-建议下一步：执行 `V1-003`，实现交易日历与 `trading_date` 服务
+建议下一步：执行 `V1-004`，实现 point-in-time `MarketSnapshot` 与数据质量判定
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-014` 及 `V1-001` 至 `V1-002` 已完成；下一任务为 `V1-003`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-014` 及 `V1-001` 至 `V1-003` 已完成；下一任务为 `V1-004`。
 
 ## 设计资料状态
 
@@ -126,9 +126,13 @@
 
 2026-08-23 使用 `gpt-5.6-terra` / `high` 完成 Instrument 精确作用域、不可变且双时维的 `ContractRuleVersion` 与 `RuleSetRef`，独立 `gpt-5.6-terra` / `high` 最终复验无 P0–P3。完整规则集显式包含乘数、tick、最小量、保证金、开/平/平今费、涨跌停、sessions、最后交易日、交割限制、持仓/交易限额和 offset 规则；禁止字段继承、拼接、永久默认值和未来泄漏。`make check` 的 contract 为 `146 passed`，真实 PostgreSQL 全量测试为 `176 passed`。未实现 V1-003 日历推导、V2 资金计算、外部规则接入或交易副作用。
 
-## 下一任务：V1-003
+## 最近完成：V1-003
 
-实现版本化交易日历与 `trading_date` 服务，覆盖上期所、大商所、郑商所和中金所的代表性夜盘、节假日及临时调整边界。该任务决定市场事实的业务日期，按安全关键路由使用 Terra/high，并安排独立复验。
+2026-08-23 使用 `gpt-5.6-terra` / `high` 完成 Variety 精确作用域、不可变且支持显式修订链的 PIT `TradingCalendar/TradingDateService`，独立 `gpt-5.6-terra` / `high` 最终复验无 P0–P3。四所代表性夜/日盘、竞价、午休、节假日、临时休市和早收均由显式 occurrence 归属 TradingDate；open→closure→reopen 可按历史 `as_of` 重放，未来修订不改变旧结果。`make check` 的 contract 为 `161 passed`，真实 PostgreSQL 全量测试为 `193 passed`。未接入官方日历数据、scheduler 或交易副作用。
+
+## 下一任务：V1-004
+
+实现 point-in-time `MarketSnapshot`、数据新鲜度/完整性/冲突检测和稳定 reason code。该任务决定后续研究数据是否可用，按安全关键路由使用 Terra/high，并安排独立复验。
 
 ## 固定工作流程
 

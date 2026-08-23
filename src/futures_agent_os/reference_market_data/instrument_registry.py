@@ -26,10 +26,17 @@ class Exchange(StrEnum):
     SHFE = "SHFE"
     DCE = "DCE"
     CZCE = "CZCE"
+    CFFEX = "CFFEX"
     INE = "INE"
 
 
-_DELIVERY_LENGTH = {Exchange.SHFE: 4, Exchange.DCE: 4, Exchange.CZCE: 3, Exchange.INE: 4}
+_DELIVERY_LENGTH = {
+    Exchange.SHFE: 4,
+    Exchange.DCE: 4,
+    Exchange.CZCE: 3,
+    Exchange.CFFEX: 4,
+    Exchange.INE: 4,
+}
 _INITIAL_ACCEPTANCE_RELEASED_AT = RecordedAt.parse("2026-02-21T00:00:00Z")
 INITIAL_ACCEPTANCE_REGISTRY_ID = EntityId.parse("instrument_registry_018f9b16-9a00-7abe-8000-000000000015")
 INITIAL_ACCEPTANCE_REGISTRY_RELEASE_VERSION = 1
