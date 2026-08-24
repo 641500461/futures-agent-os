@@ -14,6 +14,7 @@ from .observability import (
     IdempotencyOutcome,
     IdempotentCommand,
     TraceContext,
+    canonical_json_text,
     canonical_sha256,
 )
 from .time import RecordedAt, ShanghaiTimestamp, TradingDate
@@ -43,4 +44,5 @@ __all__ = [
     "TradingDate",
     "TraceContext",
     "canonical_sha256",
+    "canonical_json_text",
 ]

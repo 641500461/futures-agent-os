@@ -45,12 +45,27 @@ def canonical_sha256(value: JsonValue) -> str:
     """Hash canonical JSON so replay comparisons do not depend on key order."""
 
     try:
-        encoded = json.dumps(
+        encoded = canonical_json_text(value)
+    except (TypeError, ValueError) as error:
+        raise ValueError("value must be finite JSON-compatible data") from error
+    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
+
+
+def canonical_json_text(value: JsonValue) -> str:
+    """The byte contract used by durable V1 workflow source facts.
+
+    PostgreSQL deliberately verifies the supplied UTF-8 bytes and digest rather
+    than attempting to hash ``jsonb::text``: PostgreSQL's renderer has a
+    different whitespace and Unicode policy.  Callers may only supply values
+    accepted by this function (mappings and tuples; mutable lists/Decimal are
+    rejected), then store this exact string alongside the derived JSONB.
+    """
+    try:
+        return json.dumps(
             _canonical_json_value(value), sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False
         )
     except (TypeError, ValueError) as error:
         raise ValueError("value must be finite JSON-compatible data") from error
-    return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
 def _canonical_json_value(value: JsonValue) -> object:

@@ -36,6 +36,19 @@ from .market_regime_agent import (
     MarketRegimeTaskSources,
 )
 from .research_agent import ResearchAgent, ResearchAgentResult, ResearchTaskSources
+from .workflow import (
+    AutonomyCycle,
+    CycleTrigger,
+    DelegationPlan,
+    DelegationStep,
+    DecisionEpisode,
+    MainAgent,
+    PostgresWorkflowRepository,
+    WorkflowOrchestrator,
+    WorkflowTask,
+    WorkflowTaskResult,
+    WorkflowTaskStatus,
+)
 
 __all__ = [
     "AGENT_CATALOG",
@@ -68,4 +81,15 @@ __all__ = [
     "ResearchAgent",
     "ResearchAgentResult",
     "ResearchTaskSources",
+    "AutonomyCycle",
+    "CycleTrigger",
+    "DelegationPlan",
+    "DelegationStep",
+    "DecisionEpisode",
+    "MainAgent",
+    "PostgresWorkflowRepository",
+    "WorkflowOrchestrator",
+    "WorkflowTask",
+    "WorkflowTaskResult",
+    "WorkflowTaskStatus",
 ]

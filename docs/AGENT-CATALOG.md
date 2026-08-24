@@ -1,15 +1,15 @@
 # Versioned Agent Catalog and bounded collaboration protocol
 
-Version: `1.0`  
-Status: V0 contract baseline
+Version: `1.3`
+Status: V1-008 catalog contract
 
-`src/futures_agent_os/agent_orchestration/catalog.py` is the machine-readable source of this catalog. It defines the twelve logical roles, their version, enablement version, responsibility boundary, all five trigger origins, input/output artifact types, declared tools, budget, failure disposition and metrics. It is not an activation record or an executable permission grant.
+`src/futures_agent_os/agent_orchestration/catalog.py` is the machine-readable source of this catalog. It defines the twelve logical roles, their version, enablement version, responsibility boundary, all six trigger origins, input/output artifact types, declared tools, budget, failure disposition and metrics. It is not an activation record or an executable permission grant.
 
 | Role | Enabled from | Primary output | Failure disposition |
 | --- | --- | --- | --- |
-| Main / Autonomous Quant PM | V1 | `research_brief`, `trade_plan_draft`, `decision_digest` | `DEFER` |
+| Main / Autonomous Quant PM | V1 | `research_brief`, `decision_digest` | `DEFER` |
 | Market Regime | V1 | `market_state_assessment` | `DEFER` |
-| Research | V1 | `hypothesis`, `research_plan`, `evidence_synthesis` | `KEEP_DRAFT` |
+| Research | V1 | `hypothesis`, `evidence_synthesis`, `experiment_request` | `KEEP_DRAFT` |
 | Strategy | V3 | `strategy_candidate`, `trade_plan_draft` | `DEFER` |
 | Portfolio | V3 | `portfolio_proposal` | `FAIL_CLOSED` |
 | Risk Analyst | V3 | `risk_assessment` | `FAIL_CLOSED` |
@@ -20,7 +20,7 @@ Status: V0 contract baseline
 | Memory Curator | V4 | `lesson_candidate` | `KEEP_EXISTING_STATE` |
 | Governance | V4; Steward mode V5 | `change_proposal` | `QUARANTINE_CANDIDATE` |
 
-Every role documents user, schedule, market/data, account/position and system/lifecycle trigger origins. The exact examples are intentionally broad: the deterministic Workflow Orchestrator determines whether a concrete trigger creates a task, enforces lifecycle, retries, cancellation, deadline and recovery. Main coordinates decision work; it neither schedules work nor grants authority. No role is a permanent process merely by existing in this catalog.
+Every role documents user, schedule, market, explicit `DATA`, account/position and system/lifecycle trigger origins. The exact examples are intentionally broad: the deterministic Workflow Orchestrator determines whether a concrete trigger creates a task, enforces lifecycle, retries, cancellation, deadline and recovery. In V1-008 Main coordinates only the observe/research graph; it neither schedules work, grants authority, nor creates `TradePlan`/`StrategyCandidate`. No role is a permanent process merely by existing in this catalog.
 
 ## Contract boundaries
 

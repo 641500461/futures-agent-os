@@ -14,7 +14,7 @@ from typing import Mapping, Protocol
 from futures_agent_os.shared_kernel import EntityId, RecordedAt, SchemaVersion, canonical_sha256
 from futures_agent_os.shared_kernel.observability import JsonValue
 
-from .catalog import AgentRoleId, CATALOG_VERSION, validate_task_envelope
+from .catalog import AgentRoleId, definition_for, validate_task_envelope
 from .contracts import AgentTaskEnvelope, ArtifactClaim, ArtifactKind, ArtifactRef, StructuredArtifact
 
 
@@ -229,7 +229,10 @@ class ResearchAgent:
     ) -> ResearchAgentResult:
         if not isinstance(task, AgentTaskEnvelope) or not isinstance(sources, ResearchTaskSources):
             raise TypeError("research packaging requires a task and immutable task sources")
-        if task.assigned_role_id != AgentRoleId.RESEARCH.value or task.catalog_version != CATALOG_VERSION:
+        if (
+            task.assigned_role_id != AgentRoleId.RESEARCH.value
+            or task.catalog_version != definition_for(AgentRoleId.RESEARCH.value, task.catalog_version).version
+        ):
             raise ValueError("research task role or catalog version is invalid")
         expected_outputs = (ArtifactKind.HYPOTHESIS, ArtifactKind.EVIDENCE_SYNTHESIS, ArtifactKind.EXPERIMENT_REQUEST)
         if task.required_outputs != expected_outputs:

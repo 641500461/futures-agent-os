@@ -1,11 +1,11 @@
 # 跨对话交接
 
 文档版本：`2.1-proposed`  
-最后更新：2026-08-24
+最后更新：2026-08-25
 当前阶段：V1 自主研究与机会雷达
-最近完成：`V1-007` 只读 Research Agent 与可证伪研究产物
+最近完成：`V1-008` 只读 Main、持久 Workflow Orchestrator 与可重放研究周期
 当前开发任务：无
-建议下一步：执行 `V1-008`，实现只读 Main Agent、持久 Workflow Orchestrator 与可重放研究周期
+建议下一步：执行 `V1-009`，实现研究版 Pre-trade Critic
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-014` 及 `V1-001` 至 `V1-007` 已完成；下一任务为 `V1-008`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-014` 及 `V1-001` 至 `V1-008` 已完成；下一任务为 `V1-009`。
 
 ## 设计资料状态
 
@@ -146,9 +146,13 @@
 
 2026-08-24 使用 `gpt-5.6-terra` / `high` 完成只读 Research Agent，独立 `gpt-5.6-sol` / `high` 四轮对抗验收最终无 P0–P3。Research & Experiment 以不可变、内容寻址的 `Hypothesis`、`EvidenceSynthesis` 与非执行 `ExperimentRequest` 消费精确 `MarketStateAssessment` 谱系；Hypothesis 显式包含适用市场、可观察结果、反证、所需数据、提出来源和完整七态生命周期，但 V1-007 只能创建/封装 `DRAFT`。实验请求固定数据、对照、评估窗口、方法、指标、诊断、停止条件和潜在偏差；显式空的 known/unknown/conflict/gap 不会被迫伪造。Catalog 升至 1.2 并仅声明本任务实际支持的 MarketStateAssessment 输入；封闭 duck-port schema、严格类型、深冻结、spec/source identity、跨 artifact 一致性与重放哈希均有真实反例。实现 commit 为 `5ee47cb`；`make check` 通过（contract `208 passed`、property `9 passed`、mypy `47` source files），连接隔离 PostgreSQL 的全量测试为 `243 passed`。没有模型升级；确定性测试与 Sol/high reviewer 而非模型输出裁决了 lifecycle owner、空冲突语义、bool-as-int、隐藏 authority 字段和数据谱系漂移。未实现实验执行、LLM/持久 AgentRun、用户观点/Reflection adapter、StrategyCandidate 或任何交易副作用。
 
-## 下一任务：V1-008
+## 最近完成：V1-008
 
-实现只读 Autonomous Quant PM / Main Agent、确定性持久 Workflow Orchestrator、`AutonomyCycle/DecisionEpisode` 与 DecisionJournal 基础投影，支持触发、typed delegation、fan-out/fan-in、取消、超时、预算和跨进程恢复。按跨上下文持久编排与幂等边界使用 Terra/high，并安排独立验收。
+2026-08-25 使用 `gpt-5.6-terra` / `high` 完成只读 Main、持久 Workflow Orchestrator、`AutonomyCycle/DecisionEpisode` 与 DecisionJournal 基础投影，独立 `gpt-5.6-sol` / `high` 多轮并发与故障验收最终无 P0–P3。用户、时间表、市场/数据事件触发具备规范 hash 与持久幂等；typed plan/task、租约 fencing、预算、超时、取消及实际 artifact fan-in 可跨进程恢复。并发首次精确写入仅产生一套 task，非精确重试拒绝；DecisionJournal 从 episode 绑定的追加式源事件增量重建并保留 DECISION_TIME/POST_HOC。实现 commit 为 `8be2e36`；`make check` 通过（contract `215 passed`、property `9 passed`、mypy `48` source files），真实 PostgreSQL 全量为 `266 passed`，8 项迁移往返通过。没有 LLM 调用或交易副作用。
+
+## 下一任务：V1-009
+
+实现研究版 Pre-trade Critic，检查反证、数据泄漏、成本覆盖、样本适用性和结论强度；高严重度未解决项必须 `DEFER`，迭代次数有上限。按确定性研究门禁与 Agent 权限边界选择模型，并安排独立验收。
 
 ## 固定工作流程
 

@@ -18,9 +18,12 @@ _SHA256 = re.compile(r"^sha256:[0-9a-f]{64}$")
 
 
 class TriggerSource(StrEnum):
+    """Catalog 1.3 adds DATA without silently reinterpreting earlier tasks."""
+
     USER = "USER"
     SCHEDULE = "SCHEDULE"
     MARKET = "MARKET"
+    DATA = "DATA"
     ACCOUNT = "ACCOUNT"
     SYSTEM = "SYSTEM"
 
@@ -95,8 +98,35 @@ class ArtifactRef:
     as_of: RecordedAt
 
     def __post_init__(self) -> None:
+        if (
+            type(self.artifact_id) is not EntityId
+            or type(self.artifact_kind) is not ArtifactKind
+            or type(self.schema_version) is not SchemaVersion
+            or type(self.created_at) is not RecordedAt
+            or type(self.as_of) is not RecordedAt
+        ):
+            raise TypeError("artifact references require exact typed immutable values")
         if not _SHA256.fullmatch(self.content_hash):
             raise ValueError("artifact content_hash must be a canonical sha256 digest")
+        # ``artifact`` remains the generic opaque evidence namespace used by
+        # older contracts; concrete contexts can use their own durable IDs.
+        # Arbitrary identities (for example a trade/order ID masquerading as
+        # research evidence) are never valid artifact references.
+        allowed_namespaces = {
+            "artifact",
+            "dataset",
+            "feature_observation",
+            "market_snapshot",
+            "market_state_assessment",
+            "regime_assessment",
+            "hypothesis",
+            "evidence_synthesis",
+            "experiment_request",
+            "research_synthesis",
+            "signal_result",
+        }
+        if self.artifact_id.namespace not in allowed_namespaces:
+            raise ValueError("artifact reference has an invalid identity namespace")
         if self.as_of.value > self.created_at.value:
             raise ValueError("artifact as_of cannot be after created_at")
 
