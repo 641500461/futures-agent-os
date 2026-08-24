@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-005`；下一任务为 `V1-006`。
+当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-006`；下一任务为 `V1-007`。
 
 ## 全局依赖原则
 
@@ -92,9 +92,9 @@ Exit：新仓库可独立启动和恢复；领域、Agent、Tool、数据、安�
 - [x] `V1-005` 实现版本化 Feature Engine 和确定性 Regime/Signal Model Service。
   Acceptance: 特征输入、窗口、版本和快照可重现；模型输出不被当作交易许可。  
   Evidence: 2026-08-24 按 point-in-time 与模型完整性边界使用 `gpt-5.6-terra` / `high` 实现，并由独立 `gpt-5.6-sol` / `high` 以 15 组真实反例多轮验收至无 P0–P3。Research & Experiment 拥有版本化 `FeatureDefinition/FeatureSpec` 与 `SignalDefinition/SignalModelSpec/Signal`，Market Intelligence 拥有不可变 `FeatureObservation` 与确定性 `RegimeAssessment`；所有计算绑定用途、唯一市场引用、精确 ObservationKind、快照/记录 hash、窗口、cadence、session、scale、算法和模型版本，使用固定 Decimal context，拒绝未来、跨 session、跨 reference、缺口、未完成 Bar、未知版本、重复证据和伪造 lineage。Regime 分别记录 return/volatility/liquidity 正反证据与未知项；Signal 通过深冻结 anti-corruption evidence ref 消费特征，重放 content hash 不依赖随机实体 ID。所有模型产物固定为 `NON_TRADING`，静态契约禁止依赖 Decision/Risk/Execution/Accounting 权威对象。`make check` 通过（contract `184 passed`、property `9 passed`），连接隔离 PostgreSQL 的全量测试为 `219 passed`，Ruff、mypy、secret scan、health 与 diff check 通过。当前单 component `MarketSnapshot` 无法安全表达跨换月连续历史、期限结构和基差，相关能力显式 fail closed 并留待其 PIT 证据模型任务，不虚构完成；未接入外部行情、Agent 或交易副作用。
-- [ ] `V1-006` 实现 Market Regime Agent，输出带正反证据和不确定性的 `MarketStateAssessment`。  
+- [x] `V1-006` 实现 Market Regime Agent，输出带正反证据和不确定性的 `MarketStateAssessment`。
   Acceptance: 输出通过 schema，引用不可变快照和特征版本；不能生成 TradePlan、RiskDecision 或 Order。  
-  Evidence: 待补。
+  Evidence: 2026-08-24 按 Agent/市场解释边界使用 `gpt-5.6-terra` / `high` 实现，并由独立 `gpt-5.6-sol` / `high` 多轮反例验收至无 P0–P3。Market Intelligence 以纯、版本化 Composer 消费 V1-005 的不可变 `MarketSnapshotRef`、完整 `FeatureObservation` lineage 与确定性 `RegimeAssessment`，输出 `MarketStateAssessment`：保留全部候选、冲突、正反证据、未知项、替代解释、有效期和转换风险；只有具备正向证据的唯一最高候选可成为主状态，反证-only/unknown-only 明确无主状态且风险为 `UNKNOWN`。Agent Orchestration 仅依赖 task/artifact ports，Catalog 显式升级至 `1.1` 并新增三类只读输入 artifact；adapter 将裸 hash 严格转换为 `sha256:`、逐项核验角色/版本/工具/输出/时间/快照/特征/Regime 谱系，深冻结并独立复算 payload hash，再生成每条 claim 均有 source refs 的 `StructuredArtifact`，不完整输入只可 `DEFERRED`。重复 lineage、错快照、额外特征、过期或变异 payload、证据语义漂移及 caller-owned mutable duck 均 fail closed。输出固定 `NON_TRADING`，静态契约禁止依赖 Decision/Portfolio & Risk/Execution/Accounting 交易权威对象。`make check` 通过（contract `187 passed`、property `9 passed`、mypy `45` source files），连接隔离 PostgreSQL 的全量测试为 `222 passed`，Ruff、secret scan、health 与 diff check 通过；未实现外部新闻/期限结构、LLM 调度、持久 AgentRun、Research Agent 或交易副作用。
 - [ ] `V1-007` 实现 Research Agent，输出可证伪 `Hypothesis`、未知项、证据缺口和 `ExperimentRequest`。  
   Acceptance: Research Agent 没有交易、审批、晋升或账本权限。  
   Evidence: 待补。

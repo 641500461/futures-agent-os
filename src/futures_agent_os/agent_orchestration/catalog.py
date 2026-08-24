@@ -61,7 +61,10 @@ class AgentDefinition:
             raise ValueError("each logical role must document all supported trigger sources")
 
 
-CATALOG_VERSION = SchemaVersion(1, 0)
+# V1-006 adds typed market-artifact inputs to the Market Regime role.  This is
+# a breaking catalog-contract change, so tasks under the prior 1.0 catalog are
+# deliberately not silently reinterpreted as 1.1 tasks.
+CATALOG_VERSION = SchemaVersion(1, 1)
 _ALL_TRIGGERS = tuple(TriggerSource)
 _READ_BUDGET = AgentBudget(4, 16, 12_000, 120)
 _RESEARCH_BUDGET = AgentBudget(6, 24, 18_000, 300, 2)
@@ -126,7 +129,12 @@ AGENT_CATALOG: tuple[AgentDefinition, ...] = (
         "V1",
         "assess market regime and its uncertainty",
         "does not produce a trade direction or plan",
-        (ArtifactKind.RESEARCH_BRIEF,),
+        (
+            ArtifactKind.RESEARCH_BRIEF,
+            ArtifactKind.MARKET_SNAPSHOT,
+            ArtifactKind.FEATURE_OBSERVATION,
+            ArtifactKind.REGIME_ASSESSMENT,
+        ),
         (ArtifactKind.MARKET_STATE_ASSESSMENT,),
         ("market_snapshot", "feature_query", "regime_analysis", "news_evidence_query"),
         FailureDisposition.DEFER,

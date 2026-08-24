@@ -9,6 +9,7 @@ import pytest
 
 from futures_agent_os.agent_orchestration import (
     AGENT_CATALOG,
+    CATALOG_VERSION,
     SimulationEnvironment,
     ToolAuthorizationOutcome,
     ToolAuthorizer,
@@ -21,7 +22,7 @@ from futures_agent_os.governance_registry import TOOL_REGISTRY, TOOL_REGISTRY_VE
 from futures_agent_os.shared_kernel import EntityId, ReasonCode, RecordedAt, SchemaVersion, TraceContext
 
 
-V1 = SchemaVersion(1, 0)
+TOOL_V1 = SchemaVersion(1, 0)
 
 
 def _at(minutes: int = 0) -> RecordedAt:
@@ -47,9 +48,9 @@ def _request(**changes: object) -> ToolCallRequest:
         "call_id": EntityId.new("tool_call"),
         "agent_role_id": "main",
         "node_id": "agent_worker_a",
-        "catalog_version": V1,
+        "catalog_version": CATALOG_VERSION,
         "registry_version": TOOL_REGISTRY_VERSION,
-        "tool_ref": ToolRef("request_authorization_preflight", V1),
+        "tool_ref": ToolRef("request_authorization_preflight", TOOL_V1),
         "scope": _scope(),
         "called_at": _at(10),
         "correlation_id": correlation_id,
@@ -64,9 +65,9 @@ def _grant(**changes: object) -> ToolGrant:
         "grant_id": EntityId.new("tool_grant"),
         "grantee_role_id": "main",
         "grantee_node_id": "agent_worker_a",
-        "catalog_version": V1,
+        "catalog_version": CATALOG_VERSION,
         "registry_version": TOOL_REGISTRY_VERSION,
-        "tool_refs": frozenset({ToolRef("request_authorization_preflight", V1)}),
+        "tool_refs": frozenset({ToolRef("request_authorization_preflight", TOOL_V1)}),
         "max_permission_tier": ToolPermissionTier.MANDATE_SCOPED_SIMULATION,
         "scope": _scope(),
         "status": ToolGrantStatus.ACTIVE,
@@ -89,7 +90,7 @@ def test_registry_covers_every_permission_tier_and_resolves_exact_versions_only(
     assert {tool for role in AGENT_CATALOG for tool in role.declared_tools} <= {
         definition.ref.tool_id for definition in TOOL_REGISTRY.definitions
     }
-    assert TOOL_REGISTRY.resolve_exact(ToolRef("market_snapshot", V1)) is not None
+    assert TOOL_REGISTRY.resolve_exact(ToolRef("market_snapshot", TOOL_V1)) is not None
     assert TOOL_REGISTRY.resolve_exact(ToolRef("market_snapshot", SchemaVersion(1, 1))) is None
     assert TOOL_REGISTRY.has_tool_id("market_snapshot")
 
@@ -105,7 +106,7 @@ def test_registry_owners_follow_bounded_context_ownership_and_risk_check_is_prev
     assert owners["trade_replay"] == "Learning & Review"
     assert owners["autonomy_mandate_status"] == "Decision"
     assert owners["registry_query"] == "Governance & Registry"
-    risk_check = TOOL_REGISTRY.resolve_exact(ToolRef("risk_check", V1))
+    risk_check = TOOL_REGISTRY.resolve_exact(ToolRef("risk_check", TOOL_V1))
     assert risk_check is not None
     assert risk_check.owner_context == "Portfolio & Risk"
     assert "Non-authoritative" in risk_check.description and "RiskDecision" in risk_check.description
@@ -153,14 +154,14 @@ def test_registry_and_catalog_version_drift_fail_closed_before_grant_matching() 
         is ReasonCode.TOOL_VERSION_MISMATCH
     )
     assert (
-        _reason(authorizer, _request(catalog_version=SchemaVersion(1, 1))) is ReasonCode.TOOL_CATALOG_VERSION_MISMATCH
+        _reason(authorizer, _request(catalog_version=SchemaVersion(1, 0))) is ReasonCode.TOOL_CATALOG_VERSION_MISMATCH
     )
     assert (
         _reason(authorizer, _request(registry_version=SchemaVersion(1, 1))) is ReasonCode.TOOL_REGISTRY_VERSION_MISMATCH
     )
     assert (
         _reason(
-            ToolAuthorizer(TOOL_REGISTRY, (_grant(catalog_version=SchemaVersion(1, 1)),)),
+            ToolAuthorizer(TOOL_REGISTRY, (_grant(catalog_version=SchemaVersion(1, 0)),)),
             _request(),
         )
         is ReasonCode.TOOL_CATALOG_VERSION_MISMATCH
@@ -221,7 +222,7 @@ def test_governed_artifact_scope_rejects_cross_artifact_and_allows_governance_gr
     promotion_grant = _grant(
         max_permission_tier=ToolPermissionTier.PROMOTION,
         scope=governance_scope,
-        tool_refs=frozenset({ToolRef("submit_improvement_proposal", V1)}),
+        tool_refs=frozenset({ToolRef("submit_improvement_proposal", TOOL_V1)}),
     )
 
     assert promotion_grant.scope.contains(governance_scope)

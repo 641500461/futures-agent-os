@@ -43,6 +43,9 @@ class ResultStatus(StrEnum):
 
 
 class ArtifactKind(StrEnum):
+    MARKET_SNAPSHOT = "market_snapshot"
+    FEATURE_OBSERVATION = "feature_observation"
+    REGIME_ASSESSMENT = "regime_assessment"
     RESEARCH_BRIEF = "research_brief"
     MARKET_STATE_ASSESSMENT = "market_state_assessment"
     HYPOTHESIS = "hypothesis"
