@@ -3,9 +3,9 @@
 文档版本：`2.1-proposed`  
 最后更新：2026-08-24
 当前阶段：V1 自主研究与机会雷达
-最近完成：`V1-006` Market Regime Agent 与证据化 `MarketStateAssessment`
+最近完成：`V1-007` 只读 Research Agent 与可证伪研究产物
 当前开发任务：无
-建议下一步：执行 `V1-007`，实现只读 Research Agent 与可证伪研究产物
+建议下一步：执行 `V1-008`，实现只读 Main Agent、持久 Workflow Orchestrator 与可重放研究周期
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-014` 及 `V1-001` 至 `V1-006` 已完成；下一任务为 `V1-007`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-014` 及 `V1-001` 至 `V1-007` 已完成；下一任务为 `V1-008`。
 
 ## 设计资料状态
 
@@ -142,9 +142,13 @@
 
 2026-08-24 使用 `gpt-5.6-terra` / `high` 完成 Market Regime Agent 与证据化 `MarketStateAssessment`，独立 `gpt-5.6-sol` / `high` 多轮反例验收最终无 P0–P3。Market Intelligence 负责纯领域组合，Agent Orchestration 仅处理 Catalog 1.1 task/artifact port 和 `StructuredArtifact` 包装；快照、全部特征与确定性 Regime 谱系、时间、schema 和 hash 必须精确一致。候选完整保留正反证据、未知项与替代解释，反证-only/unknown-only 不会被提升为主状态。输出固定 `NON_TRADING`，缺失或冲突只可 `DEFERRED`。`make check` 的 contract 为 `187 passed`、property 为 `9 passed`，隔离 PostgreSQL 全量测试为 `222 passed`。
 
-## 下一任务：V1-007
+## 最近完成：V1-007
 
-实现只读 Research Agent，基于 `MarketStateAssessment` 形成可证伪 `Hypothesis`、未知项、证据缺口和 `ExperimentRequest`；不得拥有交易、审批、晋升或账本权限。按研究产物与 Agent 权限边界使用 Terra/high，并安排独立验收。
+2026-08-24 使用 `gpt-5.6-terra` / `high` 完成只读 Research Agent，独立 `gpt-5.6-sol` / `high` 四轮对抗验收最终无 P0–P3。Research & Experiment 以不可变、内容寻址的 `Hypothesis`、`EvidenceSynthesis` 与非执行 `ExperimentRequest` 消费精确 `MarketStateAssessment` 谱系；Hypothesis 显式包含适用市场、可观察结果、反证、所需数据、提出来源和完整七态生命周期，但 V1-007 只能创建/封装 `DRAFT`。实验请求固定数据、对照、评估窗口、方法、指标、诊断、停止条件和潜在偏差；显式空的 known/unknown/conflict/gap 不会被迫伪造。Catalog 升至 1.2 并仅声明本任务实际支持的 MarketStateAssessment 输入；封闭 duck-port schema、严格类型、深冻结、spec/source identity、跨 artifact 一致性与重放哈希均有真实反例。实现 commit 为 `5ee47cb`；`make check` 通过（contract `208 passed`、property `9 passed`、mypy `47` source files），连接隔离 PostgreSQL 的全量测试为 `243 passed`。没有模型升级；确定性测试与 Sol/high reviewer 而非模型输出裁决了 lifecycle owner、空冲突语义、bool-as-int、隐藏 authority 字段和数据谱系漂移。未实现实验执行、LLM/持久 AgentRun、用户观点/Reflection adapter、StrategyCandidate 或任何交易副作用。
+
+## 下一任务：V1-008
+
+实现只读 Autonomous Quant PM / Main Agent、确定性持久 Workflow Orchestrator、`AutonomyCycle/DecisionEpisode` 与 DecisionJournal 基础投影，支持触发、typed delegation、fan-out/fan-in、取消、超时、预算和跨进程恢复。按跨上下文持久编排与幂等边界使用 Terra/high，并安排独立验收。
 
 ## 固定工作流程
 
