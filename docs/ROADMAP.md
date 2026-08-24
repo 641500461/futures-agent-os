@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-007`；下一任务为 `V1-008`。
+当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-008`；下一任务为 `V1-009`。
 
 ## 全局依赖原则
 
@@ -98,9 +98,9 @@ Exit：新仓库可独立启动和恢复；领域、Agent、Tool、数据、安�
 - [x] `V1-007` 实现 Research Agent，输出可证伪 `Hypothesis`、未知项、证据缺口和 `ExperimentRequest`。
   Acceptance: Research Agent 没有交易、审批、晋升或账本权限。  
   Evidence: 2026-08-24 按研究产物与 Agent 权限边界使用 `gpt-5.6-terra` / `high` 实现，独立 `gpt-5.6-sol` / `high` 四轮对抗验收最终无 P0–P3。Research & Experiment 新增不可变、内容寻址且绑定精确 PIT `MarketStateAssessment` 的 `Hypothesis`、`EvidenceSynthesis` 与非执行 `ExperimentRequest`；Hypothesis 完整表达适用市场、可观察结果、反证、所需数据、提出来源和七态生命周期，但本任务只允许创建/封装 `DRAFT`。实验请求固定数据、对照、评估窗口、方法、指标、预期诊断、停止条件和潜在偏差；known/unknown/conflict/gap 可显式为空而不诱导伪造。Agent Catalog 升至 1.2，仅声明已实现的 MarketStateAssessment 输入和三个研究输出；Research 无 TradePlan/StrategyCandidate 输出，也无交易、审批、晋升或账本工具。封闭 payload key set、严格 schema/type/time/identity、深冻结、spec/source identity hash、跨 artifact 数据一致性与重放由 authority-injection、READY_FOR_TEST 越权、bool-as-int、mutable duck、数据漂移等真实重哈希反例证明。实现 commit `5ee47cb`；`make check` 通过（contract `208 passed`、property `9 passed`、mypy `47` source files），连接隔离 PostgreSQL 的全量测试为 `243 passed`，Ruff、secret scan、schema compatibility、health 与 diff check 均通过。未发生模型升级；实现模型未覆盖的 lifecycle owner、空冲突语义和封闭 port 攻击由确定性测试与 Sol/high reviewer 裁决。未实现实验执行、LLM/持久 AgentRun、用户观点/Reflection adapter、StrategyCandidate 或交易副作用。
-- [ ] `V1-008` 实现只读 Autonomous Quant PM / Main Agent、确定性持久 Workflow Orchestrator、`AutonomyCycle/DecisionEpisode` 与 DecisionJournal 基础投影，支持用户、时间表与市场/数据事件触发，以及 typed DelegationPlan、fan-out/fan-in、取消、超时和预算。  
+- [x] `V1-008` 实现只读 Autonomous Quant PM / Main Agent、确定性持久 Workflow Orchestrator、`AutonomyCycle/DecisionEpisode` 与 DecisionJournal 基础投影，支持用户、时间表与市场/数据事件触发，以及 typed DelegationPlan、fan-out/fan-in、取消、超时和预算。
   Acceptance: 同一 cycle/episode 可跨进程恢复；重复触发最多产生一个有效周期；Main 不拥有 durable 调度状态；DecisionJournal 可从源事件重建，不覆盖当时事实。  
-  Evidence: 待补。
+  Evidence: 2026-08-25 按跨上下文持久编排与幂等边界使用 `gpt-5.6-terra` / `high` 实现并多轮加固，独立 `gpt-5.6-sol` / `high` 以并发和故障反例最终验收无 P0–P3；实现 commit `8be2e36`。新增 Catalog 1.3 只读 Main、不可变 typed `DelegationPlan`、确定性 fan-out/fan-in、预算/超时/取消、租约 fencing 与 PostgreSQL 持久 checkpoint；用户、时间表及市场/数据事件触发以规范 payload/hash 和幂等键最多创建一个有效 `AutonomyCycle`，Main 只提出计划且不拥有 durable schedule state。`AutonomyCycle/DecisionEpisode` 生命周期、task definition/execution/binding 均不可覆盖，可跨新连接恢复；并发首次精确持久化收敛到相同稳定任务 identity，非精确重试 fail closed；下游只消费上游实际产出的唯一 artifact identity。DecisionJournal 按 episode 绑定追加式源事件 identity，可重建 DECISION_TIME/POST_HOC 历史而不改写当时事实。`make check` 通过（contract `215 passed`、property `9 passed`、mypy `48` source files），连接隔离 PostgreSQL 的全量测试为 `266 passed`，迁移 `0004 → head` 与 8 项 downgrade/upgrade round-trip 通过；Ruff、secret/schema、health 与 diff check 通过。未发生模型升级；未实现 LLM 调用、实验执行、TradePlan、RiskDecision、Order 或任何交易副作用。
 - [ ] `V1-009` 实现研究版 Pre-trade Critic，检查反证、数据泄漏、成本覆盖、样本适用性和结论强度。  
   Acceptance: 高严重度未解决项强制 `DEFER`，迭代次数有上限。  
   Evidence: 待补。
