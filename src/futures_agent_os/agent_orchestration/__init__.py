@@ -35,6 +35,7 @@ from .market_regime_agent import (
     MarketRegimeAgent,
     MarketRegimeTaskSources,
 )
+from .research_agent import ResearchAgent, ResearchAgentResult, ResearchTaskSources
 
 __all__ = [
     "AGENT_CATALOG",
@@ -64,4 +65,7 @@ __all__ = [
     "ToolScope",
     "MarketRegimeAgent",
     "MarketRegimeTaskSources",
+    "ResearchAgent",
+    "ResearchAgentResult",
+    "ResearchTaskSources",
 ]

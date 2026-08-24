@@ -61,10 +61,12 @@ class AgentDefinition:
             raise ValueError("each logical role must document all supported trigger sources")
 
 
-# V1-006 adds typed market-artifact inputs to the Market Regime role.  This is
-# a breaking catalog-contract change, so tasks under the prior 1.0 catalog are
-# deliberately not silently reinterpreted as 1.1 tasks.
-CATALOG_VERSION = SchemaVersion(1, 1)
+# V1-007 replaces the Research role's ambiguous plan output with a distinct,
+# non-executing experiment request, and deliberately scopes its only input to
+# MarketStateAssessment.  User-opinion, degradation, and Reflection adapters
+# need their own later artifact contracts; they are not claimed by this task.
+# Tasks under earlier catalog contracts are deliberately not silently reinterpreted.
+CATALOG_VERSION = SchemaVersion(1, 2)
 _ALL_TRIGGERS = tuple(TriggerSource)
 _READ_BUDGET = AgentBudget(4, 16, 12_000, 120)
 _RESEARCH_BUDGET = AgentBudget(6, 24, 18_000, 300, 2)
@@ -145,8 +147,8 @@ AGENT_CATALOG: tuple[AgentDefinition, ...] = (
         "V1",
         "form falsifiable hypotheses and minimum sufficient research",
         "does not alter a strategy registry or select evidence",
-        (ArtifactKind.MARKET_STATE_ASSESSMENT, ArtifactKind.REFLECTION),
-        (ArtifactKind.HYPOTHESIS, ArtifactKind.RESEARCH_PLAN, ArtifactKind.EVIDENCE_SYNTHESIS),
+        (ArtifactKind.MARKET_STATE_ASSESSMENT,),
+        (ArtifactKind.HYPOTHESIS, ArtifactKind.EVIDENCE_SYNTHESIS, ArtifactKind.EXPERIMENT_REQUEST),
         ("historical_data", "backtest", "walk_forward_test", "stress_test"),
         FailureDisposition.KEEP_DRAFT,
         ("falsifiability", "evidence_coverage", "failed_experiment_retention"),
