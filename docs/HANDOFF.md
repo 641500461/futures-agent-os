@@ -3,9 +3,9 @@
 文档版本：`2.1-proposed`  
 最后更新：2026-08-24
 当前阶段：V1 自主研究与机会雷达
-最近完成：`V1-005` 版本化 Feature Engine 与确定性 Regime/Signal Model Service
+最近完成：`V1-006` Market Regime Agent 与证据化 `MarketStateAssessment`
 当前开发任务：无
-建议下一步：执行 `V1-006`，实现 Market Regime Agent 与带证据、不确定性的 `MarketStateAssessment`
+建议下一步：执行 `V1-007`，实现只读 Research Agent 与可证伪研究产物
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-014` 及 `V1-001` 至 `V1-005` 已完成；下一任务为 `V1-006`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-014` 及 `V1-001` 至 `V1-006` 已完成；下一任务为 `V1-007`。
 
 ## 设计资料状态
 
@@ -138,9 +138,13 @@
 
 2026-08-24 使用 `gpt-5.6-terra` / `high` 完成版本化 Feature Engine 和确定性 Regime/Signal Model Service，独立 `gpt-5.6-sol` / `high` 以 15 组真实反例最终验收无 P0–P3。特征计算严格绑定唯一 market reference、ObservationKind、PIT 快照/记录、窗口、cadence、session、scale 与算法版本；固定 Decimal context、不可变 evidence 和内容哈希保证相同输入可重放。Regime/Signal 输出固定为 `NON_TRADING`，不能生成或替代 TradePlan、RiskDecision、Order 等权威对象。`make check` 的 contract 为 `184 passed`、property 为 `9 passed`，隔离 PostgreSQL 全量测试为 `219 passed`。期限结构、基差和跨换月连续历史因当前单 component 快照边界显式 defer，没有伪造完成度。
 
-## 下一任务：V1-006
+## 最近完成：V1-006
 
-实现 Market Regime Agent，消费已版本化的快照、特征与确定性 Regime Model 输出，形成带正反证据、不确定性和不可变引用的 `MarketStateAssessment`；Agent 仍为只读研究角色，不能生成 TradePlan、RiskDecision 或 Order。按 Agent 边界与模型输出安全路由使用 Terra/high，并安排独立验收。
+2026-08-24 使用 `gpt-5.6-terra` / `high` 完成 Market Regime Agent 与证据化 `MarketStateAssessment`，独立 `gpt-5.6-sol` / `high` 多轮反例验收最终无 P0–P3。Market Intelligence 负责纯领域组合，Agent Orchestration 仅处理 Catalog 1.1 task/artifact port 和 `StructuredArtifact` 包装；快照、全部特征与确定性 Regime 谱系、时间、schema 和 hash 必须精确一致。候选完整保留正反证据、未知项与替代解释，反证-only/unknown-only 不会被提升为主状态。输出固定 `NON_TRADING`，缺失或冲突只可 `DEFERRED`。`make check` 的 contract 为 `187 passed`、property 为 `9 passed`，隔离 PostgreSQL 全量测试为 `222 passed`。
+
+## 下一任务：V1-007
+
+实现只读 Research Agent，基于 `MarketStateAssessment` 形成可证伪 `Hypothesis`、未知项、证据缺口和 `ExperimentRequest`；不得拥有交易、审批、晋升或账本权限。按研究产物与 Agent 权限边界使用 Terra/high，并安排独立验收。
 
 ## 固定工作流程
 

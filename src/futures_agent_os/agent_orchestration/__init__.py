@@ -31,6 +31,10 @@ from .tool_permissions import (
     ToolGrantStatus,
     ToolScope,
 )
+from .market_regime_agent import (
+    MarketRegimeAgent,
+    MarketRegimeTaskSources,
+)
 
 __all__ = [
     "AGENT_CATALOG",
@@ -58,4 +62,6 @@ __all__ = [
     "ToolGrant",
     "ToolGrantStatus",
     "ToolScope",
+    "MarketRegimeAgent",
+    "MarketRegimeTaskSources",
 ]

@@ -16,6 +16,17 @@ from .regime_model_service import (
     RegimeModelService,
     RegimeModelSpec,
 )
+from .market_state_assessment import (
+    MARKET_STATE_COMPOSITION_VERSION,
+    MarketStateAssessment,
+    MarketStateAssessmentComposer,
+    MarketStateAssessmentInput,
+    MarketStateAssessmentSpec,
+    MarketStateCandidate,
+    MarketStateEvidence,
+    FeatureObservationLineage,
+    TransitionRisk,
+)
 
 __all__ = [
     "FeatureEngine",
@@ -30,4 +41,13 @@ __all__ = [
     "RegimeKind",
     "RegimeModelService",
     "RegimeModelSpec",
+    "MARKET_STATE_COMPOSITION_VERSION",
+    "MarketStateAssessment",
+    "MarketStateAssessmentComposer",
+    "MarketStateAssessmentInput",
+    "MarketStateAssessmentSpec",
+    "MarketStateCandidate",
+    "MarketStateEvidence",
+    "FeatureObservationLineage",
+    "TransitionRisk",
 ]
