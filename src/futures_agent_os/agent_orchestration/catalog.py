@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from enum import StrEnum
 
 from futures_agent_os.shared_kernel import SchemaVersion
@@ -57,16 +57,20 @@ class AgentDefinition:
         )
         if any(not value for value in required) or not self.permission_boundary or not self.enabled_from:
             raise ValueError("agent definitions must declare every catalog contract field")
-        if set(self.trigger_sources) != set(TriggerSource):
-            raise ValueError("each logical role must document all supported trigger sources")
+        if len(set(self.trigger_sources)) != len(self.trigger_sources) or not set(self.trigger_sources) <= set(
+            TriggerSource
+        ):
+            raise ValueError("role trigger declarations must be unique supported sources")
 
 
-# V1-007 replaces the Research role's ambiguous plan output with a distinct,
+# V1-008 adds the explicit DATA trigger and makes Main's V1 surface strictly
+# observe/research-only.  Earlier envelopes retain their 1.2 contract and are
+# never silently reinterpreted as executable work.
 # non-executing experiment request, and deliberately scopes its only input to
 # MarketStateAssessment.  User-opinion, degradation, and Reflection adapters
 # need their own later artifact contracts; they are not claimed by this task.
 # Tasks under earlier catalog contracts are deliberately not silently reinterpreted.
-CATALOG_VERSION = SchemaVersion(1, 2)
+CATALOG_VERSION = SchemaVersion(1, 3)
 _ALL_TRIGGERS = tuple(TriggerSource)
 _READ_BUDGET = AgentBudget(4, 16, 12_000, 120)
 _RESEARCH_BUDGET = AgentBudget(6, 24, 18_000, 300, 2)
@@ -112,16 +116,14 @@ AGENT_CATALOG: tuple[AgentDefinition, ...] = (
     _definition(
         AgentRoleId.MAIN,
         "V1",
-        "coordinate bounded cycles and issue TRADE/NO_TRADE/DEFER proposals",
-        "does not schedule, authorize, or decide deterministic risk",
+        "coordinate bounded observe/research cycles and issue NO_TRADE/DEFER explanations",
+        "does not schedule, authorize, create TradePlan or StrategyCandidate, or decide deterministic risk",
         (ArtifactKind.RESEARCH_BRIEF, ArtifactKind.MARKET_STATE_ASSESSMENT, ArtifactKind.CRITIQUE),
         (
             ArtifactKind.RESEARCH_BRIEF,
-            ArtifactKind.TRADE_PLAN_DRAFT,
             ArtifactKind.DECISION_DIGEST,
-            ArtifactKind.ESCALATION_REQUEST,
         ),
-        ("market_snapshot", "autonomy_mandate_status", "request_authorization_preflight", "create_trade_plan_draft"),
+        ("market_snapshot", "feature_query", "historical_data", "experiment_search"),
         FailureDisposition.DEFER,
         ("opportunity_coverage", "no_trade_quality", "permission_denials", "user_correction_rate"),
         _RESEARCH_BUDGET,
@@ -258,12 +260,44 @@ AGENT_CATALOG: tuple[AgentDefinition, ...] = (
 
 _BY_ROLE = {definition.role_id.value: definition for definition in AGENT_CATALOG}
 
+# An additive 1.3 trigger does not reinterpret durable 1.2 envelopes.  The
+# historical resolver deliberately keeps DATA out of its contract.  The old
+# Main declaration is retained only for validation/replay of already-persisted
+# 1.2 tasks; no V1-008 runtime routes it.
+_CATALOG_1_2 = {
+    definition.role_id.value: replace(
+        definition,
+        version=SchemaVersion(1, 2),
+        trigger_sources=tuple(source for source in definition.trigger_sources if source is not TriggerSource.DATA),
+    )
+    for definition in AGENT_CATALOG
+}
+_CATALOG_1_2[AgentRoleId.MAIN.value] = replace(
+    _CATALOG_1_2[AgentRoleId.MAIN.value],
+    output_kinds=(
+        ArtifactKind.RESEARCH_BRIEF,
+        ArtifactKind.TRADE_PLAN_DRAFT,
+        ArtifactKind.DECISION_DIGEST,
+        ArtifactKind.ESCALATION_REQUEST,
+    ),
+    declared_tools=(
+        "market_snapshot",
+        "autonomy_mandate_status",
+        "request_authorization_preflight",
+        "create_trade_plan_draft",
+    ),
+)
+_CATALOGS = {SchemaVersion(1, 2): _CATALOG_1_2, CATALOG_VERSION: _BY_ROLE}
 
-def definition_for(role_id: str) -> AgentDefinition:
+
+def definition_for(role_id: str, catalog_version: SchemaVersion | None = None) -> AgentDefinition:
     """Resolve only a catalogued role; routing/activation is intentionally future work."""
 
+    catalog = _CATALOGS.get(catalog_version or CATALOG_VERSION)
+    if catalog is None:
+        raise ValueError("unsupported catalog version")
     try:
-        return _BY_ROLE[role_id]
+        return catalog[role_id]
     except KeyError as error:
         raise ValueError("agent role is not present in the versioned catalog") from error
 
@@ -276,7 +310,7 @@ def validate_task_envelope(envelope: AgentTaskEnvelope) -> None:
     the Governance context own those future decisions.
     """
 
-    definition = definition_for(envelope.assigned_role_id)
+    definition = definition_for(envelope.assigned_role_id, envelope.catalog_version)
     if envelope.catalog_version != definition.version:
         raise ValueError("task envelope catalog version does not match its role definition")
     if not set(envelope.trigger_sources).issubset(definition.trigger_sources):

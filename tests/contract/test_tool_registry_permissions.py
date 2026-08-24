@@ -50,7 +50,7 @@ def _request(**changes: object) -> ToolCallRequest:
         "node_id": "agent_worker_a",
         "catalog_version": CATALOG_VERSION,
         "registry_version": TOOL_REGISTRY_VERSION,
-        "tool_ref": ToolRef("request_authorization_preflight", TOOL_V1),
+        "tool_ref": ToolRef("market_snapshot", TOOL_V1),
         "scope": _scope(),
         "called_at": _at(10),
         "correlation_id": correlation_id,
@@ -67,8 +67,8 @@ def _grant(**changes: object) -> ToolGrant:
         "grantee_node_id": "agent_worker_a",
         "catalog_version": CATALOG_VERSION,
         "registry_version": TOOL_REGISTRY_VERSION,
-        "tool_refs": frozenset({ToolRef("request_authorization_preflight", TOOL_V1)}),
-        "max_permission_tier": ToolPermissionTier.MANDATE_SCOPED_SIMULATION,
+        "tool_refs": frozenset({ToolRef("market_snapshot", TOOL_V1)}),
+        "max_permission_tier": ToolPermissionTier.READ_ONLY,
         "scope": _scope(),
         "status": ToolGrantStatus.ACTIVE,
         "issued_at": _at(),
@@ -150,7 +150,7 @@ def test_registry_and_catalog_version_drift_fail_closed_before_grant_matching() 
     authorizer = ToolAuthorizer(TOOL_REGISTRY, (grant,))
 
     assert (
-        _reason(authorizer, _request(tool_ref=ToolRef("request_authorization_preflight", SchemaVersion(1, 1))))
+        _reason(authorizer, _request(tool_ref=ToolRef("market_snapshot", SchemaVersion(1, 1))))
         is ReasonCode.TOOL_VERSION_MISMATCH
     )
     assert (
@@ -188,10 +188,21 @@ def test_expired_inactive_node_and_tier_mismatches_are_all_denied() -> None:
         _reason(ToolAuthorizer(TOOL_REGISTRY, (_grant(grantee_node_id="agent_worker_b"),)), request)
         is ReasonCode.TOOL_NODE_SCOPE_MISMATCH
     )
+    legacy = SchemaVersion(1, 2)
+    proposal = ToolRef("create_trade_plan_draft", TOOL_V1)
     assert (
         _reason(
-            ToolAuthorizer(TOOL_REGISTRY, (_grant(max_permission_tier=ToolPermissionTier.PROPOSAL),)),
-            request,
+            ToolAuthorizer(
+                TOOL_REGISTRY,
+                (
+                    _grant(
+                        catalog_version=legacy,
+                        tool_refs=frozenset({proposal}),
+                        max_permission_tier=ToolPermissionTier.READ_ONLY,
+                    ),
+                ),
+            ),
+            _request(catalog_version=legacy, tool_ref=proposal),
         )
         is ReasonCode.TOOL_PERMISSION_TIER_DENIED
     )
@@ -249,7 +260,7 @@ def test_permitted_call_has_a_grant_reference_and_no_business_authorization_is_a
     assert decision.outcome is ToolAuthorizationOutcome.PERMIT
     assert decision.reason_code is ReasonCode.TOOL_AUTHORIZED
     assert decision.matched_grant_id is not None
-    assert decision.to_dict()["tool_ref"] == "request_authorization_preflight@1.0"
+    assert decision.to_dict()["tool_ref"] == "market_snapshot@1.0"
     assert decision.to_dict()["call_id"] == str(request.call_id)
     assert decision.to_dict()["trace_id"] == str(request.trace.trace_id)
     field_names = {field.name for field in fields(ToolGrant)}
@@ -259,7 +270,7 @@ def test_permitted_call_has_a_grant_reference_and_no_business_authorization_is_a
 
 def test_simulation_and_plan_approval_grants_cannot_be_created_with_broad_trading_scope() -> None:
     with pytest.raises(ValueError, match="simulation and plan-approval"):
-        _grant(scope=ToolScope())
+        _grant(max_permission_tier=ToolPermissionTier.MANDATE_SCOPED_SIMULATION, scope=ToolScope())
     with pytest.raises(ValueError, match="simulation and plan-approval"):
         _grant(max_permission_tier=ToolPermissionTier.PLAN_APPROVAL, scope=ToolScope())
 

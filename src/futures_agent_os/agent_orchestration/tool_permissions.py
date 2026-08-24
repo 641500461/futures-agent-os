@@ -298,8 +298,12 @@ class ToolAuthorizer:
                 else ReasonCode.TOOL_NOT_REGISTERED
             )
         try:
-            role = definition_for(request.agent_role_id)
+            role = definition_for(request.agent_role_id, request.catalog_version)
         except ValueError:
+            try:
+                definition_for("main", request.catalog_version)
+            except ValueError:
+                return deny(ReasonCode.TOOL_CATALOG_VERSION_MISMATCH)
             return deny(ReasonCode.TOOL_ROLE_MISMATCH)
         if request.catalog_version != role.version:
             return deny(ReasonCode.TOOL_CATALOG_VERSION_MISMATCH)

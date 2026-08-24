@@ -13,7 +13,7 @@ from typing import Mapping, Protocol
 from futures_agent_os.shared_kernel import EntityId, ModelOutputAuthority, RecordedAt, SchemaVersion, canonical_sha256
 from futures_agent_os.shared_kernel.observability import JsonValue
 
-from .catalog import AgentRoleId, CATALOG_VERSION, validate_task_envelope
+from .catalog import AgentRoleId, definition_for, validate_task_envelope
 from .contracts import (
     AgentTaskEnvelope,
     ArtifactClaim,
@@ -142,7 +142,7 @@ class MarketRegimeAgent:
             raise TypeError("market regime packaging requires a task and immutable task sources")
         if task.assigned_role_id != AgentRoleId.MARKET_REGIME.value:
             raise ValueError("market regime agent task must be assigned to market_regime")
-        if task.catalog_version != CATALOG_VERSION:
+        if task.catalog_version != definition_for(AgentRoleId.MARKET_REGIME.value, task.catalog_version).version:
             raise ValueError("market regime agent task catalog version mismatch")
         if task.required_outputs != (ArtifactKind.MARKET_STATE_ASSESSMENT,):
             raise ValueError("market regime agent requires exactly one market_state_assessment required output")

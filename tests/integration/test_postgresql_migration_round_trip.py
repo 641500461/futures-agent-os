@@ -5,12 +5,15 @@ from __future__ import annotations
 import os
 import subprocess
 import sys
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import uuid4
 
 import pytest
 from sqlalchemy import create_engine, text
 from sqlalchemy.exc import DBAPIError, IntegrityError
+
+from futures_agent_os.shared_kernel import canonical_json_text, canonical_sha256
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATABASE_URL = os.environ.get("FAO_DATABASE_URL")
@@ -234,6 +237,69 @@ def test_v0_014_hardening_downgrade_restores_v0_014_table_select_acl_snapshot() 
     with engine.connect() as connection:
         assert connection.execute(acl_sql).scalar_one() is direct_0003_acl is False
     _alembic("upgrade", "head")
+
+
+def test_v1_008_upgrade_and_downgrade_preserve_domain_event_acl_and_business_boundary() -> None:
+    """0005 adds worker bridges without weakening the V0 event writer ACL."""
+    _alembic("upgrade", "head")
+    engine = create_engine(DATABASE_URL)
+    runtime_event_acl = text(
+        "SELECT has_table_privilege('fao_runtime', 'fao.domain_event', 'SELECT'), "
+        "has_table_privilege('fao_runtime', 'fao.domain_event', 'INSERT')"
+    )
+    checkpoint_business_update = text(
+        "SELECT has_table_privilege('fao_checkpoint_owner', 'fao.decision_episode', 'UPDATE')"
+    )
+    with engine.connect() as connection:
+        assert connection.execute(runtime_event_acl).one() == (True, True)
+        assert connection.execute(checkpoint_business_update).scalar_one() is False
+    _alembic("downgrade", "0004_v0_014_hardening")
+    with engine.connect() as connection:
+        assert connection.execute(runtime_event_acl).one() == (True, True)
+        assert (
+            connection.execute(text("SELECT to_regclass('agent_checkpoint.workflow_execution') IS NULL")).scalar_one()
+            is True
+        )
+    _alembic("upgrade", "head")
+    with engine.connect() as connection:
+        assert connection.execute(runtime_event_acl).one() == (True, True)
+        assert connection.execute(checkpoint_business_update).scalar_one() is False
+
+
+def test_v1_008_downgrade_upgrade_rebuilds_workflow_sidecar_on_exact_event_retry() -> None:
+    _alembic("upgrade", "head")
+    engine = create_engine(DATABASE_URL)
+    event_id, aggregate_id, correlation_id = uuid4(), uuid4(), uuid4()
+    occurred_at = datetime.now(UTC) - timedelta(seconds=1)
+    payload = {"fact": "sidecar-rebuild"}
+    canonical, digest = canonical_json_text(payload), canonical_sha256(payload)
+    call = text(
+        "SELECT fao.append_workflow_domain_event(:event,:aggregate,1,'SidecarFact',:correlation,"
+        "'sidecar-rebuild',CAST(:payload AS jsonb),:canonical,:digest,:occurred)"
+    )
+    parameters = {
+        "event": event_id,
+        "aggregate": aggregate_id,
+        "correlation": correlation_id,
+        "payload": canonical,
+        "canonical": canonical,
+        "digest": digest,
+        "occurred": occurred_at,
+    }
+    with engine.begin() as connection:
+        connection.execute(text("SET LOCAL ROLE fao_workflow_worker"))
+        assert connection.execute(call, parameters).scalar_one() is True
+
+    _alembic("downgrade", "0004_v0_014_hardening")
+    _alembic("upgrade", "head")
+    with engine.begin() as connection:
+        connection.execute(text("SET LOCAL ROLE fao_workflow_worker"))
+        assert connection.execute(call, parameters).scalar_one() is True
+    with engine.connect() as connection:
+        assert connection.execute(
+            text("SELECT canonical_payload,payload_sha256 FROM fao.workflow_source_payload WHERE event_id=:event"),
+            {"event": event_id},
+        ).one() == (canonical, digest)
 
 
 def test_v0_014_replaced_reservations_are_fail_closed_normalized_on_upgrade() -> None:

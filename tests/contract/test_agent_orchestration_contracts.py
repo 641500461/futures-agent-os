@@ -112,6 +112,66 @@ def test_task_envelope_is_bounded_by_the_versioned_role_contract() -> None:
     with pytest.raises(ValueError, match="input artifact"):
         validate_task_envelope(replace(task, input_artifacts=(_ref(ArtifactKind.HYPOTHESIS),)))
 
+
+def test_v1_2_market_regime_and_research_envelopes_replay_against_their_own_catalog() -> None:
+    legacy = SchemaVersion(1, 2)
+    correlation_id = EntityId.new("correlation")
+    for role, inputs, outputs, tools in (
+        (
+            AgentRoleId.MARKET_REGIME,
+            (_ref(ArtifactKind.MARKET_SNAPSHOT),),
+            (ArtifactKind.MARKET_STATE_ASSESSMENT,),
+            ("market_snapshot",),
+        ),
+        (
+            AgentRoleId.RESEARCH,
+            (_ref(ArtifactKind.MARKET_STATE_ASSESSMENT),),
+            (ArtifactKind.HYPOTHESIS,),
+            ("historical_data",),
+        ),
+    ):
+        task = AgentTaskEnvelope(
+            EntityId.new("agent_task"),
+            EntityId.new("session"),
+            correlation_id,
+            _trace(correlation_id),
+            role.value,
+            legacy,
+            "replay",
+            "return immutable result",
+            (TriggerSource.MARKET,),
+            inputs,
+            (),
+            tools,
+            definition_for(role.value, legacy).budget,
+            outputs,
+            _at(3),
+            _at(30),
+        )
+        validate_task_envelope(task)
+        with pytest.raises(ValueError, match="trigger"):
+            validate_task_envelope(replace(task, trigger_sources=(TriggerSource.DATA,)))
+
+    # Keep the current market-regime envelope as the subject of the remaining
+    # negative checks; the loop variable above is the final (research) replay.
+    task = AgentTaskEnvelope(
+        EntityId.new("agent_task"),
+        EntityId.new("session"),
+        correlation_id,
+        _trace(correlation_id),
+        AgentRoleId.MARKET_REGIME.value,
+        CATALOG_VERSION,
+        "assess regime",
+        "return assessment",
+        (TriggerSource.MARKET,),
+        (_ref(ArtifactKind.MARKET_SNAPSHOT),),
+        (),
+        ("market_snapshot",),
+        definition_for(AgentRoleId.MARKET_REGIME.value).budget,
+        (ArtifactKind.MARKET_STATE_ASSESSMENT,),
+        _at(3),
+        _at(30),
+    )
     with pytest.raises(ValueError, match="correlation"):
         replace(task, trace=_trace(EntityId.new("correlation")))
 
@@ -216,6 +276,15 @@ def test_handoffs_and_artifacts_are_immutable_referenced_evidence_not_peer_chat(
     with pytest.raises(ValueError, match="sha256"):
         ArtifactRef(
             EntityId.new("artifact"), ArtifactKind.RESEARCH_BRIEF, SchemaVersion(1, 0), "mutable", _at(2), _at(1)
+        )
+    with pytest.raises(ValueError, match="namespace"):
+        ArtifactRef(
+            EntityId.new("trade_plan"),
+            ArtifactKind.RESEARCH_BRIEF,
+            SchemaVersion(1, 0),
+            "sha256:" + "a" * 64,
+            _at(2),
+            _at(1),
         )
     with pytest.raises(ValueError, match="own task"):
         AgentHandoff(
