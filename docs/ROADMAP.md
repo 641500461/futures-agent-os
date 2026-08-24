@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-006`；下一任务为 `V1-007`。
+当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-007`；下一任务为 `V1-008`。
 
 ## 全局依赖原则
 
@@ -95,9 +95,9 @@ Exit：新仓库可独立启动和恢复；领域、Agent、Tool、数据、安�
 - [x] `V1-006` 实现 Market Regime Agent，输出带正反证据和不确定性的 `MarketStateAssessment`。
   Acceptance: 输出通过 schema，引用不可变快照和特征版本；不能生成 TradePlan、RiskDecision 或 Order。  
   Evidence: 2026-08-24 按 Agent/市场解释边界使用 `gpt-5.6-terra` / `high` 实现，并由独立 `gpt-5.6-sol` / `high` 多轮反例验收至无 P0–P3。Market Intelligence 以纯、版本化 Composer 消费 V1-005 的不可变 `MarketSnapshotRef`、完整 `FeatureObservation` lineage 与确定性 `RegimeAssessment`，输出 `MarketStateAssessment`：保留全部候选、冲突、正反证据、未知项、替代解释、有效期和转换风险；只有具备正向证据的唯一最高候选可成为主状态，反证-only/unknown-only 明确无主状态且风险为 `UNKNOWN`。Agent Orchestration 仅依赖 task/artifact ports，Catalog 显式升级至 `1.1` 并新增三类只读输入 artifact；adapter 将裸 hash 严格转换为 `sha256:`、逐项核验角色/版本/工具/输出/时间/快照/特征/Regime 谱系，深冻结并独立复算 payload hash，再生成每条 claim 均有 source refs 的 `StructuredArtifact`，不完整输入只可 `DEFERRED`。重复 lineage、错快照、额外特征、过期或变异 payload、证据语义漂移及 caller-owned mutable duck 均 fail closed。输出固定 `NON_TRADING`，静态契约禁止依赖 Decision/Portfolio & Risk/Execution/Accounting 交易权威对象。`make check` 通过（contract `187 passed`、property `9 passed`、mypy `45` source files），连接隔离 PostgreSQL 的全量测试为 `222 passed`，Ruff、secret scan、health 与 diff check 通过；未实现外部新闻/期限结构、LLM 调度、持久 AgentRun、Research Agent 或交易副作用。
-- [ ] `V1-007` 实现 Research Agent，输出可证伪 `Hypothesis`、未知项、证据缺口和 `ExperimentRequest`。  
+- [x] `V1-007` 实现 Research Agent，输出可证伪 `Hypothesis`、未知项、证据缺口和 `ExperimentRequest`。
   Acceptance: Research Agent 没有交易、审批、晋升或账本权限。  
-  Evidence: 待补。
+  Evidence: 2026-08-24 按研究产物与 Agent 权限边界使用 `gpt-5.6-terra` / `high` 实现，独立 `gpt-5.6-sol` / `high` 四轮对抗验收最终无 P0–P3。Research & Experiment 新增不可变、内容寻址且绑定精确 PIT `MarketStateAssessment` 的 `Hypothesis`、`EvidenceSynthesis` 与非执行 `ExperimentRequest`；Hypothesis 完整表达适用市场、可观察结果、反证、所需数据、提出来源和七态生命周期，但本任务只允许创建/封装 `DRAFT`。实验请求固定数据、对照、评估窗口、方法、指标、预期诊断、停止条件和潜在偏差；known/unknown/conflict/gap 可显式为空而不诱导伪造。Agent Catalog 升至 1.2，仅声明已实现的 MarketStateAssessment 输入和三个研究输出；Research 无 TradePlan/StrategyCandidate 输出，也无交易、审批、晋升或账本工具。封闭 payload key set、严格 schema/type/time/identity、深冻结、spec/source identity hash、跨 artifact 数据一致性与重放由 authority-injection、READY_FOR_TEST 越权、bool-as-int、mutable duck、数据漂移等真实重哈希反例证明。实现 commit `5ee47cb`；`make check` 通过（contract `208 passed`、property `9 passed`、mypy `47` source files），连接隔离 PostgreSQL 的全量测试为 `243 passed`，Ruff、secret scan、schema compatibility、health 与 diff check 均通过。未发生模型升级；实现模型未覆盖的 lifecycle owner、空冲突语义和封闭 port 攻击由确定性测试与 Sol/high reviewer 裁决。未实现实验执行、LLM/持久 AgentRun、用户观点/Reflection adapter、StrategyCandidate 或交易副作用。
 - [ ] `V1-008` 实现只读 Autonomous Quant PM / Main Agent、确定性持久 Workflow Orchestrator、`AutonomyCycle/DecisionEpisode` 与 DecisionJournal 基础投影，支持用户、时间表与市场/数据事件触发，以及 typed DelegationPlan、fan-out/fan-in、取消、超时和预算。  
   Acceptance: 同一 cycle/episode 可跨进程恢复；重复触发最多产生一个有效周期；Main 不拥有 durable 调度状态；DecisionJournal 可从源事件重建，不覆盖当时事实。  
   Evidence: 待补。

@@ -50,6 +50,7 @@ class ArtifactKind(StrEnum):
     MARKET_STATE_ASSESSMENT = "market_state_assessment"
     HYPOTHESIS = "hypothesis"
     RESEARCH_PLAN = "research_plan"
+    EXPERIMENT_REQUEST = "experiment_request"
     EVIDENCE_SYNTHESIS = "evidence_synthesis"
     STRATEGY_CANDIDATE = "strategy_candidate"
     TRADE_PLAN_DRAFT = "trade_plan_draft"
