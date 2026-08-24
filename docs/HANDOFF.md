@@ -1,11 +1,11 @@
 # 跨对话交接
 
 文档版本：`2.1-proposed`  
-最后更新：2026-08-23
+最后更新：2026-08-24
 当前阶段：V1 自主研究与机会雷达
-最近完成：`V1-004` point-in-time `MarketSnapshot` 与数据质量判定
+最近完成：`V1-005` 版本化 Feature Engine 与确定性 Regime/Signal Model Service
 当前开发任务：无
-建议下一步：执行 `V1-005`，实现版本化 Feature Engine 与确定性 Regime/Signal Model Service
+建议下一步：执行 `V1-006`，实现 Market Regime Agent 与带证据、不确定性的 `MarketStateAssessment`
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-014` 及 `V1-001` 至 `V1-004` 已完成；下一任务为 `V1-005`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-014` 及 `V1-001` 至 `V1-005` 已完成；下一任务为 `V1-006`。
 
 ## 设计资料状态
 
@@ -134,9 +134,13 @@
 
 2026-08-23 使用 `gpt-5.6-terra` / `high` 完成用途专属、不可变且内容寻址的 PIT `MarketObservation/MarketSnapshot`，独立 `gpt-5.6-terra` / `high` 最终复验无 P0–P3。规则、日历、Instrument Registry、Dataset Manifest 与逐记录证据均由实际不可变对象验证；质量判定覆盖缺失、陈旧、乱序、重复、冲突、未来、未完成、缺口、跳变、fallback 和不可信时间戳。修订链按 `as_of` 选择唯一 active leaf，连续合约、跨合约规则、闭市、零深度报价或伪造引用不能获得执行资格。`make check` 的 contract 为 `175 passed`、property 为 `9 passed`，真实 PostgreSQL 全量测试为 `210 passed`。未接入外部行情、Feature Engine、Agent 或交易副作用。
 
-## 下一任务：V1-005
+## 最近完成：V1-005
 
-实现版本化 Feature Engine 和确定性 Regime/Signal Model Service，确保相同 MarketSnapshot 与 Feature/Model 版本可完全重现，且模型输出永远不构成交易许可。该任务按安全关键路由使用 Terra/high，并安排独立复验。
+2026-08-24 使用 `gpt-5.6-terra` / `high` 完成版本化 Feature Engine 和确定性 Regime/Signal Model Service，独立 `gpt-5.6-sol` / `high` 以 15 组真实反例最终验收无 P0–P3。特征计算严格绑定唯一 market reference、ObservationKind、PIT 快照/记录、窗口、cadence、session、scale 与算法版本；固定 Decimal context、不可变 evidence 和内容哈希保证相同输入可重放。Regime/Signal 输出固定为 `NON_TRADING`，不能生成或替代 TradePlan、RiskDecision、Order 等权威对象。`make check` 的 contract 为 `184 passed`、property 为 `9 passed`，隔离 PostgreSQL 全量测试为 `219 passed`。期限结构、基差和跨换月连续历史因当前单 component 快照边界显式 defer，没有伪造完成度。
+
+## 下一任务：V1-006
+
+实现 Market Regime Agent，消费已版本化的快照、特征与确定性 Regime Model 输出，形成带正反证据、不确定性和不可变引用的 `MarketStateAssessment`；Agent 仍为只读研究角色，不能生成 TradePlan、RiskDecision 或 Order。按 Agent 边界与模型输出安全路由使用 Terra/high，并安排独立验收。
 
 ## 固定工作流程
 

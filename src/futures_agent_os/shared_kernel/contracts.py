@@ -85,6 +85,13 @@ class ReasonCode(StrEnum):
     CALENDAR_MISSING = "CALENDAR_MISSING"
     CALENDAR_CONFLICT = "CALENDAR_CONFLICT"
     CALENDAR_CLOSED = "CALENDAR_CLOSED"
+    MODEL_OUTPUT_NOT_AUTHORIZATION = "MODEL_OUTPUT_NOT_AUTHORIZATION"
+
+
+class ModelOutputAuthority(StrEnum):
+    """A model/derived result is evidence, never a permission capability."""
+
+    NON_TRADING = "NON_TRADING"
 
 
 @dataclass(frozen=True, slots=True)

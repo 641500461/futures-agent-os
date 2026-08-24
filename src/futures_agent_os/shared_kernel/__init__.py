@@ -1,6 +1,6 @@
 """Small, stable cross-context value types and protocols."""
 
-from .contracts import Failure, ReasonCode, SchemaVersion
+from .contracts import Failure, ModelOutputAuthority, ReasonCode, SchemaVersion
 from .ids import EntityId
 from .observability import (
     AppendOnlyAuditLog,
@@ -31,6 +31,7 @@ __all__ = [
     "CommandEffectRegistry",
     "Failure",
     "Money",
+    "ModelOutputAuthority",
     "Price",
     "Quantity",
     "ReasonCode",
