@@ -1,7 +1,7 @@
 # Versioned Agent Catalog and bounded collaboration protocol
 
-Version: `1.3`
-Status: V1-008 catalog contract
+Version: `1.4`
+Status: V1-009 catalog contract
 
 `src/futures_agent_os/agent_orchestration/catalog.py` is the machine-readable source of this catalog. It defines the twelve logical roles, their version, enablement version, responsibility boundary, all six trigger origins, input/output artifact types, declared tools, budget, failure disposition and metrics. It is not an activation record or an executable permission grant.
 
@@ -21,6 +21,8 @@ Status: V1-008 catalog contract
 | Governance | V4; Steward mode V5 | `change_proposal` | `QUARANTINE_CANDIDATE` |
 
 Every role documents user, schedule, market, explicit `DATA`, account/position and system/lifecycle trigger origins. The exact examples are intentionally broad: the deterministic Workflow Orchestrator determines whether a concrete trigger creates a task, enforces lifecycle, retries, cancellation, deadline and recovery. In V1-008 Main coordinates only the observe/research graph; it neither schedules work, grants authority, nor creates `TradePlan`/`StrategyCandidate`. No role is a permanent process merely by existing in this catalog.
+
+In V1-009 Pre-trade Critic is strictly a research-artifact adapter. It consumes only exact `hypothesis`, `evidence_synthesis`, and `experiment_request` identities, emits one `critique`, and invokes no tools. V1-010 deterministic diagnostic artifacts do not yet exist, so V1-009 rejects caller diagnostics and emits the fixed closed eight-category `GAP`/`UNRESOLVED` set (with `DATA_LEAKAGE` HIGH), fixed validation codes, and `DEFER`; it never claims `CLEAR`, `RESOLVED`, `PASS`, or `REJECT`. Catalog 1.3 remains separately resolvable for historical replay and is not reinterpreted under this contract.
 
 ## Contract boundaries
 

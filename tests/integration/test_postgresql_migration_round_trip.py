@@ -67,6 +67,21 @@ def test_empty_database_upgrade_downgrade_upgrade_preserves_schema_isolation() -
             ).scalar_one()
             is False
         )
+    _alembic("downgrade", "0005_v1_008")
+    with engine.connect() as connection:
+        assert connection.execute(
+            text(
+                "SELECT has_function_privilege('fao_workflow_worker', "
+                "'agent_checkpoint.complete_workflow_task(uuid,bigint,bigint,jsonb,text,text)', 'EXECUTE')"
+            )
+        ).scalar_one()
+        assert connection.execute(
+            text(
+                "SELECT to_regprocedure("
+                "'agent_checkpoint.complete_critic_workflow_task(uuid,bigint,bigint,jsonb,jsonb,text,text)') IS NULL"
+            )
+        ).scalar_one()
+    _alembic("upgrade", "head")
     _alembic("downgrade", "base")
     with engine.connect() as connection:
         assert connection.execute(text("SELECT to_regnamespace('fao') IS NULL")).scalar_one()

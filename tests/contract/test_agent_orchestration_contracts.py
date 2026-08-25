@@ -53,7 +53,9 @@ def test_catalog_has_the_complete_machine_checkable_twelve_role_roster() -> None
         assert definition.responsibilities and definition.non_responsibilities
         assert set(definition.trigger_sources) == set(TriggerSource)
         assert definition.trigger_examples and definition.input_kinds and definition.output_kinds
-        assert definition.declared_tools and definition.permission_boundary
+        assert definition.permission_boundary
+        if definition.role_id is not AgentRoleId.PRE_TRADE_CRITIC:
+            assert definition.declared_tools
         assert definition.budget.max_turns > 0 and definition.metrics and definition.enabled_from
 
 
