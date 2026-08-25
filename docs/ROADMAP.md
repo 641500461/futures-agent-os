@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-008`；下一任务为 `V1-009`。
+当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-009`；下一任务为 `V1-010`。
 
 ## 全局依赖原则
 
@@ -101,9 +101,9 @@ Exit：新仓库可独立启动和恢复；领域、Agent、Tool、数据、安�
 - [x] `V1-008` 实现只读 Autonomous Quant PM / Main Agent、确定性持久 Workflow Orchestrator、`AutonomyCycle/DecisionEpisode` 与 DecisionJournal 基础投影，支持用户、时间表与市场/数据事件触发，以及 typed DelegationPlan、fan-out/fan-in、取消、超时和预算。
   Acceptance: 同一 cycle/episode 可跨进程恢复；重复触发最多产生一个有效周期；Main 不拥有 durable 调度状态；DecisionJournal 可从源事件重建，不覆盖当时事实。  
   Evidence: 2026-08-25 按跨上下文持久编排与幂等边界使用 `gpt-5.6-terra` / `high` 实现并多轮加固，独立 `gpt-5.6-sol` / `high` 以并发和故障反例最终验收无 P0–P3；实现 commit `8be2e36`。新增 Catalog 1.3 只读 Main、不可变 typed `DelegationPlan`、确定性 fan-out/fan-in、预算/超时/取消、租约 fencing 与 PostgreSQL 持久 checkpoint；用户、时间表及市场/数据事件触发以规范 payload/hash 和幂等键最多创建一个有效 `AutonomyCycle`，Main 只提出计划且不拥有 durable schedule state。`AutonomyCycle/DecisionEpisode` 生命周期、task definition/execution/binding 均不可覆盖，可跨新连接恢复；并发首次精确持久化收敛到相同稳定任务 identity，非精确重试 fail closed；下游只消费上游实际产出的唯一 artifact identity。DecisionJournal 按 episode 绑定追加式源事件 identity，可重建 DECISION_TIME/POST_HOC 历史而不改写当时事实。`make check` 通过（contract `215 passed`、property `9 passed`、mypy `48` source files），连接隔离 PostgreSQL 的全量测试为 `266 passed`，迁移 `0004 → head` 与 8 项 downgrade/upgrade round-trip 通过；Ruff、secret/schema、health 与 diff check 通过。未发生模型升级；未实现 LLM 调用、实验执行、TradePlan、RiskDecision、Order 或任何交易副作用。
-- [ ] `V1-009` 实现研究版 Pre-trade Critic，检查反证、数据泄漏、成本覆盖、样本适用性和结论强度。  
+- [x] `V1-009` 实现研究版 Pre-trade Critic，检查反证、数据泄漏、成本覆盖、样本适用性和结论强度。
   Acceptance: 高严重度未解决项强制 `DEFER`，迭代次数有上限。  
-  Evidence: 待补。
+  Evidence: 2026-08-25 初始实现按常规研究契约路由使用 `gpt-5.6-terra` / `medium`，在独立验收发现持久化、权限和 SQL/Python 一致性风险后升级为 `gpt-5.6-terra` / `high` 加固；独立 `gpt-5.6-sol` / `high` 多轮对抗复验最终无 P0–P3。实现 commit `efd832a`。Catalog 升至 1.4；新增不可变、内容寻址的 `Critique`、固定 policy/revision 上限、Pre-trade Critic artifact-only adapter，以及跨进程可恢复的 Research 三产物 fan-in、专用 fenced completion、sidecar hydration 与最小权限 migration `0006`。因 V1-010 的确定性诊断生产者尚未实现，V1-009 不接受调用方自报诊断，八类检查固定产生完整 `GAP/UNRESOLVED`，其中 `DATA_LEAKAGE=HIGH`，唯一合法结论为 `DEFER` 且 `max_iterations=1`；generic/legacy completion、过期来源、非规范嵌套快照、错误 hypothesis/revision、越权字段、直接 sidecar 读取及不精确重试均 fail closed。`make check` 通过（contract `224 passed`、property `9 passed`、mypy `50` source files），全新 PostgreSQL 全量测试为 `276 passed`，Critic integration `1 passed`，8 项 migration round-trip 通过；空库 `head → 0005 → head` 正确恢复 V1-008 worker 权限，有 durable Critique 事实时 downgrade 在任何 schema 变更前原子拒绝并保留 `0006` 数据。未实现模型调用、V1-010 诊断工具、StrategyCandidate、TradePlan、Order 或任何交易副作用。
 - [ ] `V1-010` 实现研究工具：market/historical/feature/contract 查询、memory/experiment search、L0 Signal Test、L1 Bar Backtest，以及单策略基础 walk-forward、成本/滑点 stress 与 counterfactual。  
   Acceptance: 工具结果包含版本、`as_of`、source refs、warnings、artifact refs 和失败码；基础验证固定样本切分、成本假设、停止规则与可复现配置，供后续 L2 资格证据复用。  
   Evidence: 待补。
