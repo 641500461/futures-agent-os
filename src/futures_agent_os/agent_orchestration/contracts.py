@@ -123,10 +123,13 @@ class ArtifactRef:
             "evidence_synthesis",
             "experiment_request",
             "research_synthesis",
+            "critique",
             "signal_result",
         }
         if self.artifact_id.namespace not in allowed_namespaces:
             raise ValueError("artifact reference has an invalid identity namespace")
+        if self.artifact_id.namespace == "critique" and self.artifact_kind is not ArtifactKind.CRITIQUE:
+            raise ValueError("critique identity can only reference a critique artifact")
         if self.as_of.value > self.created_at.value:
             raise ValueError("artifact as_of cannot be after created_at")
 

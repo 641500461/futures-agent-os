@@ -52,7 +52,6 @@ class AgentDefinition:
             self.trigger_examples,
             self.input_kinds,
             self.output_kinds,
-            self.declared_tools,
             self.metrics,
         )
         if any(not value for value in required) or not self.permission_boundary or not self.enabled_from:
@@ -70,7 +69,7 @@ class AgentDefinition:
 # MarketStateAssessment.  User-opinion, degradation, and Reflection adapters
 # need their own later artifact contracts; they are not claimed by this task.
 # Tasks under earlier catalog contracts are deliberately not silently reinterpreted.
-CATALOG_VERSION = SchemaVersion(1, 3)
+CATALOG_VERSION = SchemaVersion(1, 4)
 _ALL_TRIGGERS = tuple(TriggerSource)
 _READ_BUDGET = AgentBudget(4, 16, 12_000, 120)
 _RESEARCH_BUDGET = AgentBudget(6, 24, 18_000, 300, 2)
@@ -203,11 +202,11 @@ AGENT_CATALOG: tuple[AgentDefinition, ...] = (
     _definition(
         AgentRoleId.PRE_TRADE_CRITIC,
         "V1",
-        "independently seek counter-evidence before a plan proceeds",
-        "does not rewrite and silently approve a plan or replace Risk Constitution",
-        (ArtifactKind.TRADE_PLAN_DRAFT, ArtifactKind.EVIDENCE_SYNTHESIS),
+        "deterministically gate auditable V1 research using explicit counter-evidence and diagnostics",
+        "does not create TradePlan or StrategyCandidate, run tools, grant authority, or replace Risk Constitution",
+        (ArtifactKind.HYPOTHESIS, ArtifactKind.EVIDENCE_SYNTHESIS, ArtifactKind.EXPERIMENT_REQUEST),
         (ArtifactKind.CRITIQUE,),
-        ("backtest", "cost_analysis", "parameter_stability", "historical_data"),
+        (),
         FailureDisposition.FAIL_CLOSED,
         ("high_risk_defect_recall", "false_veto_rate", "leakage_detection"),
     ),
@@ -260,6 +259,20 @@ AGENT_CATALOG: tuple[AgentDefinition, ...] = (
 
 _BY_ROLE = {definition.role_id.value: definition for definition in AGENT_CATALOG}
 
+# Freeze the V1-008 catalog exactly.  In particular its Critic still described
+# the future plan-facing surface and must not be reinterpreted as the V1-009
+# research-only adapter during replay.
+_CATALOG_1_3 = {
+    definition.role_id.value: replace(definition, version=SchemaVersion(1, 3)) for definition in AGENT_CATALOG
+}
+_CATALOG_1_3[AgentRoleId.PRE_TRADE_CRITIC.value] = replace(
+    _CATALOG_1_3[AgentRoleId.PRE_TRADE_CRITIC.value],
+    responsibilities=("independently seek counter-evidence before a plan proceeds",),
+    non_responsibilities=("does not rewrite and silently approve a plan or replace Risk Constitution",),
+    input_kinds=(ArtifactKind.TRADE_PLAN_DRAFT, ArtifactKind.EVIDENCE_SYNTHESIS),
+    declared_tools=("backtest", "cost_analysis", "parameter_stability", "historical_data"),
+)
+
 # An additive 1.3 trigger does not reinterpret durable 1.2 envelopes.  The
 # historical resolver deliberately keeps DATA out of its contract.  The old
 # Main declaration is retained only for validation/replay of already-persisted
@@ -270,7 +283,7 @@ _CATALOG_1_2 = {
         version=SchemaVersion(1, 2),
         trigger_sources=tuple(source for source in definition.trigger_sources if source is not TriggerSource.DATA),
     )
-    for definition in AGENT_CATALOG
+    for definition in _CATALOG_1_3.values()
 }
 _CATALOG_1_2[AgentRoleId.MAIN.value] = replace(
     _CATALOG_1_2[AgentRoleId.MAIN.value],
@@ -287,7 +300,11 @@ _CATALOG_1_2[AgentRoleId.MAIN.value] = replace(
         "create_trade_plan_draft",
     ),
 )
-_CATALOGS = {SchemaVersion(1, 2): _CATALOG_1_2, CATALOG_VERSION: _BY_ROLE}
+_CATALOGS = {
+    SchemaVersion(1, 2): _CATALOG_1_2,
+    SchemaVersion(1, 3): _CATALOG_1_3,
+    CATALOG_VERSION: _BY_ROLE,
+}
 
 
 def definition_for(role_id: str, catalog_version: SchemaVersion | None = None) -> AgentDefinition:

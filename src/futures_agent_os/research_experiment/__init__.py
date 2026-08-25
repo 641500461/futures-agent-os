@@ -1,5 +1,28 @@
 """Research-owned feature definitions and deterministic signals."""
 
+from .critique import (
+    Critique,
+    CritiqueCategory,
+    CritiqueComposer,
+    CritiqueFinding,
+    CritiquePolicy,
+    CritiqueRevision,
+    CritiqueRevisionStore,
+    CritiqueStatus,
+    DiagnosticConclusion,
+    DiagnosticEvidence,
+    DiagnosticMeasurement,
+    DiagnosticRevision,
+    DiagnosticSpec,
+    FindingState,
+    IssueResolution,
+    IssueSeverity,
+    ResearchArtifactIdentity,
+    ResearchArtifactKind,
+    V1_009_REQUIRED_VALIDATIONS,
+    v1_009_critique_policy,
+    determine_critique_status,
+)
 from .features import FeatureAlgorithm, FeatureDefinition, FeatureDefinitionRef, FeatureSpec, FeatureSpecRef
 from .research_hypothesis import (
     EvidenceGap,
@@ -17,6 +40,19 @@ from .research_hypothesis import (
 )
 
 __all__ = [
+    "Critique",
+    "CritiqueCategory",
+    "CritiqueComposer",
+    "CritiqueFinding",
+    "CritiquePolicy",
+    "CritiqueRevision",
+    "CritiqueRevisionStore",
+    "CritiqueStatus",
+    "DiagnosticConclusion",
+    "DiagnosticEvidence",
+    "DiagnosticMeasurement",
+    "DiagnosticRevision",
+    "DiagnosticSpec",
     "EvidenceGap",
     "EvidenceSynthesis",
     "ExperimentRequest",
@@ -30,8 +66,16 @@ __all__ = [
     "FeatureDefinitionRef",
     "FeatureSpec",
     "FeatureSpecRef",
+    "FindingState",
+    "IssueResolution",
+    "IssueSeverity",
     "MarketStateAssessmentRef",
+    "ResearchArtifactIdentity",
+    "ResearchArtifactKind",
+    "V1_009_REQUIRED_VALIDATIONS",
+    "v1_009_critique_policy",
     "ResearchSynthesis",
     "ResearchSynthesisComposer",
     "ResearchSynthesisInput",
+    "determine_critique_status",
 ]

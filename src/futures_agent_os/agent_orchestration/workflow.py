@@ -19,9 +19,10 @@ from sqlalchemy import Connection, text
 
 from futures_agent_os.shared_kernel import EntityId, RecordedAt, SchemaVersion, canonical_json_text, canonical_sha256
 from futures_agent_os.shared_kernel.observability import JsonValue
+from futures_agent_os.research_experiment.critique import Critique, CritiqueRevisionStore, CritiqueStatus
 
 from .catalog import CATALOG_VERSION, AgentRoleId, definition_for
-from .contracts import AgentBudget, ArtifactKind, ArtifactRef, TriggerSource
+from .contracts import AgentBudget, ArtifactKind, ArtifactRef, StructuredArtifact, TriggerSource
 
 
 class CycleStatus(StrEnum):
@@ -64,7 +65,14 @@ _TERMINAL_TASKS = frozenset(
 _TERMINAL_EPISODES = frozenset(
     {EpisodeStatus.COMPLETED, EpisodeStatus.DEFERRED, EpisodeStatus.CANCELLED, EpisodeStatus.TIMED_OUT}
 )
-_READ_ONLY_ROLES = frozenset({AgentRoleId.MARKET_REGIME.value, AgentRoleId.RESEARCH.value})
+_READ_ONLY_ROLES = frozenset(
+    {AgentRoleId.MARKET_REGIME.value, AgentRoleId.RESEARCH.value, AgentRoleId.PRE_TRADE_CRITIC.value}
+)
+_CRITIC_INPUT_KINDS = (
+    ArtifactKind.HYPOTHESIS,
+    ArtifactKind.EVIDENCE_SYNTHESIS,
+    ArtifactKind.EXPERIMENT_REQUEST,
+)
 
 
 def _validate_role_contract(
@@ -87,6 +95,16 @@ def _validate_role_contract(
     # callers cannot smuggle a predeclared substitute alongside that result.
     if role_id == AgentRoleId.RESEARCH.value and dependency_output_kinds and direct_inputs:
         raise ValueError("research fan-in must consume dependency artifacts rather than direct substitutes")
+    if role_id == AgentRoleId.PRE_TRADE_CRITIC.value:
+        if required_outputs and required_outputs != (ArtifactKind.CRITIQUE,):
+            raise ValueError("critic delegation must produce exactly one critique")
+        if dependency_output_kinds and direct_inputs:
+            raise ValueError("critic fan-in must consume dependency artifacts rather than direct substitutes")
+        # DelegationStep performs a first local validation before its parent
+        # graph is available.  The parent plan supplies dependency outputs and
+        # makes this exact check mandatory.
+        if effective_kinds and effective_kinds != _CRITIC_INPUT_KINDS:
+            raise ValueError("critic delegation requires exact Research artifact fan-in")
 
 
 @dataclass(frozen=True, slots=True)
@@ -246,6 +264,12 @@ class DelegationPlan:
         by_key = {step.step_key: step for step in self.steps}
         for step in self.steps:
             dependent_outputs = tuple(output for name in step.depends_on for output in by_key[name].required_outputs)
+            if step.role_id == AgentRoleId.PRE_TRADE_CRITIC.value and (
+                len(step.depends_on) != 1
+                or by_key[step.depends_on[0]].role_id != AgentRoleId.RESEARCH.value
+                or dependent_outputs != _CRITIC_INPUT_KINDS
+            ):
+                raise ValueError("critic delegation must depend on one complete Research result")
             _validate_role_contract(
                 step.role_id,
                 step.input_artifacts,
@@ -307,6 +331,10 @@ class WorkflowTaskResult:
     artifacts: tuple[ArtifactRef, ...]
     unknowns: tuple[str, ...]
     warnings: tuple[str, ...]
+    # Critic conclusions are domain facts.  This field is deliberately not a
+    # generic worker supplied status: the orchestrator maps it to the task and
+    # episode transitions below.
+    critique_status: CritiqueStatus | None = None
 
     def __post_init__(self) -> None:
         if (
@@ -316,6 +344,7 @@ class WorkflowTaskResult:
             or type(self.artifacts) is not tuple
             or type(self.unknowns) is not tuple
             or type(self.warnings) is not tuple
+            or (self.critique_status is not None and type(self.critique_status) is not CritiqueStatus)
         ):
             raise TypeError("workflow result requires exact immutable typed values")
         if self.status not in _TERMINAL_TASKS - {WorkflowTaskStatus.CANCELLED, WorkflowTaskStatus.TIMED_OUT}:
@@ -330,6 +359,22 @@ class WorkflowTaskResult:
             not isinstance(value, str) or not value.strip() for value in (*self.unknowns, *self.warnings)
         ):
             raise ValueError("workflow result must preserve unique artifacts and non-empty reasons")
+
+
+def _critic_task_status(status: CritiqueStatus) -> WorkflowTaskStatus:
+    """The only workflow projection of a Critique verdict.
+
+    PASS and REJECT both preserve the immutable critique artifact as a
+    completed task.  REJECT is nevertheless a fail-closed episode outcome;
+    REVISE and DEFER are terminal deferred work.  A caller cannot choose a
+    different projection by changing ``WorkflowTaskResult.status``.
+    """
+
+    return (
+        WorkflowTaskStatus.COMPLETED
+        if status in {CritiqueStatus.PASS, CritiqueStatus.REJECT}
+        else WorkflowTaskStatus.DEFERRED
+    )
 
 
 class MainAgent:
@@ -363,6 +408,7 @@ class WorkflowOrchestrator:
         self._plans: dict[EntityId, DelegationPlan] = {}
         self._tasks: dict[EntityId, WorkflowTask] = {}
         self._task_results: dict[EntityId, WorkflowTaskResult] = {}
+        self._critic_completions: dict[EntityId, tuple[StructuredArtifact, Critique]] = {}
         self._lock = RLock()
 
     def start_cycle(self, trigger: CycleTrigger, expires_at: RecordedAt) -> AutonomyCycle:
@@ -515,9 +561,15 @@ class WorkflowOrchestrator:
             and values
             and all(task.status in _TERMINAL_TASKS for task in values)
         ):
+            critic_rejected = any(
+                task.role_id == AgentRoleId.PRE_TRADE_CRITIC.value
+                and (result := self._task_results.get(task.task_id)) is not None
+                and result.critique_status is CritiqueStatus.REJECT
+                for task in values
+            )
             final = (
                 EpisodeStatus.COMPLETED
-                if all(task.status is WorkflowTaskStatus.COMPLETED for task in values)
+                if not critic_rejected and all(task.status is WorkflowTaskStatus.COMPLETED for task in values)
                 else EpisodeStatus.DEFERRED
             )
             self._episodes[episode_id] = DecisionEpisode(
@@ -556,6 +608,93 @@ class WorkflowOrchestrator:
             return result
 
     def complete_task(self, episode_id: EntityId, result: WorkflowTaskResult, now: RecordedAt) -> WorkflowTask:
+        """Complete non-Critic work only; Critic has a typed gate command."""
+        task = self._tasks.get(result.task_id)
+        if task is not None and task.role_id == AgentRoleId.PRE_TRADE_CRITIC.value:
+            raise ValueError("generic completion cannot complete a Critic task")
+        return self._complete_task(episode_id, result, now)
+
+    def complete_critic_task(
+        self,
+        episode_id: EntityId,
+        task_id: EntityId,
+        artifact: StructuredArtifact,
+        critique: Critique,
+        sources: tuple[StructuredArtifact, ...],
+        revisions: CritiqueRevisionStore,
+        now: RecordedAt,
+    ) -> WorkflowTask:
+        """Atomically project a pre-reserved canonical Critique into workflow state."""
+        with self._lock:
+            task = self._tasks.get(task_id)
+            if task is None or task.episode_id != episode_id or task.role_id != AgentRoleId.PRE_TRADE_CRITIC.value:
+                raise ValueError("critic completion requires the episode's Critic task")
+            prior = self._critic_completions.get(task_id)
+            if task.status in _TERMINAL_TASKS:
+                if prior == (artifact, critique):
+                    return task
+                raise ValueError("critic exact retry conflicts with immutable canonical completion")
+            if (
+                type(artifact) is not StructuredArtifact
+                or type(critique) is not Critique
+                or type(sources) is not tuple
+                or type(revisions) is not CritiqueRevisionStore
+                or len(sources) != 3
+                or any(type(source) is not StructuredArtifact for source in sources)
+                or tuple(source.ref for source in sources) != task.input_artifacts
+                or any(source.producer_role_id != AgentRoleId.RESEARCH.value for source in sources)
+                or any(source.producer_run_id.namespace != "agent_run" for source in sources)
+                or any(source.producer_run_id != sources[0].producer_run_id for source in sources[1:])
+                or any(source.source_refs != sources[0].source_refs for source in sources[1:])
+                or any(source.expires_at != sources[0].expires_at for source in sources[1:])
+                or artifact.ref.artifact_kind is not ArtifactKind.CRITIQUE
+                or artifact.ref.artifact_id != critique.critique_id
+                or artifact.ref.schema_version != critique.policy.schema_version
+                or artifact.ref.content_hash != "sha256:" + critique.content_sha256
+                or artifact.ref.created_at != critique.evaluated_at
+                or artifact.ref.as_of != critique.hypothesis.as_of
+                or artifact.producer_role_id != AgentRoleId.PRE_TRADE_CRITIC.value
+                or artifact.producer_run_id.namespace != "agent_run"
+                or artifact.source_refs != task.input_artifacts
+                or artifact.expires_at != critique.expires_at
+                or now.value >= critique.expires_at.value
+                or task.deadline_at.value > min(source.expires_at.value for source in sources)
+                or critique.expires_at.value > min(source.expires_at.value for source in sources)
+            ):
+                raise ValueError("critic completion requires exact live StructuredArtifact fan-in")
+            critique.validate_current()
+            identities = (critique.hypothesis, critique.evidence_synthesis, critique.experiment_request)
+            if any(
+                str(identity.artifact_id) != str(source.ref.artifact_id)
+                or identity.content_sha256 != source.ref.content_hash.removeprefix("sha256:")
+                or identity.as_of != source.ref.as_of
+                or identity.valid_until != source.expires_at
+                for identity, source in zip(identities, sources, strict=True)
+            ):
+                raise ValueError("critic source snapshot does not match actual structured fan-in")
+            reservation = revisions.require(
+                episode_id, critique.hypothesis.content_sha256, critique.policy, critique.content_sha256
+            )
+            if reservation.iteration != critique.iteration:
+                raise ValueError("critic completion revision does not match its reservation")
+            completed = self._complete_task(
+                episode_id,
+                WorkflowTaskResult(
+                    task_id,
+                    _critic_task_status(critique.status),
+                    (artifact.ref,) if critique.status in {CritiqueStatus.PASS, CritiqueStatus.REJECT} else (),
+                    (f"critique:{critique.status.value}",)
+                    if critique.status in {CritiqueStatus.REVISE, CritiqueStatus.DEFER}
+                    else (),
+                    (),
+                    critique.status,
+                ),
+                now,
+            )
+            self._critic_completions[task_id] = (artifact, critique)
+            return completed
+
+    def _complete_task(self, episode_id: EntityId, result: WorkflowTaskResult, now: RecordedAt) -> WorkflowTask:
         with self._lock:
             self._timeout(episode_id, now)
             task = self._tasks[result.task_id]
@@ -573,6 +712,14 @@ class WorkflowOrchestrator:
                 raise ValueError("task is not claimable for completion")
             plan = self._plans[episode_id]
             expected = next(step for step in plan.steps if step.step_key == task.step_key)
+            if task.role_id == AgentRoleId.PRE_TRADE_CRITIC.value:
+                if result.critique_status is None:
+                    raise ValueError("critic completion requires its canonical Critique verdict")
+                projected = _critic_task_status(result.critique_status)
+                if result.status is not projected:
+                    raise ValueError("caller cannot override the deterministic Critique workflow outcome")
+            elif result.critique_status is not None:
+                raise ValueError("only the Critic task may carry a Critique verdict")
             if (
                 result.status is WorkflowTaskStatus.COMPLETED
                 and tuple(value.artifact_kind for value in result.artifacts) != expected.required_outputs
@@ -757,6 +904,48 @@ class PostgresWorkflowRepository:
             },
         ).scalar_one()
 
+    def reserve_critique_revision(
+        self,
+        connection: Connection,
+        episode_id: EntityId,
+        hypothesis_sha256: str,
+        policy_id: EntityId,
+        policy_version: int,
+        policy_schema: SchemaVersion,
+        max_iterations: int,
+        evaluation_sha256: str,
+    ) -> int:
+        """Atomically allocate an immutable Critique revision in PostgreSQL."""
+        if (
+            type(episode_id) is not EntityId
+            or episode_id.namespace != "decision_episode"
+            or type(policy_id) is not EntityId
+            or policy_id.namespace != "critique_policy"
+            or type(policy_schema) is not SchemaVersion
+            or type(policy_version) is not int
+            or type(max_iterations) is not int
+        ):
+            raise TypeError("critique revision requires exact episode and policy identities")
+        for value in (hypothesis_sha256, evaluation_sha256):
+            if type(value) is not str or len(value) != 64 or any(ch not in "0123456789abcdef" for ch in value):
+                raise ValueError("critique revision requires canonical SHA-256 identities")
+        return int(
+            connection.execute(
+                text(
+                    "SELECT agent_checkpoint.reserve_critique_revision(:episode,:hypothesis,:policy,:version,:schema,:maximum,:evaluation)"
+                ),
+                {
+                    "episode": episode_id.value,
+                    "hypothesis": hypothesis_sha256,
+                    "policy": policy_id.value,
+                    "version": policy_version,
+                    "schema": str(policy_schema),
+                    "maximum": max_iterations,
+                    "evaluation": evaluation_sha256,
+                },
+            ).scalar_one()
+        )
+
     def start_typed_cycle(
         self,
         connection: Connection,
@@ -904,6 +1093,83 @@ class PostgresWorkflowRepository:
             ).scalar_one()
         )
 
+    def complete_critic_task_fenced(
+        self,
+        connection: Connection,
+        task_id: UUID,
+        version: int,
+        fencing_token: int,
+        artifact: StructuredArtifact,
+        critique: Critique,
+        sources: tuple[StructuredArtifact, ...],
+    ) -> bool:
+        """Persist a Critique through the only verdict-owning SQL command.
+
+        There is deliberately no caller status parameter.  PostgreSQL validates
+        the complete canonical Critique, checks its reserved revision and
+        source fan-in, and maps PASS/REJECT/REVISE/DEFER itself.
+        """
+        if (
+            type(artifact) is not StructuredArtifact
+            or type(critique) is not Critique
+            or type(sources) is not tuple
+            or len(sources) != 3
+            or any(type(source) is not StructuredArtifact for source in sources)
+        ):
+            raise TypeError("critic completion requires exact StructuredArtifact fan-in and Critique")
+        critique.validate_current()
+        refs = tuple(source.ref for source in sources)
+        if (
+            tuple(source.producer_role_id for source in sources) != (AgentRoleId.RESEARCH.value,) * 3
+            or tuple(source.ref.artifact_kind for source in sources) != _CRITIC_INPUT_KINDS
+            or any(source.producer_run_id.namespace != "agent_run" for source in sources)
+            or any(source.producer_run_id != sources[0].producer_run_id for source in sources[1:])
+            or any(source.source_refs != sources[0].source_refs for source in sources[1:])
+            or any(source.expires_at != sources[0].expires_at for source in sources[1:])
+            or artifact.producer_role_id != AgentRoleId.PRE_TRADE_CRITIC.value
+            or artifact.producer_run_id.namespace != "agent_run"
+            or artifact.ref.artifact_kind is not ArtifactKind.CRITIQUE
+            or artifact.ref.artifact_id != critique.critique_id
+            or artifact.ref.schema_version != critique.policy.schema_version
+            or artifact.ref.content_hash != "sha256:" + critique.content_sha256
+            or artifact.ref.created_at != critique.evaluated_at
+            or artifact.ref.as_of != critique.hypothesis.as_of
+            or artifact.source_refs != refs
+            or artifact.expires_at != critique.expires_at
+            or critique.expires_at.value > min(source.expires_at.value for source in sources)
+            or any(
+                str(identity.artifact_id) != str(source.ref.artifact_id)
+                or identity.content_sha256 != source.ref.content_hash.removeprefix("sha256:")
+                or identity.as_of != source.ref.as_of
+                or identity.valid_until != source.expires_at
+                for identity, source in zip(
+                    (critique.hypothesis, critique.evidence_synthesis, critique.experiment_request),
+                    sources,
+                    strict=True,
+                )
+            )
+            or critique.content_sha256 != canonical_sha256(critique.payload())
+        ):
+            raise ValueError("critic artifact and canonical Critique payload must match exactly")
+        payload = critique.payload()
+        payload_text = canonical_json_text(payload)
+        return bool(
+            connection.execute(
+                text(
+                    "SELECT agent_checkpoint.complete_critic_workflow_task(:task,:version,:fence,CAST(:artifact AS jsonb),CAST(:critique AS jsonb),:canonical,:hash)"
+                ),
+                {
+                    "task": task_id,
+                    "version": version,
+                    "fence": fencing_token,
+                    "artifact": canonical_json_text(cast(JsonValue, _ref_json(artifact.ref))),
+                    "critique": payload_text,
+                    "canonical": payload_text,
+                    "hash": critique.content_sha256,
+                },
+            ).scalar_one()
+        )
+
     def persist_typed_execution(self, connection: Connection, plan: DelegationPlan, expected_version: int = 0) -> int:
         """Persist only a fully validated typed graph; no caller JSON enters here."""
         _assert_observe_plan(plan)
@@ -973,6 +1239,47 @@ class PostgresWorkflowRepository:
         )
         return cycle, episode, plan, _resolve_hydrated_task_inputs(plan, tasks, results), results
 
+    def hydrate_critic_completion(
+        self, connection: Connection, task_id: UUID, episode_id: EntityId
+    ) -> dict[str, object] | None:
+        """Read the complete DB-validated Critic sidecar through its owner API.
+
+        Workers are intentionally not granted table access: the SQL function
+        re-authenticates the canonical Critique and derived verdict before it
+        returns the immutable artifact/payload pair.
+        """
+        if type(task_id) is not UUID or type(episode_id) is not EntityId or episode_id.namespace != "decision_episode":
+            raise TypeError("critic hydration requires exact task and decision_episode identities")
+        value = connection.execute(
+            text("SELECT agent_checkpoint.hydrate_critic_completion(:task,:episode)"),
+            {"task": task_id, "episode": episode_id.value},
+        ).scalar_one_or_none()
+        if value is None:
+            return None
+        payload = cast(dict[str, object], value)
+        if set(payload) != {"artifact", "critique", "canonical", "hash", "status"}:
+            raise ValueError("invalid hydrated Critic completion envelope")
+        critique = cast(dict[str, object], payload["critique"])
+        immutable_critique = _freeze_loaded_json(critique)
+        canonical = payload["canonical"]
+        digest = payload["hash"]
+        if (
+            type(canonical) is not str
+            or type(digest) is not str
+            or canonical != canonical_json_text(immutable_critique)
+            or digest != canonical_sha256(immutable_critique)
+            or payload["status"] != critique.get("status")
+        ):
+            raise ValueError("hydrated Critic completion canonical integrity drift")
+        return payload
+
+    def hydrate_critic_verdict(
+        self, connection: Connection, task_id: UUID, episode_id: EntityId
+    ) -> CritiqueStatus | None:
+        """Recover the DB-owned Critic verdict without direct sidecar access."""
+        completion = self.hydrate_critic_completion(connection, task_id, episode_id)
+        return None if completion is None else CritiqueStatus(str(completion["status"]))
+
 
 def _assert_acyclic(steps: tuple[DelegationStep, ...]) -> None:
     dependencies = {step.step_key: set(step.depends_on) for step in steps}
@@ -996,6 +1303,21 @@ def _ref_json(ref: ArtifactRef) -> dict[str, object]:
         "created_at": ref.created_at.value.isoformat(),
         "as_of": ref.as_of.value.isoformat(),
     }
+
+
+def _freeze_loaded_json(value: object) -> JsonValue:
+    """Convert driver-owned JSON lists into the immutable canonical contract."""
+
+    if value is None or type(value) in {str, int, bool}:
+        return cast(JsonValue, value)
+    if type(value) is list:
+        return tuple(_freeze_loaded_json(item) for item in cast(list[object], value))
+    if type(value) is dict:
+        mapping = cast(dict[object, object], value)
+        if any(type(key) is not str for key in mapping):
+            raise ValueError("persisted JSON object keys must be strings")
+        return {cast(str, key): _freeze_loaded_json(item) for key, item in mapping.items()}
+    raise ValueError("persisted value must be finite JSON-compatible data")
 
 
 def _ref_from_json(value: dict[str, object]) -> ArtifactRef:

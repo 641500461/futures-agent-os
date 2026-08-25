@@ -3,9 +3,9 @@
 文档版本：`2.1-proposed`  
 最后更新：2026-08-25
 当前阶段：V1 自主研究与机会雷达
-最近完成：`V1-008` 只读 Main、持久 Workflow Orchestrator 与可重放研究周期
+最近完成：`V1-009` 研究版 Pre-trade Critic 与 fail-closed 持久研究门禁
 当前开发任务：无
-建议下一步：执行 `V1-009`，实现研究版 Pre-trade Critic
+建议下一步：启动 `V1-010` 研究工具与基础验证能力
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -44,7 +44,7 @@
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-014` 及 `V1-001` 至 `V1-008` 已完成；下一任务为 `V1-009`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-014` 及 `V1-001` 至 `V1-009` 已完成；下一任务为 `V1-010`。
 
 ## 设计资料状态
 
@@ -150,9 +150,13 @@
 
 2026-08-25 使用 `gpt-5.6-terra` / `high` 完成只读 Main、持久 Workflow Orchestrator、`AutonomyCycle/DecisionEpisode` 与 DecisionJournal 基础投影，独立 `gpt-5.6-sol` / `high` 多轮并发与故障验收最终无 P0–P3。用户、时间表、市场/数据事件触发具备规范 hash 与持久幂等；typed plan/task、租约 fencing、预算、超时、取消及实际 artifact fan-in 可跨进程恢复。并发首次精确写入仅产生一套 task，非精确重试拒绝；DecisionJournal 从 episode 绑定的追加式源事件增量重建并保留 DECISION_TIME/POST_HOC。实现 commit 为 `8be2e36`；`make check` 通过（contract `215 passed`、property `9 passed`、mypy `48` source files），真实 PostgreSQL 全量为 `266 passed`，8 项迁移往返通过。没有 LLM 调用或交易副作用。
 
-## 下一任务：V1-009
+## 最近完成：V1-009
 
-实现研究版 Pre-trade Critic，检查反证、数据泄漏、成本覆盖、样本适用性和结论强度；高严重度未解决项必须 `DEFER`，迭代次数有上限。按确定性研究门禁与 Agent 权限边界选择模型，并安排独立验收。
+2026-08-25 初始使用 `gpt-5.6-terra` / `medium` 实现研究版 Pre-trade Critic，因独立复核发现安全关键持久化与权限边界而升级至 `gpt-5.6-terra` / `high` 加固；独立 `gpt-5.6-sol` / `high` 最终复验无 P0–P3。实现 commit 为 `efd832a`。Catalog 1.4、不可变 Critique、固定 policy/revision、Research 三产物实际 fan-in、专用 fenced PostgreSQL completion、持久 hydration、ACL 和 migration downgrade 边界均已完成。V1-010 尚未提供权威诊断，因此八类检查固定为 GAP/UNRESOLVED、DATA_LEAKAGE 为 HIGH，结论只能 DEFER，迭代上限为 1；调用方不能注入诊断或 verdict。`make check` 通过（contract `224 passed`、property `9 passed`、mypy `50` source files），全新 PostgreSQL 全量 `276 passed`，8 项 migration round-trip 与 populated downgrade 原子拒绝通过。没有模型调用、诊断工具、StrategyCandidate、TradePlan 或交易副作用。
+
+## 下一任务：V1-010
+
+实现 market/historical/feature/contract 查询、memory/experiment search、L0 Signal Test、L1 Bar Backtest，以及基础 walk-forward、成本/滑点 stress 与 counterfactual；所有结果必须带版本、PIT 来源、warnings、artifact refs、失败码和可复现配置。不得把诊断工具输出扩张为交易权限或真实下单能力。
 
 ## 固定工作流程
 

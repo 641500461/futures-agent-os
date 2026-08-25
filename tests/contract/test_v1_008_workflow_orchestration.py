@@ -137,6 +137,63 @@ def test_failure_recursively_skips_descendants_and_closes_without_a_poll() -> No
     assert orchestrator._tasks[tasks[1].task_id].status is WorkflowTaskStatus.SKIPPED
 
 
+def test_research_actual_artifacts_fan_in_to_v1_critic_in_memory() -> None:
+    orchestrator = WorkflowOrchestrator()
+    cycle = orchestrator.start_cycle(CycleTrigger(TriggerSource.DATA, "critic:CU", _at(), (_ref(),)), _at(30))
+    episode = orchestrator.start_episode(cycle.cycle_id, "CU:critic", _at(30))
+    base = _plan(cycle.cycle_id, episode.episode_id)
+    critic = DelegationStep(
+        "critic",
+        AgentRoleId.PRE_TRADE_CRITIC.value,
+        (),
+        (ArtifactKind.CRITIQUE,),
+        AgentBudget(4, 16, 12_000, 120),
+        ("research",),
+    )
+    plan = replace(base, steps=(*base.steps, critic), cycle_budget=AgentBudget(16, 64, 48_000, 720, 2))
+    tasks = orchestrator.accept_delegation_plan(plan)
+
+    orchestrator.complete_task(
+        episode.episode_id,
+        WorkflowTaskResult(
+            tasks[0].task_id,
+            WorkflowTaskStatus.COMPLETED,
+            (_ref(ArtifactKind.MARKET_STATE_ASSESSMENT),),
+            (),
+            (),
+        ),
+        _at(1),
+    )
+    research_task = orchestrator.ready_tasks(episode.episode_id, _at(1))[0]
+    actual = (
+        _ref(ArtifactKind.HYPOTHESIS),
+        _ref(ArtifactKind.EVIDENCE_SYNTHESIS),
+        _ref(ArtifactKind.EXPERIMENT_REQUEST),
+    )
+    orchestrator.complete_task(
+        episode.episode_id,
+        WorkflowTaskResult(research_task.task_id, WorkflowTaskStatus.COMPLETED, actual, (), ()),
+        _at(1),
+    )
+    critic_task = orchestrator.ready_tasks(episode.episode_id, _at(1))[0]
+    assert critic_task.role_id == AgentRoleId.PRE_TRADE_CRITIC.value
+    assert critic_task.input_artifacts == actual
+
+    with pytest.raises(ValueError, match="generic completion cannot complete a Critic"):
+        orchestrator.complete_task(
+            episode.episode_id,
+            WorkflowTaskResult(
+                critic_task.task_id,
+                WorkflowTaskStatus.COMPLETED,
+                (_ref(ArtifactKind.HYPOTHESIS),),
+                (),
+                (),
+            ),
+            _at(1),
+        )
+    assert orchestrator.episode(episode.episode_id).status.name == "RUNNING"
+
+
 def test_main_never_owns_durable_schedule_or_effectful_outputs() -> None:
     source = __import__("inspect").getsource(MainAgent)
     assert "Postgres" not in source and "repository" not in source.lower()
