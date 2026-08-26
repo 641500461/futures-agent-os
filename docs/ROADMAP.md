@@ -1,7 +1,7 @@
 # 绿地版本路线图与可勾选任务
 
-版本：`2.1-proposed`  
-最后更新：2026-08-24
+版本：`2.2-proposed`<br>
+最后更新：2026-08-27
 任务状态唯一来源：本文件
 
 ## 状态约定
@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-009`；下一任务为 `V1-010`。
+当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-010`；下一任务为 `MVP-R-001` 研究可用性试验，取得 `GO` 前不自动进入 `V1-011`。
 
 ## 全局依赖原则
 
@@ -104,20 +104,27 @@ Exit：新仓库可独立启动和恢复；领域、Agent、Tool、数据、安�
 - [x] `V1-009` 实现研究版 Pre-trade Critic，检查反证、数据泄漏、成本覆盖、样本适用性和结论强度。
   Acceptance: 高严重度未解决项强制 `DEFER`，迭代次数有上限。  
   Evidence: 2026-08-25 初始实现按常规研究契约路由使用 `gpt-5.6-terra` / `medium`，在独立验收发现持久化、权限和 SQL/Python 一致性风险后升级为 `gpt-5.6-terra` / `high` 加固；独立 `gpt-5.6-sol` / `high` 多轮对抗复验最终无 P0–P3。实现 commit `efd832a`。Catalog 升至 1.4；新增不可变、内容寻址的 `Critique`、固定 policy/revision 上限、Pre-trade Critic artifact-only adapter，以及跨进程可恢复的 Research 三产物 fan-in、专用 fenced completion、sidecar hydration 与最小权限 migration `0006`。因 V1-010 的确定性诊断生产者尚未实现，V1-009 不接受调用方自报诊断，八类检查固定产生完整 `GAP/UNRESOLVED`，其中 `DATA_LEAKAGE=HIGH`，唯一合法结论为 `DEFER` 且 `max_iterations=1`；generic/legacy completion、过期来源、非规范嵌套快照、错误 hypothesis/revision、越权字段、直接 sidecar 读取及不精确重试均 fail closed。`make check` 通过（contract `224 passed`、property `9 passed`、mypy `50` source files），全新 PostgreSQL 全量测试为 `276 passed`，Critic integration `1 passed`，8 项 migration round-trip 通过；空库 `head → 0005 → head` 正确恢复 V1-008 worker 权限，有 durable Critique 事实时 downgrade 在任何 schema 变更前原子拒绝并保留 `0006` 数据。未实现模型调用、V1-010 诊断工具、StrategyCandidate、TradePlan、Order 或任何交易副作用。
-- [ ] `V1-010` 实现研究工具：market/historical/feature/contract 查询、memory/experiment search、L0 Signal Test、L1 Bar Backtest，以及单策略基础 walk-forward、成本/滑点 stress 与 counterfactual。  
-  Acceptance: 工具结果包含版本、`as_of`、source refs、warnings、artifact refs 和失败码；基础验证固定样本切分、成本假设、停止规则与可复现配置，供后续 L2 资格证据复用。  
+- [x] `V1-010` 实现研究工具：market/historical/feature/contract 查询、memory/experiment search、L0 Signal Test、L1 Bar Backtest，以及单策略基础 walk-forward、成本/滑点 stress 与 counterfactual。
+  Acceptance: 工具结果包含版本、`as_of`、source refs、warnings、artifact refs 和失败码；基础验证固定样本切分、成本假设、停止规则与可复现配置，供后续 L2 资格证据复用；至少一条冻结 `MarketSnapshot → research diagnostics → Critic` 垂直链路可重放，且工具不能产生交易副作用。V1-010 完成只触发 `MVP-R-001`，不等于 MVP 已成立。<br>
+  Evidence: 2026-08-27 按 PIT、可重放与工具权限边界使用 `gpt-5.6-terra` / `high` 实现，独立 `gpt-5.6-sol` / `high` 经六轮对抗复验最终无 P0–P3；实现 commit `67faddf`。Catalog/Tool Registry 升至 1.5/1.1 并仅授权 11 个精确版本新工具；旧 Catalog 1.4 语义保留，1.5 对 legacy research grants 稳定拒绝。L0 仅验证 signal/forward label，L1 固定 close-to-next-open 方向近似、成本与滑点且无 fill 语义；walk-forward 使用固定时序 train/embargo/test、不调参和停止规则，stress 逐项只改成本或滑点，counterfactual 只反转 signal direction。完整 `MarketSnapshot → 11 tool results → 8 diagnostics → Critic → AgentTaskEnvelope/StructuredArtifact` 链路具有确定 logical identity、JSON hydration 和跨 worker recovery；composition-root trusted ports、真实 V1-005 `FeatureObservation`、owner-issued memory/experiment batches、tool-result proof 及 deterministic rerun 阻断伪造来源、metrics、失败实验或 diagnostics，缺失/重复/过期/篡改不会产生 PASS artifact。`make check` 通过（contract `232 passed`、property `9 passed`、mypy `53` source files）；全新 PostgreSQL `alembic upgrade head` 后全量 `284 passed`，8 项 migration round-trip 通过，Ruff、secret scan、schema compatibility、health 与 diff check 均通过。未实现真实模型调用、V1-011/V2、StrategyCandidate、TradePlan、Order/Fill/Position 或任何交易副作用；本任务完成只触发 `MVP-R-001`，不等于 MVP 已成立。
+- [ ] `MVP-R-001` 在 `V1-010` 后运行研究可用性试验：补齐最小真实模型调用、受限串行工具循环、少量授权真实 PIT 数据、Replay/Evaluation Harness、诊断/封存 Episode、基线与 Critic ablation，以及真实用户 shadow 使用。<br>
+  Depends: `V1-010`。<br>
+  Acceptance: 严格执行 [`MVP-RESEARCH-VALIDATION.md`](./MVP-RESEARCH-VALIDATION.md)；30 个诊断 Episode 只用于开发和冻结门槛，至少 50 个新封存 holdout Episode 用于最终评分，随后完成至少 10 次真实 shadow 研究；future leakage、无来源数字、越权工具和交易副作用均为零，Critical scenario 正确拒绝率 100%，Critic 高严重度缺陷召回率至少 95%；只有真实性与安全、智能有效性和用户价值三类门槛全部通过并记录用户/产品治理 `GO`，才可声明 MVP-R 并开始 `V1-011`。<br>
   Evidence: 待补。
 - [ ] `V1-011` 实现基础 Experiment Manager 与异步 Research Job 状态机：预注册实验、排队、运行、部分完成、失败、取消、超时和恢复。  
+  Depends: `MVP-R-001` Gate 决定为 `GO`。<br>
   Acceptance: 每个任务有算力/时间预算；结果可回流原对话；Experiment Manager 不能交易或晋升策略。  
   Evidence: 待补。
 - [ ] `V1-012` 建立 Agent 研究评测集：工具选择、引用正确性、数字 grounding、反证覆盖、`NO_TRADE/DEFER` 和相同证据重放。  
+  Depends: `MVP-R-001` Gate 决定为 `GO`、`V1-011`。<br>
   Acceptance: 评测集、评分规则和版本已冻结；每次模型/Prompt/Toolset 变更都会生成可比较报告。  
   Evidence: 待补。
 - [ ] `V1-013` 实现 `OBSERVE` Opportunity Radar：按 ScanPolicy/UniversePolicy 或事件扫描品种宇宙，产出 `OpportunityScan` 与 `OpportunityCandidate`，并形成重要研究摘要。  
+  Depends: `V1-011`、`V1-012`。<br>
   Acceptance: 每次扫描绑定宇宙、时点、数据/特征版本和预算；OBSERVE 的 account/mandate 可空；候选有支持与反对证据、时间尺度、去重/冷却信息和 `NO_OPPORTUNITY`结果；漏跑可补跑，且不能创建 TradePlan、Order 或账务副作用。  
   Evidence: 待补。
 
-Exit：从用户问题或时间表/市场事件到 OpportunityCandidate、Hypothesis、实验结果、Critique 和证据化答复可完整重放；没有任何 Order、Fill、Position 或账本副作用。
+Exit：`MVP-R-001` 已取得用户/产品治理 `GO`；从用户问题或时间表/市场事件到 OpportunityCandidate、Hypothesis、实验结果、Critique 和证据化答复可完整重放；没有任何 Order、Fill、Position 或账本副作用。
 
 ## V2：确定性模拟交易内核
 

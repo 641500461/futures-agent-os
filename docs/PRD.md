@@ -1,7 +1,7 @@
 # Agent Quant Research & Futures Simulation OS — 产品需求文档
 
-文档版本：`2.1-proposed`  
-日期：2026-08-18  
+文档版本：`2.2-proposed`<br>
+日期：2026-08-25<br>
 项目性质：Greenfield，全新独立项目  
 工作名称：`Futures Agent OS`  
 目标市场：中国境内商品期货与金融期货模拟研究  
@@ -25,6 +25,7 @@
 - [技术方案](./TECHNICAL-DESIGN.md)
 - [旧项目资产复用评估](./LEGACY-ASSET-REUSE.md)
 - [版本路线图](./ROADMAP.md)
+- [MVP-R 研究可用性验证](./MVP-RESEARCH-VALIDATION.md)
 - [领域上下文地图](./CONTEXT-MAP.md)
 - [跨对话交接](./HANDOFF.md)
 - [系统架构、用户生命周期与盯盘调度](./SYSTEM-ARCHITECTURE-AND-LIFECYCLE.md)
@@ -1121,6 +1122,8 @@ Exit：旧仓库和旧数据库完全离线时，新项目仍可独立启动和�
 不包含：TradePlan 提交、Order/Fill、账户模拟或 Validated Lesson 自动使用。
 
 Exit：连续覆盖约定扫描时段，完成可重放的 OBSERVE scan → hypothesis → experiment → critique → candidate/NO_TRADE 链路，不产生 TradePlan 或交易副作用。
+
+阶段性产品门槛：`V1-010` 完成后先执行 [`MVP-R-001`](./MVP-RESEARCH-VALIDATION.md)，用真实模型、授权真实 PIT 数据、Replay/基线/Critic ablation 和真实用户 shadow 使用验证研究价值。`V1-010` 只是试验起跑线；只有取得用户/产品治理 `GO` 才可声明 MVP-R，并继续 Experiment Manager 和 Opportunity Radar 的工业化建设。
 
 ### V2 — Deterministic Simulation Core
 

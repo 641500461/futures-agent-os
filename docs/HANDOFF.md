@@ -1,11 +1,11 @@
 # 跨对话交接
 
-文档版本：`2.1-proposed`  
-最后更新：2026-08-25
+文档版本：`2.2-proposed`<br>
+最后更新：2026-08-27
 当前阶段：V1 自主研究与机会雷达
-最近完成：`V1-009` 研究版 Pre-trade Critic 与 fail-closed 持久研究门禁
+最近完成：`V1-010` 可重放研究工具、基础验证与 Catalog 1.5 Critic 垂直链
 当前开发任务：无
-建议下一步：启动 `V1-010` 研究工具与基础验证能力
+建议下一步：执行 `MVP-R-001` 研究可用性试验；取得 `GO` 前不进入 `V1-011`
 
 开发模型路由：按 `docs/DEVELOPMENT-MODEL-POLICY.md` 自动选择；常规开发使用 Terra/medium，安全关键开发使用 Terra/high，版本验收使用独立 Sol/high 或 xhigh。每项 Evidence 必须记录实际模型与推理强度。
 
@@ -39,12 +39,13 @@
 |---|---|
 | V0 地基 | 新仓库、领域/Agent/Tool 契约、PostgreSQL、数据 manifest、安全与 CI |
 | V1 自主研究与机会雷达 | Main、Regime、Research、Critic、基础 Experiment Manager 按用户、时间表或市场事件完成只读可复现机会研究 |
+| MVP-R 研究可用性门槛 | `V1-010` 后用真实模型、授权真实 PIT 数据、Replay/基线/Critic ablation 和用户 shadow 证明研究价值；`GO` 才解锁 `V1-011` |
 | V2 确定性模拟内核 | 原子风险预留、最小 AutonomyGate/Receipt、硬风控、订单、撮合、账本、结算、保护和恢复无需 LLM |
 | V3 受约束自治多 Agent 模拟交易 | EffectiveAutonomy 成立时自主找机会、论证、模拟执行、盯盘、复盘和重要信息通知 |
 | V4 验证学习 | Experiment 与 V3 Reviewer 扩展、Memory、Lesson 与 Strategy 晋升闭环 |
 | V5 高保真/离线增强 | Tick/订单簿/Paper、组合扩展、离线模型增强和运营成熟 |
 
-详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-014` 及 `V1-001` 至 `V1-009` 已完成；下一任务为 `V1-010`。
+详细任务、依赖和 Acceptance 只以 `ROADMAP.md` 为准。当前 `V0-001` 至 `V0-014` 及 `V1-001` 至 `V1-010` 已完成；下一任务固定为 `MVP-R-001`。在 [`MVP-RESEARCH-VALIDATION.md`](./MVP-RESEARCH-VALIDATION.md) 的真实性与安全、智能有效性和用户价值门槛全部通过并取得 `GO` 前，不开始 `V1-011` Experiment Manager 或 Opportunity Radar 工业化。
 
 ## 设计资料状态
 
@@ -154,9 +155,15 @@
 
 2026-08-25 初始使用 `gpt-5.6-terra` / `medium` 实现研究版 Pre-trade Critic，因独立复核发现安全关键持久化与权限边界而升级至 `gpt-5.6-terra` / `high` 加固；独立 `gpt-5.6-sol` / `high` 最终复验无 P0–P3。实现 commit 为 `efd832a`。Catalog 1.4、不可变 Critique、固定 policy/revision、Research 三产物实际 fan-in、专用 fenced PostgreSQL completion、持久 hydration、ACL 和 migration downgrade 边界均已完成。V1-010 尚未提供权威诊断，因此八类检查固定为 GAP/UNRESOLVED、DATA_LEAKAGE 为 HIGH，结论只能 DEFER，迭代上限为 1；调用方不能注入诊断或 verdict。`make check` 通过（contract `224 passed`、property `9 passed`、mypy `50` source files），全新 PostgreSQL 全量 `276 passed`，8 项 migration round-trip 与 populated downgrade 原子拒绝通过。没有模型调用、诊断工具、StrategyCandidate、TradePlan 或交易副作用。
 
-## 下一任务：V1-010
+## 最近完成：V1-010
 
-实现 market/historical/feature/contract 查询、memory/experiment search、L0 Signal Test、L1 Bar Backtest，以及基础 walk-forward、成本/滑点 stress 与 counterfactual；所有结果必须带版本、PIT 来源、warnings、artifact refs、失败码和可复现配置。不得把诊断工具输出扩张为交易权限或真实下单能力。
+2026-08-27 使用 `gpt-5.6-terra` / `high` 实现，独立 `gpt-5.6-sol` / `high` 六轮对抗复验最终无 P0–P3；实现 commit `67faddf`。新增精确版本的 market/historical/feature/contract、memory/experiment、L0/L1、walk-forward、成本/滑点 stress 与 counterfactual 工具，以及独立 Diagnostic Producer 和 Catalog 1.5 Critic worker。冻结 request/config/split/cost/stop/scope 可跨 JSON/进程完整重放；结果与上游 feature/memory/experiment 由 composition-root trusted ports 验证，真实 V1-005 `FeatureObservation` 谱系、PIT/有效期、失败实验、工具 metrics 及八类 diagnostics 皆 fail closed。冻结 `MarketSnapshot → 11 tool results → 8 diagnostics → Critic → AgentTaskEnvelope/StructuredArtifact` 垂直链可重放，缺失/重复/过期/篡改诊断只产生可审计 FAILED，不产生 PASS artifact。`make check` 通过（contract `232 passed`、property `9 passed`、mypy `53` source files）；全新 PostgreSQL 升级到 head 后全量 `284 passed`，8 项 migration round-trip 通过。未实现真实模型调用、V1-011/V2、StrategyCandidate、TradePlan、Order/Fill/Position 或任何交易副作用；完成只触发 `MVP-R-001`，不等于 MVP 已成立。
+
+## V1-010 后的强制下一任务：MVP-R-001
+
+立即按 [`MVP-RESEARCH-VALIDATION.md`](./MVP-RESEARCH-VALIDATION.md) 启动研究可用性试验：补齐最小真实模型调用、受限串行工具循环、少量授权真实 PIT 数据和 Replay/Evaluation Harness；先跑 30 个诊断 Episode 并冻结评分，再跑至少 50 个新封存 holdout Episode，最后完成至少 10 次真实用户 shadow 研究。
+
+只有硬安全、智能有效性和用户价值三类门槛全部通过并由用户/产品治理记录 `GO`，才能称为 MVP-R 并启动 `V1-011`。`ITERATE/REPAIR` 只允许在预注册预算内修正和复验；`STOP/PIVOT` 时不得因已有投入自动继续 V1/V2。
 
 ## 固定工作流程
 
@@ -190,4 +197,4 @@ Next task:
 
 ## 新对话可直接使用的提示
 
-> 请先阅读 `/Users/qiu/work/futures-agent-os/docs/HANDOFF.md`、`ROADMAP.md`、仓库根 `README.md` 及当前任务引用的 PRD/技术章节。这是完全独立的绿地项目；`/Users/qiu/futures_workflow` 仅是 donor，不继承其运行状态，也不把其能力计作新项目进度。只执行路线图中首个已获授权的未完成任务，保持研究与模拟边界，并用新项目测试证据更新路线图和本交接文件。
+> 请先阅读 `/Users/qiu/work/futures-agent-os/docs/HANDOFF.md`、`ROADMAP.md`、仓库根 `README.md` 及当前任务引用的 PRD/技术章节。这是完全独立的绿地项目；`/Users/qiu/futures_workflow` 仅是 donor，不继承其运行状态，也不把其能力计作新项目进度。只执行路线图中首个已获授权的未完成任务，保持研究与模拟边界，并用新项目测试证据更新路线图和本交接文件。当前下一任务为 `MVP-R-001`；取得 `GO` 前不得启动 `V1-011`。
