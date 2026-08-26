@@ -44,7 +44,7 @@ from futures_agent_os.research_experiment import (
     V1_009_REQUIRED_VALIDATIONS,
     v1_009_critique_policy,
 )
-from futures_agent_os.shared_kernel import EntityId, RecordedAt, TraceContext, canonical_sha256
+from futures_agent_os.shared_kernel import EntityId, RecordedAt, SchemaVersion, TraceContext, canonical_sha256
 
 
 def _at(minutes: int = 0) -> RecordedAt:
@@ -144,14 +144,14 @@ def _task(refs: tuple[ArtifactRef, ...], expires_at: RecordedAt) -> AgentTaskEnv
         correlation_id,
         TraceContext(correlation_id, EntityId.new("trace")),
         AgentRoleId.PRE_TRADE_CRITIC.value,
-        CATALOG_VERSION,
+        SchemaVersion(1, 4),
         "independently challenge the supplied research",
         "return one deterministic research critique",
         (TriggerSource.DATA,),
         refs,
         (),
         (),
-        definition_for(AgentRoleId.PRE_TRADE_CRITIC.value).budget,
+        definition_for(AgentRoleId.PRE_TRADE_CRITIC.value, SchemaVersion(1, 4)).budget,
         (ArtifactKind.CRITIQUE,),
         refs[0].as_of,
         expires_at,
@@ -340,7 +340,7 @@ def test_critic_adapter_binds_exact_sources_and_has_no_authority_or_tool_surface
     with pytest.raises(ValueError, match="tool"):
         validate_task_envelope(replace(task, allowed_tools=("backtest",)))
 
-    role = definition_for(AgentRoleId.PRE_TRADE_CRITIC.value)
+    role = definition_for(AgentRoleId.PRE_TRADE_CRITIC.value, SchemaVersion(1, 4))
     assert role.input_kinds == (
         ArtifactKind.HYPOTHESIS,
         ArtifactKind.EVIDENCE_SYNTHESIS,

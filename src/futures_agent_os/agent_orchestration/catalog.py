@@ -69,7 +69,7 @@ class AgentDefinition:
 # MarketStateAssessment.  User-opinion, degradation, and Reflection adapters
 # need their own later artifact contracts; they are not claimed by this task.
 # Tasks under earlier catalog contracts are deliberately not silently reinterpreted.
-CATALOG_VERSION = SchemaVersion(1, 4)
+CATALOG_VERSION = SchemaVersion(1, 5)
 _ALL_TRIGGERS = tuple(TriggerSource)
 _READ_BUDGET = AgentBudget(4, 16, 12_000, 120)
 _RESEARCH_BUDGET = AgentBudget(6, 24, 18_000, 300, 2)
@@ -150,7 +150,19 @@ AGENT_CATALOG: tuple[AgentDefinition, ...] = (
         "does not alter a strategy registry or select evidence",
         (ArtifactKind.MARKET_STATE_ASSESSMENT,),
         (ArtifactKind.HYPOTHESIS, ArtifactKind.EVIDENCE_SYNTHESIS, ArtifactKind.EXPERIMENT_REQUEST),
-        ("historical_data", "backtest", "walk_forward_test", "stress_test"),
+        (
+            "market_query",
+            "historical_query",
+            "feature_query",
+            "contract_query",
+            "memory_search",
+            "experiment_search",
+            "l0_signal_test",
+            "l1_bar_backtest",
+            "walk_forward_test",
+            "cost_slippage_stress",
+            "counterfactual_test",
+        ),
         FailureDisposition.KEEP_DRAFT,
         ("falsifiability", "evidence_coverage", "failed_experiment_retention"),
         _RESEARCH_BUDGET,
@@ -204,7 +216,13 @@ AGENT_CATALOG: tuple[AgentDefinition, ...] = (
         "V1",
         "deterministically gate auditable V1 research using explicit counter-evidence and diagnostics",
         "does not create TradePlan or StrategyCandidate, run tools, grant authority, or replace Risk Constitution",
-        (ArtifactKind.HYPOTHESIS, ArtifactKind.EVIDENCE_SYNTHESIS, ArtifactKind.EXPERIMENT_REQUEST),
+        (
+            ArtifactKind.MARKET_SNAPSHOT,
+            ArtifactKind.HYPOTHESIS,
+            ArtifactKind.EVIDENCE_SYNTHESIS,
+            ArtifactKind.EXPERIMENT_REQUEST,
+            ArtifactKind.RESEARCH_DIAGNOSTIC,
+        ),
         (ArtifactKind.CRITIQUE,),
         (),
         FailureDisposition.FAIL_CLOSED,
@@ -259,11 +277,25 @@ AGENT_CATALOG: tuple[AgentDefinition, ...] = (
 
 _BY_ROLE = {definition.role_id.value: definition for definition in AGENT_CATALOG}
 
+# Freeze the V1-009 catalog exactly. Its Critic remains the fixed GAP/DEFER
+# adapter and its Research role retains the pre-V1-010 prospective tool names.
+_CATALOG_1_4 = {
+    definition.role_id.value: replace(definition, version=SchemaVersion(1, 4)) for definition in AGENT_CATALOG
+}
+_CATALOG_1_4[AgentRoleId.RESEARCH.value] = replace(
+    _CATALOG_1_4[AgentRoleId.RESEARCH.value],
+    declared_tools=("historical_data", "backtest", "walk_forward_test", "stress_test"),
+)
+_CATALOG_1_4[AgentRoleId.PRE_TRADE_CRITIC.value] = replace(
+    _CATALOG_1_4[AgentRoleId.PRE_TRADE_CRITIC.value],
+    input_kinds=(ArtifactKind.HYPOTHESIS, ArtifactKind.EVIDENCE_SYNTHESIS, ArtifactKind.EXPERIMENT_REQUEST),
+)
+
 # Freeze the V1-008 catalog exactly.  In particular its Critic still described
 # the future plan-facing surface and must not be reinterpreted as the V1-009
 # research-only adapter during replay.
 _CATALOG_1_3 = {
-    definition.role_id.value: replace(definition, version=SchemaVersion(1, 3)) for definition in AGENT_CATALOG
+    definition.role_id.value: replace(definition, version=SchemaVersion(1, 3)) for definition in _CATALOG_1_4.values()
 }
 _CATALOG_1_3[AgentRoleId.PRE_TRADE_CRITIC.value] = replace(
     _CATALOG_1_3[AgentRoleId.PRE_TRADE_CRITIC.value],
@@ -303,6 +335,7 @@ _CATALOG_1_2[AgentRoleId.MAIN.value] = replace(
 _CATALOGS = {
     SchemaVersion(1, 2): _CATALOG_1_2,
     SchemaVersion(1, 3): _CATALOG_1_3,
+    SchemaVersion(1, 4): _CATALOG_1_4,
     CATALOG_VERSION: _BY_ROLE,
 }
 

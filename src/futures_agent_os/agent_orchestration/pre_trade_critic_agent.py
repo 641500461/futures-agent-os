@@ -10,7 +10,7 @@ from futures_agent_os.research_experiment.critique import (
     FindingState,
     ResearchArtifactIdentity,
 )
-from futures_agent_os.shared_kernel import EntityId
+from futures_agent_os.shared_kernel import EntityId, SchemaVersion
 
 from .catalog import AgentRoleId, validate_task_envelope
 from .contracts import AgentTaskEnvelope, ArtifactClaim, ArtifactKind, ArtifactRef, StructuredArtifact
@@ -110,8 +110,10 @@ class PreTradeCriticAgent:
             raise ValueError("critic adapter requires the Pre-trade Critic role")
         if task.allowed_tools:
             raise ValueError("V1 critic adapter performs no tool calls")
-        if critique.policy.schema_version != task.catalog_version:
-            raise ValueError("critic policy schema must match the task catalog contract")
+        # This adapter is the historical Catalog 1.4 fixed-GAP path. Catalog
+        # 1.5 is dispatched to the synchronous V1_010CriticWorker instead.
+        if critique.policy.schema_version != SchemaVersion(1, 4) or task.catalog_version != SchemaVersion(1, 4):
+            raise ValueError("legacy critic adapter requires its pinned 1.4 policy")
         if task.required_outputs != (ArtifactKind.CRITIQUE,):
             raise ValueError("critic task must require exactly one critique")
         if task.input_artifacts != sources.refs:
