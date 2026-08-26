@@ -55,6 +55,7 @@ class ArtifactKind(StrEnum):
     RESEARCH_PLAN = "research_plan"
     EXPERIMENT_REQUEST = "experiment_request"
     EVIDENCE_SYNTHESIS = "evidence_synthesis"
+    RESEARCH_DIAGNOSTIC = "research_diagnostic"
     STRATEGY_CANDIDATE = "strategy_candidate"
     TRADE_PLAN_DRAFT = "trade_plan_draft"
     CRITIQUE = "critique"
@@ -125,6 +126,8 @@ class ArtifactRef:
             "research_synthesis",
             "critique",
             "signal_result",
+            "critique_diagnostic",
+            "research_tool_result",
         }
         if self.artifact_id.namespace not in allowed_namespaces:
             raise ValueError("artifact reference has an invalid identity namespace")

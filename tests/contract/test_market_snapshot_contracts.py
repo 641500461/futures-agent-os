@@ -3,8 +3,21 @@
 from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
 from dataclasses import FrozenInstanceError, replace
+import json
 
 import pytest
+
+from futures_agent_os.market_intelligence import FeatureObservation
+from futures_agent_os.agent_orchestration import (
+    AgentRoleId,
+    AgentTaskEnvelope,
+    ArtifactKind,
+    ResultStatus,
+    TriggerSource,
+    V1_010CriticTaskSources,
+    V1_010ResearchCriticAgent,
+    definition_for,
+)
 
 from futures_agent_os.reference_market_data import (
     BarInterval,
@@ -66,7 +79,38 @@ from futures_agent_os.shared_kernel import (
     RecordedAt,
     SchemaVersion,
     ShanghaiTimestamp,
+    TraceContext,
     TradingDate,
+    canonical_sha256,
+)
+from futures_agent_os.research_experiment import (
+    CritiqueStatus,
+    DeterministicResearchTools,
+    DiagnosticEvidenceV1_010,
+    EvidenceGap,
+    ExperimentOutcome,
+    ExperimentRequestSpec,
+    ExperimentSearchRecord,
+    FalsifiableHypothesisSpec,
+    HypothesisProposalSource,
+    MarketStateAssessmentRef,
+    MemorySearchRecord,
+    PRIOR_CLOSE_RETURN_FEATURE_SPEC_ID,
+    PRIOR_CLOSE_RETURN_FEATURE_SPEC_SHA256,
+    ResearchQueryScope,
+    ResearchArtifactRef,
+    ResearchSynthesisComposer,
+    ResearchSynthesisInput,
+    ToolFailureCode,
+    TrustedExperimentSearchPort,
+    TrustedFeatureEvidencePort,
+    TrustedMemorySearchPort,
+    TrustedResearchToolsPort,
+    V1_010CritiqueComposer,
+    V1_010CriticWorker,
+    V1_010DiagnosticProducer,
+    ValidationConfig,
+    ValidationRunRequest,
 )
 
 
@@ -547,3 +591,558 @@ def test_snapshot_rejects_forged_calendar_phase_ref_and_later_as_of_evidence() -
         snapshot(calendar=forged_ref)
     with pytest.raises(ValueError, match="as_of must exactly match"):
         snapshot(calendar=replace(accepted, as_of=at(15)), as_of=at(14))
+
+
+def _final_bar(sequence: int, opening: str, closing: str) -> MarketObservation:
+    event = at(13, sequence)
+    return MarketObservation(
+        EntityId.new("market_observation"),
+        instrument(),
+        ObservationKind.BAR,
+        event,
+        event,
+        event,
+        provenance(),
+        SourceTrust.PRIMARY,
+        SchemaVersion(1, 0),
+        sequence,
+        DatasetRecordRef(_MANIFEST_ID, f"bar/{sequence}", format(sequence, "064x")),
+        open_price=Price(opening, "CNY", "CNY/tonne", 1),
+        high_price=Price(str(max(Decimal(opening), Decimal(closing)) + Decimal("1.0")), "CNY", "CNY/tonne", 1),
+        low_price=Price(str(min(Decimal(opening), Decimal(closing)) - Decimal("1.0")), "CNY", "CNY/tonne", 1),
+        close_price=Price(closing, "CNY", "CNY/tonne", 1),
+        volume=Quantity("10", "lot", 0),
+        bar_interval=BarInterval("1m", timedelta(minutes=1)),
+        bar_status=BarStatus.FINAL,
+    )
+
+
+def _v1_010_research(as_of: RecordedAt):
+    valid_until = RecordedAt(as_of.value + timedelta(hours=1))
+    market = MarketStateAssessmentRef(
+        EntityId.new("market_state_assessment"), SchemaVersion(1, 5), as_of, valid_until, "a" * 64
+    )
+    values = ResearchSynthesisInput(
+        "A fixed signal differs from its prespecified control.",
+        ("AG",),
+        "Held-out return differs from control.",
+        "Held-out return includes zero.",
+        ("historical_data",),
+        HypothesisProposalSource.MARKET_STATE_ASSESSMENT,
+        ("Frozen PIT bars are available.",),
+        (),
+        (),
+        ("Run the fixed suite.",),
+        (EvidenceGap("validation", "Requires deterministic diagnostics."),),
+        "Zero-return control.",
+        "Fixed chronological windows.",
+        "Synchronous deterministic proxy.",
+        ("mean_return",),
+        ("all eight critic diagnostics",),
+        "Stop after fixed folds.",
+        ("selection_bias",),
+    )
+    return ResearchSynthesisComposer().compose(
+        FalsifiableHypothesisSpec(EntityId.new("hypothesis_spec"), 1, SchemaVersion(1, 5)),
+        ExperimentRequestSpec(EntityId.new("experiment_request_spec"), 1, SchemaVersion(1, 5)),
+        market,
+        values,
+        valid_until,
+    )
+
+
+def test_v1_010_snapshot_validation_diagnostics_and_critic_are_replayable_and_fail_closed() -> None:
+    bars = tuple(_final_bar(index, f"{6000 + index}.0", f"{6000 + index}.0") for index in range(1, 38))
+    frozen = snapshot(observations=bars, as_of=at(14), purpose=SnapshotPurpose.RESEARCH)
+    config = ValidationConfig(
+        EntityId.new("research_validation_config"),
+        1,
+        20,
+        5,
+        5,
+        20,
+        Decimal("0.00010000"),
+        Decimal("0.00000000"),
+        Decimal("0.00000000"),
+        (Decimal("1.00000000"), Decimal("2.00000000")),
+        2,
+    )
+    valid_until = RecordedAt(frozen.as_of.value + timedelta(hours=1))
+    research = _v1_010_research(frozen.as_of)
+    scope = ResearchQueryScope(
+        frozen.rule_resolution.rule.instrument.reference_id,
+        frozen.rule_resolution.rule.instrument.variety.code,
+        config.signal_rule,
+        config.content_sha256,
+        research.hypothesis.content_sha256,
+        ("AG",),
+    )
+    snapshot_ref = ResearchArtifactRef(
+        frozen.snapshot_id,
+        "market_snapshot",
+        frozen.schema_version,
+        frozen.expected_content_sha256,
+        frozen.as_of,
+        valid_until,
+    )
+    feature_definition_ref = {
+        "definition_id": str(EntityId.new("feature_definition")),
+        "version": 1,
+        "schema_version": "1.0",
+        "content_sha256": "8" * 64,
+        "algorithm": "SIMPLE_RETURN",
+    }
+    feature_payload = {
+        "feature_spec_id": str(PRIOR_CLOSE_RETURN_FEATURE_SPEC_ID),
+        "feature_spec_content_sha256": PRIOR_CLOSE_RETURN_FEATURE_SPEC_SHA256,
+        "feature_spec": {
+            "spec_id": str(PRIOR_CLOSE_RETURN_FEATURE_SPEC_ID),
+            "version": 1,
+            "schema_version": "1.0",
+            "content_sha256": PRIOR_CLOSE_RETURN_FEATURE_SPEC_SHA256,
+            "definition": feature_definition_ref,
+        },
+        "feature_definition": feature_definition_ref,
+        "feature_algorithm": "SIMPLE_RETURN",
+        "target_reference_id": frozen.rule_resolution.rule.instrument.reference_id,
+        "as_of": frozen.as_of.to_dict()["recorded_at"],
+        "input_window_size": 2,
+        "market_snapshot_refs": (
+            {
+                "snapshot_id": str(EntityId.new("market_snapshot")),
+                "content_sha256": "7" * 64,
+                "as_of": at(13).to_dict()["recorded_at"],
+                "schema_version": str(frozen.schema_version),
+                "purpose": frozen.intended_purpose.value,
+            },
+            {
+                "snapshot_id": str(frozen.snapshot_id),
+                "content_sha256": frozen.expected_content_sha256,
+                "as_of": frozen.as_of.to_dict()["recorded_at"],
+                "schema_version": str(frozen.schema_version),
+                "purpose": frozen.intended_purpose.value,
+            },
+        ),
+        "observation_ids": (str(bars[-2].observation_id), str(bars[-1].observation_id)),
+        "input_observation_refs": (
+            {
+                "observation_id": str(bars[-2].observation_id),
+                "content_sha256": bars[-2].dataset_record_ref.record_sha256,
+            },
+            {
+                "observation_id": str(bars[-1].observation_id),
+                "content_sha256": bars[-1].dataset_record_ref.record_sha256,
+            },
+        ),
+        "value": {"amount": "0.00010000", "unit": "ratio", "scale": 8},
+        "schema_version": "1.0",
+    }
+    attacker_feature_authority = TrustedFeatureEvidencePort(b"attacker-feature-secret-v1-010-test")
+    attacker_memory_authority = TrustedMemorySearchPort(b"attacker-memory-secret-v1-010-tests-")
+    attacker_experiment_authority = TrustedExperimentSearchPort(b"attacker-experiment-secret-v1-tests")
+    feature_authority = TrustedFeatureEvidencePort(b"feature-owner-secret-for-v1-010-tests")
+    memory_authority = TrustedMemorySearchPort(b"memory-owner-secret-for-v1-010-tests-")
+    experiment_authority = TrustedExperimentSearchPort(b"experiment-owner-secret-v1-010-tests")
+    result_authority = TrustedResearchToolsPort(b"result-owner-secret-for-v1-010-tests-")
+    feature_observation = FeatureObservation.hydrate(EntityId.new("feature_observation"), feature_payload)
+    feature = feature_authority.issue(
+        feature_observation,
+        snapshot_ref,
+        valid_until,
+        scope,
+    )
+    lesson = MemorySearchRecord(
+        ResearchArtifactRef(
+            EntityId.new("artifact"), "validated_lesson", SchemaVersion(1, 5), "f" * 64, at(12), valid_until
+        ),
+        ("AG",),
+        scope_sha256=scope.content_sha256,
+    )
+    provenance_ref = ResearchArtifactRef(
+        EntityId.new("artifact"), "dataset", SchemaVersion(1, 5), "d" * 64, at(11), valid_until
+    )
+    failed_experiment = ExperimentSearchRecord(
+        ResearchArtifactRef(
+            EntityId.new("artifact"), "experiment_result", SchemaVersion(1, 5), "c" * 64, at(12), valid_until
+        ),
+        ("AG",),
+        ExperimentOutcome.SUCCESS,
+        at(13),
+        (provenance_ref,),
+        scope.content_sha256,
+    )
+    request = ValidationRunRequest(
+        EntityId.new("research_validation_request"),
+        EntityId.new("research_validation_run"),
+        snapshot_ref,
+        config,
+        scope,
+        (feature,),
+        memory_authority.issue((lesson,)),
+        experiment_authority.issue((failed_experiment,)),
+    )
+    hydrated_request = ValidationRunRequest.hydrate(request.to_dict())
+    tools = DeterministicResearchTools(feature_authority, memory_authority, experiment_authority, result_authority)
+    attacker_feature = attacker_feature_authority.issue(feature_observation, snapshot_ref, valid_until, scope)
+    with pytest.raises(ValueError, match="authority proof"):
+        tools.run_snapshot_suite(frozen, replace(request, feature_evidence=(attacker_feature,)))
+    with pytest.raises(ValueError, match="authority proof"):
+        tools.run_snapshot_suite(frozen, replace(request, memory_batch=attacker_memory_authority.issue((lesson,))))
+    forged_provenance = replace(provenance_ref, content_sha256="9" * 64)
+    forged_experiment = replace(failed_experiment, provenance_refs=(forged_provenance,))
+    with pytest.raises(ValueError, match="authority proof"):
+        tools.run_snapshot_suite(
+            frozen,
+            replace(
+                request,
+                experiment_batch=attacker_experiment_authority.issue((forged_experiment,)),
+            ),
+        )
+    results = tools.run_snapshot_suite(frozen, request)
+    replayed_results = DeterministicResearchTools(
+        feature_authority, memory_authority, experiment_authority, result_authority
+    ).run_snapshot_suite(frozen, hydrated_request)
+    evaluated_at = RecordedAt(frozen.as_of.value + timedelta(minutes=10))
+    expires_at = RecordedAt(frozen.as_of.value + timedelta(minutes=30))
+    diagnostics = V1_010DiagnosticProducer(tools).produce(
+        frozen,
+        request,
+        results,
+        research.hypothesis,
+        research.evidence_synthesis,
+        research.experiment_request,
+        evaluated_at,
+    )
+    diagnostics = tuple(
+        type(item)(
+            DiagnosticEvidenceV1_010.hydrate(
+                json.loads(json.dumps(item.evidence.to_dict())),
+                item.evidence.research_sources,
+                item.evidence.tool_results,
+            )
+        )
+        for item in diagnostics
+    )
+    critique = V1_010CriticWorker().run(
+        frozen,
+        request,
+        research.hypothesis,
+        research.evidence_synthesis,
+        research.experiment_request,
+        diagnostics,
+        evaluated_at,
+        expires_at,
+    )
+
+    assert len(results) == 11
+    assert all(result.failure_code is ToolFailureCode.NONE for result in results)
+    assert tuple(result.content_sha256 for result in results) == tuple(
+        result.content_sha256 for result in replayed_results
+    )
+    assert results == replayed_results
+    assert all(result.artifact_refs[0].content_sha256 == result.content_sha256 for result in results)
+    assert type(results[0]).hydrate(results[0].to_dict()).content_sha256 == results[0].content_sha256
+    assert len(critique.diagnostics) == 8
+    assert all(item.evidence.evaluated_at == evaluated_at for item in critique.diagnostics)
+    assert critique.status is CritiqueStatus.PASS
+    hydrated_critique = type(critique).hydrate(
+        critique.to_dict(),
+        research.hypothesis,
+        research.evidence_synthesis,
+        research.experiment_request,
+        results,
+    )
+    assert hydrated_critique == critique
+    assert (
+        critique.content_sha256
+        == V1_010CritiqueComposer()
+        .compose(
+            frozen,
+            hydrated_request,
+            research.hypothesis,
+            research.evidence_synthesis,
+            research.experiment_request,
+            diagnostics,
+            evaluated_at,
+            expires_at,
+        )
+        .content_sha256
+    )
+
+    different_request = replace(
+        request,
+        request_id=EntityId.new("research_validation_request"),
+        run_id=EntityId.new("research_validation_run"),
+    )
+    different_run = tools.run_snapshot_suite(frozen, different_request)
+    with pytest.raises(ValueError, match="untrusted or non-deterministic"):
+        V1_010DiagnosticProducer(tools).produce(
+            frozen,
+            request,
+            (*results[:-1], different_run[-1]),
+            research.hypothesis,
+            research.evidence_synthesis,
+            research.experiment_request,
+            evaluated_at,
+        )
+
+    insufficient = replace(config, train_bars=30)
+    insufficient_scope = replace(scope, config_sha256=insufficient.content_sha256)
+    insufficient_scope_sha = insufficient_scope.content_sha256
+    deferred_request = replace(
+        request,
+        config=insufficient,
+        query_scope=insufficient_scope,
+        feature_evidence=(feature_authority.issue(feature_observation, snapshot_ref, valid_until, insufficient_scope),),
+        memory_batch=memory_authority.issue((replace(lesson, scope_sha256=insufficient_scope_sha),)),
+        experiment_batch=experiment_authority.issue((replace(failed_experiment, scope_sha256=insufficient_scope_sha),)),
+    )
+    deferred_results = tools.run_snapshot_suite(frozen, deferred_request)
+    deferred_diagnostics = V1_010DiagnosticProducer(tools).produce(
+        frozen,
+        deferred_request,
+        deferred_results,
+        research.hypothesis,
+        research.evidence_synthesis,
+        research.experiment_request,
+        evaluated_at,
+    )
+    deferred = V1_010CritiqueComposer().compose(
+        frozen,
+        deferred_request,
+        research.hypothesis,
+        research.evidence_synthesis,
+        research.experiment_request,
+        deferred_diagnostics,
+        evaluated_at,
+        expires_at,
+    )
+    assert deferred.status is CritiqueStatus.DEFER
+    assert deferred.required_validations
+
+    failed_record = replace(failed_experiment, outcome=ExperimentOutcome.FAILED)
+    failed_request = replace(request, experiment_batch=experiment_authority.issue((failed_record,)))
+    failed_results = tools.run_snapshot_suite(frozen, failed_request)
+    experiment_result = next(item for item in failed_results if item.tool.value == "experiment_search")
+    forged_metrics = tuple(
+        sorted(
+            (key, "0" if key == "failed_count" else "1" if key == "success_count" else value)
+            for key, value in experiment_result.metrics
+        )
+    )
+    forged_payload = {**experiment_result.payload(), "metrics": forged_metrics}
+    forged_result = replace(
+        experiment_result,
+        metrics=forged_metrics,
+        content_sha256=canonical_sha256(forged_payload),
+    )
+    forged_results = tuple(forged_result if item.tool is experiment_result.tool else item for item in failed_results)
+    assert forged_result.result_id == experiment_result.result_id
+    with pytest.raises(ValueError, match="authority proof|non-deterministic"):
+        V1_010DiagnosticProducer(tools).produce(
+            frozen,
+            failed_request,
+            forged_results,
+            research.hypothesis,
+            research.evidence_synthesis,
+            research.experiment_request,
+            evaluated_at,
+        )
+    unknown_metrics = tuple(sorted((*experiment_result.metrics, ("caller_metric", "999"))))
+    unknown_payload = {**experiment_result.payload(), "metrics": unknown_metrics}
+    unknown_result = replace(
+        experiment_result,
+        metrics=unknown_metrics,
+        content_sha256=canonical_sha256(unknown_payload),
+    )
+    with pytest.raises(ValueError, match="authority proof|non-deterministic"):
+        V1_010DiagnosticProducer(tools).produce(
+            frozen,
+            failed_request,
+            tuple(unknown_result if item.tool is experiment_result.tool else item for item in failed_results),
+            research.hypothesis,
+            research.evidence_synthesis,
+            research.experiment_request,
+            evaluated_at,
+        )
+    failed_diagnostics = V1_010DiagnosticProducer(tools).produce(
+        frozen,
+        failed_request,
+        failed_results,
+        research.hypothesis,
+        research.evidence_synthesis,
+        research.experiment_request,
+        evaluated_at,
+    )
+    failed_critique = V1_010CritiqueComposer().compose(
+        frozen,
+        failed_request,
+        research.hypothesis,
+        research.evidence_synthesis,
+        research.experiment_request,
+        failed_diagnostics,
+        evaluated_at,
+        expires_at,
+    )
+    assert failed_critique.status is CritiqueStatus.DEFER
+    assert any("HISTORICAL_FAILURE" in item for item in failed_critique.required_validations)
+
+    no_memory_request = replace(request, memory_batch=memory_authority.issue(()))
+    no_memory_results = tools.run_snapshot_suite(frozen, no_memory_request)
+    no_memory_diagnostics = V1_010DiagnosticProducer(tools).produce(
+        frozen,
+        no_memory_request,
+        no_memory_results,
+        research.hypothesis,
+        research.evidence_synthesis,
+        research.experiment_request,
+        evaluated_at,
+    )
+    no_memory_critique = V1_010CritiqueComposer().compose(
+        frozen,
+        no_memory_request,
+        research.hypothesis,
+        research.evidence_synthesis,
+        research.experiment_request,
+        no_memory_diagnostics,
+        evaluated_at,
+        expires_at,
+    )
+    assert no_memory_critique.status is CritiqueStatus.DEFER
+
+    stress = next(result for result in results if result.tool.value == "cost_slippage_stress")
+    scenarios = json.loads(dict(stress.metrics)["scenarios"])
+    assert {item["changed_variable"] for item in scenarios} == {
+        "none",
+        "round_trip_cost_bps",
+        "slippage_bps",
+    }
+    assert all(set(item) == {"changed_variable", "multiplier", "net_mean"} for item in scenarios)
+
+    with pytest.raises(ValueError, match="lifetime must be fixed"):
+        replace(request, snapshot_ref=replace(snapshot_ref, valid_until=at(16)))
+    with pytest.raises(ValueError, match="pinned V1-005"):
+        replace(feature, feature_name="caller_feature")
+    with pytest.raises(TypeError, match="owner FeatureObservation"):
+        feature_authority.issue(feature_payload, snapshot_ref, valid_until, scope)  # type: ignore[arg-type]
+    nan_payload = json.loads(json.dumps(feature_payload))
+    nan_payload["value"]["amount"] = "NaN"
+    with pytest.raises(TypeError, match="finite Decimal"):
+        FeatureObservation.hydrate(EntityId.new("feature_observation"), nan_payload)
+    bad_window = json.loads(json.dumps(feature_payload))
+    bad_window["input_window_size"] = 1
+    with pytest.raises(ValueError, match="window must exactly"):
+        FeatureObservation.hydrate(EntityId.new("feature_observation"), bad_window)
+    bad_observation_refs = json.loads(json.dumps(feature_payload))
+    bad_observation_refs["observation_ids"] = bad_observation_refs["observation_ids"][:-1]
+    with pytest.raises(TypeError, match="per-observation refs"):
+        FeatureObservation.hydrate(EntityId.new("feature_observation"), bad_observation_refs)
+    bad_spec = json.loads(json.dumps(feature_payload))
+    bad_spec["feature_spec_content_sha256"] = "0" * 64
+    bad_spec["feature_spec"]["content_sha256"] = "0" * 64
+    bad_spec_observation = FeatureObservation.hydrate(EntityId.new("feature_observation"), bad_spec)
+    with pytest.raises(ValueError, match="target/spec/snapshot"):
+        feature_authority.issue(bad_spec_observation, snapshot_ref, valid_until, scope)
+    wrong_definition_namespace = json.loads(json.dumps(feature_payload))
+    wrong_definition_namespace["feature_definition"]["definition_id"] = str(EntityId.new("artifact"))
+    with pytest.raises(ValueError, match="feature_definition id"):
+        FeatureObservation.hydrate(EntityId.new("feature_observation"), wrong_definition_namespace)
+    wrong_definition_hash = json.loads(json.dumps(feature_payload))
+    wrong_definition_hash["feature_definition"]["content_sha256"] = "1" * 64
+    with pytest.raises(ValueError, match="refs must agree"):
+        FeatureObservation.hydrate(EntityId.new("feature_observation"), wrong_definition_hash)
+    spec_definition_mismatch = json.loads(json.dumps(feature_payload))
+    spec_definition_mismatch["feature_spec"]["definition"]["definition_id"] = str(EntityId.new("feature_definition"))
+    with pytest.raises(ValueError, match="refs must agree"):
+        FeatureObservation.hydrate(EntityId.new("feature_observation"), spec_definition_mismatch)
+    duplicate_snapshot = json.loads(json.dumps(feature_payload))
+    duplicate_snapshot["market_snapshot_refs"][0]["snapshot_id"] = duplicate_snapshot["market_snapshot_refs"][1][
+        "snapshot_id"
+    ]
+    with pytest.raises(ValueError, match="repeat a market snapshot"):
+        FeatureObservation.hydrate(EntityId.new("feature_observation"), duplicate_snapshot)
+    wrong_target = json.loads(json.dumps(feature_payload))
+    wrong_target["target_reference_id"] = "SHFE.CU2606"
+    wrong_target_observation = FeatureObservation.hydrate(EntityId.new("feature_observation"), wrong_target)
+    with pytest.raises(ValueError, match="target/spec/snapshot"):
+        feature_authority.issue(wrong_target_observation, snapshot_ref, valid_until, scope)
+    wrong_snapshot = json.loads(json.dumps(feature_payload))
+    wrong_snapshot["market_snapshot_refs"][-1]["content_sha256"] = "6" * 64
+    wrong_snapshot_observation = FeatureObservation.hydrate(EntityId.new("feature_observation"), wrong_snapshot)
+    with pytest.raises(ValueError, match="target/spec/snapshot"):
+        feature_authority.issue(wrong_snapshot_observation, snapshot_ref, valid_until, scope)
+    with pytest.raises(ValueError, match="cannot be empty"):
+        replace(scope, tags=())
+    unrelated = replace(failed_experiment, tags=("CU",))
+    with pytest.raises(ValueError, match="exact research query scope"):
+        replace(request, experiment_batch=experiment_authority.issue((unrelated,)))
+
+    sources = V1_010CriticTaskSources(
+        frozen,
+        request,
+        results,
+        research.hypothesis,
+        research.evidence_synthesis,
+        research.experiment_request,
+        diagnostics,
+        evaluated_at,
+        expires_at,
+    )
+    agent = V1_010ResearchCriticAgent()
+    correlation_id = EntityId.new("correlation")
+    task = AgentTaskEnvelope(
+        EntityId.new("agent_task"),
+        EntityId.new("session"),
+        correlation_id,
+        TraceContext(correlation_id, EntityId.new("trace")),
+        AgentRoleId.PRE_TRADE_CRITIC.value,
+        SchemaVersion(1, 5),
+        "compose the frozen research diagnostics",
+        "emit one replayable research critique",
+        (TriggerSource.DATA,),
+        agent.expected_inputs(sources),
+        (),
+        (),
+        definition_for(AgentRoleId.PRE_TRADE_CRITIC.value, SchemaVersion(1, 5)).budget,
+        (ArtifactKind.CRITIQUE,),
+        frozen.as_of,
+        expires_at,
+    )
+    producer_run = EntityId.new("agent_run")
+    packaged = agent.run(task, sources, producer_run)
+    serialized_diagnostics = tuple(json.loads(json.dumps(item.evidence.to_dict())) for item in diagnostics)
+    assert agent.run_serialized_diagnostics(task, sources, serialized_diagnostics, producer_run) == packaged
+    missing_gate = agent.run_serialized_diagnostics(task, sources, serialized_diagnostics[:-1], producer_run)
+    assert missing_gate.status is ResultStatus.FAILED
+    assert missing_gate.artifacts == ()
+    assert "DIAGNOSTIC_MISSING" in missing_gate.unknowns
+    tampered_diagnostics = list(serialized_diagnostics)
+    tampered_diagnostics[0] = {**tampered_diagnostics[0], "content_sha256": "0" * 64}
+    invalid_gate = agent.run_serialized_diagnostics(task, sources, tuple(tampered_diagnostics), producer_run)
+    assert invalid_gate.status is ResultStatus.FAILED
+    assert invalid_gate.artifacts == ()
+    assert "DIAGNOSTIC_INVALID" in invalid_gate.warnings
+    duplicated_diagnostics = (*serialized_diagnostics[:-1], serialized_diagnostics[0])
+    duplicate_gate = agent.run_serialized_diagnostics(task, sources, duplicated_diagnostics, producer_run)
+    assert duplicate_gate.status is ResultStatus.FAILED
+    assert "DIAGNOSTIC_INVALID" in duplicate_gate.unknowns
+    expired_diagnostics = list(serialized_diagnostics)
+    expired_ref = dict(expired_diagnostics[0]["market_snapshot_ref"])
+    expired_ref["valid_until"] = expired_diagnostics[0]["evaluated_at"]
+    expired_diagnostics[0] = {
+        **expired_diagnostics[0],
+        "market_snapshot_ref": expired_ref,
+    }
+    expired_gate = agent.run_serialized_diagnostics(task, sources, tuple(expired_diagnostics), producer_run)
+    assert expired_gate.status is ResultStatus.FAILED
+    assert expired_gate.artifacts == ()
+    serialized = json.loads(json.dumps(packaged.to_dict()))
+    recovered = V1_010ResearchCriticAgent().recover(serialized, task, sources, producer_run)
+    assert recovered == packaged
+    assert recovered.artifact.ref.content_hash == "sha256:" + critique.content_sha256
+    assert all(ref.created_at == evaluated_at for ref in recovered.artifact.source_refs[4:])
+    with pytest.raises(ValueError, match="task envelope|task boundary"):
+        agent.run(replace(task, catalog_version=SchemaVersion(1, 4)), sources, producer_run)
+    serialized["artifact"]["warnings"] = ["tampered"]
+    with pytest.raises(ValueError, match="content hash|deterministic replay"):
+        V1_010ResearchCriticAgent().recover(serialized, task, sources, producer_run)

@@ -106,10 +106,53 @@ def test_registry_owners_follow_bounded_context_ownership_and_risk_check_is_prev
     assert owners["trade_replay"] == "Learning & Review"
     assert owners["autonomy_mandate_status"] == "Decision"
     assert owners["registry_query"] == "Governance & Registry"
+    assert (
+        TOOL_REGISTRY.resolve_exact(ToolRef("market_query", SchemaVersion(1, 5))).owner_context
+        == "Reference & Market Data"
+    )  # type: ignore[union-attr]
+    assert (
+        TOOL_REGISTRY.resolve_exact(ToolRef("feature_query", SchemaVersion(1, 5))).owner_context
+        == "Market Intelligence"
+    )  # type: ignore[union-attr]
+    assert (
+        TOOL_REGISTRY.resolve_exact(ToolRef("memory_search", SchemaVersion(1, 5))).owner_context == "Learning & Review"
+    )  # type: ignore[union-attr]
     risk_check = TOOL_REGISTRY.resolve_exact(ToolRef("risk_check", TOOL_V1))
     assert risk_check is not None
     assert risk_check.owner_context == "Portfolio & Risk"
     assert "Non-authoritative" in risk_check.description and "RiskDecision" in risk_check.description
+
+
+def test_catalog_1_5_requires_exact_1_5_research_tool_ref_and_minimum_grant() -> None:
+    old_ref = ToolRef("feature_query", TOOL_V1)
+    exact_ref = ToolRef("feature_query", SchemaVersion(1, 5))
+    request = _request(agent_role_id="research", catalog_version=SchemaVersion(1, 5), tool_ref=old_ref)
+    old_grant = _grant(
+        grantee_role_id="research",
+        catalog_version=SchemaVersion(1, 5),
+        tool_refs=frozenset({old_ref}),
+        max_permission_tier=ToolPermissionTier.READ_ONLY,
+    )
+    assert _reason(ToolAuthorizer(TOOL_REGISTRY, (old_grant,)), request) is ReasonCode.TOOL_VERSION_MISMATCH
+
+    exact_request = replace(request, tool_ref=exact_ref)
+    exact_grant = replace(old_grant, tool_refs=frozenset({exact_ref}))
+    assert (
+        ToolAuthorizer(TOOL_REGISTRY, (exact_grant,)).authorize(exact_request).outcome
+        is ToolAuthorizationOutcome.PERMIT
+    )
+
+
+@pytest.mark.parametrize("tool_id", ["historical_data", "backtest", "stress_test"])
+def test_catalog_1_5_rejects_legacy_research_surface_even_with_matching_grant(tool_id: str) -> None:
+    legacy_ref = ToolRef(tool_id, TOOL_V1)
+    request = _request(agent_role_id="research", catalog_version=SchemaVersion(1, 5), tool_ref=legacy_ref)
+    matching_grant = _grant(
+        grantee_role_id="research",
+        catalog_version=SchemaVersion(1, 5),
+        tool_refs=frozenset({legacy_ref}),
+    )
+    assert _reason(ToolAuthorizer(TOOL_REGISTRY, (matching_grant,)), request) is ReasonCode.TOOL_NOT_DECLARED_FOR_ROLE
 
 
 def test_default_deny_and_unknown_or_undeclared_agents_are_stably_audited() -> None:
@@ -157,7 +200,7 @@ def test_registry_and_catalog_version_drift_fail_closed_before_grant_matching() 
         _reason(authorizer, _request(catalog_version=SchemaVersion(1, 0))) is ReasonCode.TOOL_CATALOG_VERSION_MISMATCH
     )
     assert (
-        _reason(authorizer, _request(registry_version=SchemaVersion(1, 1))) is ReasonCode.TOOL_REGISTRY_VERSION_MISMATCH
+        _reason(authorizer, _request(registry_version=SchemaVersion(1, 2))) is ReasonCode.TOOL_REGISTRY_VERSION_MISMATCH
     )
     assert (
         _reason(
@@ -168,7 +211,7 @@ def test_registry_and_catalog_version_drift_fail_closed_before_grant_matching() 
     )
     assert (
         _reason(
-            ToolAuthorizer(TOOL_REGISTRY, (_grant(registry_version=SchemaVersion(1, 1)),)),
+            ToolAuthorizer(TOOL_REGISTRY, (_grant(registry_version=SchemaVersion(1, 2)),)),
             _request(),
         )
         is ReasonCode.TOOL_REGISTRY_VERSION_MISMATCH

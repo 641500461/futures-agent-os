@@ -22,6 +22,19 @@ from .catalog import definition_for
 
 
 _SCOPE_TOKEN = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:/@-]*$")
+_CATALOG_1_5_EXACT_TOOLS = {
+    "market_query",
+    "historical_query",
+    "feature_query",
+    "contract_query",
+    "memory_search",
+    "experiment_search",
+    "l0_signal_test",
+    "l1_bar_backtest",
+    "walk_forward_test",
+    "cost_slippage_stress",
+    "counterfactual_test",
+}
 
 
 class ToolGrantStatus(StrEnum):
@@ -309,6 +322,12 @@ class ToolAuthorizer:
             return deny(ReasonCode.TOOL_CATALOG_VERSION_MISMATCH)
         if request.tool_ref.tool_id not in role.declared_tools:
             return deny(ReasonCode.TOOL_NOT_DECLARED_FOR_ROLE)
+        if (
+            request.catalog_version == SchemaVersion(1, 5)
+            and request.tool_ref.tool_id in _CATALOG_1_5_EXACT_TOOLS
+            and request.tool_ref.version != SchemaVersion(1, 5)
+        ):
+            return deny(ReasonCode.TOOL_VERSION_MISMATCH)
 
         role_grants = tuple(grant for grant in self._grants if grant.grantee_role_id == request.agent_role_id)
         if not role_grants:

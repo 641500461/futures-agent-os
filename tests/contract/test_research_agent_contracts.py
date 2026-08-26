@@ -118,7 +118,7 @@ def _task(source: ArtifactRef) -> AgentTaskEnvelope:
         (TriggerSource.MARKET,),
         (source,),
         (),
-        ("historical_data",),
+        ("historical_query",),
         definition_for(AgentRoleId.RESEARCH.value).budget,
         (ArtifactKind.HYPOTHESIS, ArtifactKind.EVIDENCE_SYNTHESIS, ArtifactKind.EXPERIMENT_REQUEST),
         source.as_of,

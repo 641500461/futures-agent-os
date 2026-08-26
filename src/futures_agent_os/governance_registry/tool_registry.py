@@ -90,8 +90,9 @@ class ToolRegistry:
         return any(definition.ref.tool_id == tool_id for definition in self._definitions)
 
 
-TOOL_REGISTRY_VERSION = SchemaVersion(1, 0)
+TOOL_REGISTRY_VERSION = SchemaVersion(1, 1)
 _V1 = SchemaVersion(1, 0)
+_V1_010 = SchemaVersion(1, 5)
 
 
 def _tool(
@@ -107,6 +108,17 @@ def _tool(
         response_schema=_V1,
         owner_context=owner_context,
         description=description or f"V0 static contract for {tool_id}",
+    )
+
+
+def _v1_010_tool(tool_id: str, tier: ToolPermissionTier, owner_context: str) -> ToolDefinition:
+    return ToolDefinition(
+        ToolRef(tool_id, _V1_010),
+        tier,
+        _V1_010,
+        _V1_010,
+        owner_context,
+        f"V1-010 synchronous deterministic research contract for {tool_id}",
     )
 
 
@@ -195,5 +207,26 @@ TOOL_REGISTRY = ToolRegistry(
         _tool("request_plan_approval", ToolPermissionTier.PLAN_APPROVAL, "Decision"),
         _tool("submit_improvement_proposal", ToolPermissionTier.PROMOTION, "Governance & Registry"),
         _tool("request_activation", ToolPermissionTier.ACTIVATION, "Governance & Registry"),
+        *(
+            _v1_010_tool(name, ToolPermissionTier.READ_ONLY, owner)
+            for name, owner in (
+                ("market_query", "Reference & Market Data"),
+                ("historical_query", "Reference & Market Data"),
+                ("feature_query", "Market Intelligence"),
+                ("contract_query", "Reference & Market Data"),
+                ("memory_search", "Learning & Review"),
+                ("experiment_search", "Research & Experiment"),
+            )
+        ),
+        *(
+            _v1_010_tool(name, ToolPermissionTier.RESEARCH_REQUEST, "Research & Experiment")
+            for name in (
+                "l0_signal_test",
+                "l1_bar_backtest",
+                "walk_forward_test",
+                "cost_slippage_stress",
+                "counterfactual_test",
+            )
+        ),
     ),
 )

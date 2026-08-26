@@ -37,6 +37,11 @@ from .market_regime_agent import (
 )
 from .research_agent import ResearchAgent, ResearchAgentResult, ResearchTaskSources
 from .pre_trade_critic_agent import CriticTaskSources, PreTradeCriticAgent, PreTradeCriticResult
+from .research_critic_agent import (
+    V1_010CriticAgentResult,
+    V1_010CriticTaskSources,
+    V1_010ResearchCriticAgent,
+)
 from .workflow import (
     AutonomyCycle,
     CycleTrigger,
@@ -85,6 +90,9 @@ __all__ = [
     "CriticTaskSources",
     "PreTradeCriticAgent",
     "PreTradeCriticResult",
+    "V1_010CriticAgentResult",
+    "V1_010CriticTaskSources",
+    "V1_010ResearchCriticAgent",
     "AutonomyCycle",
     "CycleTrigger",
     "DelegationPlan",

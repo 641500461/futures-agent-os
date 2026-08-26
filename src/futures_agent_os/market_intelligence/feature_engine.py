@@ -5,7 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import timedelta
 from decimal import Decimal, InvalidOperation, ROUND_HALF_EVEN, localcontext
-from typing import cast
+import json
+from typing import Mapping, cast
 
 from futures_agent_os.reference_market_data import BarStatus, MarketObservation, MarketSnapshot, SnapshotPurpose
 from futures_agent_os.research_experiment.features import (
@@ -14,7 +15,7 @@ from futures_agent_os.research_experiment.features import (
     FeatureSpec,
     FeatureSpecRef,
 )
-from futures_agent_os.shared_kernel import EntityId, RecordedAt, SchemaVersion, canonical_sha256
+from futures_agent_os.shared_kernel import EntityId, RecordedAt, SchemaVersion, canonical_json_text, canonical_sha256
 from futures_agent_os.shared_kernel.observability import JsonValue
 
 
@@ -239,8 +240,20 @@ class FeatureObservation:
             or observation_ids != tuple(item.observation_id for item in input_refs)
         ):
             raise TypeError("feature observation requires immutable per-observation refs")
+        if len({item.snapshot_id for item in snapshots}) != len(snapshots):
+            raise ValueError("feature observation cannot repeat a market snapshot")
+        if any(left.as_of.value >= right.as_of.value for left, right in zip(snapshots, snapshots[1:])):
+            raise ValueError("feature observation snapshot refs must be in strict point-in-time order")
+        if snapshots[-1].as_of != self.as_of or any(item.as_of.value > self.as_of.value for item in snapshots):
+            raise ValueError("feature observation as_of must equal its latest snapshot ref")
+        if len({item.purpose for item in snapshots}) != 1:
+            raise ValueError("feature observation cannot mix snapshot purposes")
+        if len(set(observation_ids)) != len(observation_ids):
+            raise ValueError("feature observation cannot repeat an input observation")
         if not isinstance(self.value, FeatureValue) or not isinstance(self.schema_version, SchemaVersion):
             raise TypeError("feature observation requires FeatureValue and SchemaVersion")
+        if self.schema_version != self.feature_spec.schema_version:
+            raise ValueError("feature observation schema must match its feature spec")
         if self.feature_algorithm in (FeatureAlgorithm.SIMPLE_RETURN, FeatureAlgorithm.REALIZED_VOLATILITY):
             if self.value.unit != "ratio" or self.value.currency is not None:
                 raise ValueError("return and volatility observations require currency-free ratio FeatureValue")
@@ -272,6 +285,130 @@ class FeatureObservation:
             "value": self.value.to_dict(),
             "schema_version": str(self.schema_version),
         }
+
+    @classmethod
+    def hydrate(cls, observation_id: EntityId, value: Mapping[str, object]) -> FeatureObservation:
+        """Recover the real owner type from its exact canonical payload."""
+
+        _exact_keys(
+            value,
+            {
+                "feature_spec_id",
+                "feature_spec_content_sha256",
+                "feature_spec",
+                "feature_definition",
+                "feature_algorithm",
+                "target_reference_id",
+                "as_of",
+                "input_window_size",
+                "market_snapshot_refs",
+                "observation_ids",
+                "input_observation_refs",
+                "value",
+                "schema_version",
+            },
+            "feature observation",
+        )
+        definition_payload = _mapping(value["feature_definition"], "feature definition ref")
+        _exact_keys(
+            definition_payload,
+            {"definition_id", "version", "schema_version", "content_sha256", "algorithm"},
+            "feature definition ref",
+        )
+        definition = FeatureDefinitionRef(
+            EntityId.parse(_text(definition_payload["definition_id"], "definition_id")),
+            _integer(definition_payload["version"], "definition version"),
+            SchemaVersion.parse(_text(definition_payload["schema_version"], "definition schema_version")),
+            _text(definition_payload["content_sha256"], "definition content_sha256"),
+            FeatureAlgorithm(_text(definition_payload["algorithm"], "definition algorithm")),
+        )
+        spec_payload = _mapping(value["feature_spec"], "feature spec ref")
+        _exact_keys(
+            spec_payload,
+            {"spec_id", "version", "schema_version", "content_sha256", "definition"},
+            "feature spec ref",
+        )
+        nested_definition_payload = _mapping(spec_payload["definition"], "feature spec definition ref")
+        _exact_keys(
+            nested_definition_payload,
+            {"definition_id", "version", "schema_version", "content_sha256", "algorithm"},
+            "feature spec definition ref",
+        )
+        nested_definition = FeatureDefinitionRef(
+            EntityId.parse(_text(nested_definition_payload["definition_id"], "definition_id")),
+            _integer(nested_definition_payload["version"], "definition version"),
+            SchemaVersion.parse(_text(nested_definition_payload["schema_version"], "definition schema_version")),
+            _text(nested_definition_payload["content_sha256"], "definition content_sha256"),
+            FeatureAlgorithm(_text(nested_definition_payload["algorithm"], "definition algorithm")),
+        )
+        spec = FeatureSpecRef(
+            EntityId.parse(_text(spec_payload["spec_id"], "spec_id")),
+            _integer(spec_payload["version"], "spec version"),
+            SchemaVersion.parse(_text(spec_payload["schema_version"], "spec schema_version")),
+            _text(spec_payload["content_sha256"], "spec content_sha256"),
+            nested_definition,
+        )
+        snapshot_refs = tuple(
+            _hydrate_snapshot_ref(item) for item in _sequence(value["market_snapshot_refs"], "snapshot refs")
+        )
+        observation_ids = tuple(
+            EntityId.parse(_text(item, "observation_id"))
+            for item in _sequence(value["observation_ids"], "observation ids")
+        )
+        input_refs = tuple(
+            _hydrate_input_ref(item) for item in _sequence(value["input_observation_refs"], "input observation refs")
+        )
+        feature_value_payload = _mapping(value["value"], "feature value")
+        allowed_value_keys = {"amount", "unit", "scale"}
+        if "currency" in feature_value_payload:
+            allowed_value_keys.add("currency")
+        _exact_keys(feature_value_payload, allowed_value_keys, "feature value")
+        currency_value = feature_value_payload.get("currency")
+        currency = None if currency_value is None else _text(currency_value, "feature value currency")
+        feature_value = FeatureValue(
+            Decimal(_text(feature_value_payload["amount"], "feature value amount")),
+            _text(feature_value_payload["unit"], "feature value unit"),
+            _integer(feature_value_payload["scale"], "feature value scale"),
+            currency,
+        )
+        canonical_payload: dict[str, JsonValue] = {
+            "feature_spec_id": _text(value["feature_spec_id"], "feature_spec_id"),
+            "feature_spec_content_sha256": _text(value["feature_spec_content_sha256"], "feature_spec_content_sha256"),
+            "feature_spec": spec.to_dict(),
+            "feature_definition": definition.to_dict(),
+            "feature_algorithm": _text(value["feature_algorithm"], "feature_algorithm"),
+            "target_reference_id": _text(value["target_reference_id"], "target_reference_id"),
+            "as_of": _text(value["as_of"], "as_of"),
+            "input_window_size": _integer(value["input_window_size"], "input_window_size"),
+            "market_snapshot_refs": tuple(item.to_dict() for item in snapshot_refs),
+            "observation_ids": tuple(str(item) for item in observation_ids),
+            "input_observation_refs": tuple(item.to_dict() for item in input_refs),
+            "value": feature_value.to_dict(),
+            "schema_version": _text(value["schema_version"], "schema_version"),
+        }
+        try:
+            supplied_json = json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=True, allow_nan=False)
+        except (TypeError, ValueError) as error:
+            raise ValueError("feature observation payload must be finite canonical JSON data") from error
+        if supplied_json != canonical_json_text(canonical_payload):
+            raise ValueError("feature observation payload does not match its typed owner representation")
+        return cls(
+            observation_id,
+            EntityId.parse(_text(value["feature_spec_id"], "feature_spec_id")),
+            _text(value["feature_spec_content_sha256"], "feature_spec_content_sha256"),
+            spec,
+            definition,
+            FeatureAlgorithm(_text(value["feature_algorithm"], "feature_algorithm")),
+            _text(value["target_reference_id"], "target_reference_id"),
+            RecordedAt.parse(_text(value["as_of"], "as_of")),
+            _integer(value["input_window_size"], "input_window_size"),
+            snapshot_refs,
+            observation_ids,
+            input_refs,
+            feature_value,
+            SchemaVersion.parse(_text(value["schema_version"], "schema_version")),
+            canonical_sha256(canonical_payload),
+        )
 
 
 FeatureSnapshot = FeatureObservation
@@ -480,3 +617,57 @@ def _digest(value: str, label: str) -> None:
         or any(character not in "0123456789abcdef" for character in value)
     ):
         raise ValueError(f"{label} content_sha256 must be a lowercase SHA-256 digest")
+
+
+def _exact_keys(value: Mapping[str, object], expected: set[str], label: str) -> None:
+    if set(value) != expected:
+        raise ValueError(f"{label} fields are not exact")
+
+
+def _mapping(value: object, label: str) -> Mapping[str, object]:
+    if not isinstance(value, Mapping) or any(not isinstance(key, str) for key in value):
+        raise TypeError(f"{label} must be an object")
+    return cast("Mapping[str, object]", value)
+
+
+def _sequence(value: object, label: str) -> tuple[object, ...]:
+    if not isinstance(value, (tuple, list)):
+        raise TypeError(f"{label} must be an array")
+    return tuple(value)
+
+
+def _text(value: object, label: str) -> str:
+    if not isinstance(value, str):
+        raise TypeError(f"{label} must be a string")
+    return value
+
+
+def _integer(value: object, label: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise TypeError(f"{label} must be an integer")
+    return value
+
+
+def _hydrate_snapshot_ref(value: object) -> MarketSnapshotRef:
+    payload = _mapping(value, "market snapshot ref")
+    _exact_keys(
+        payload,
+        {"snapshot_id", "content_sha256", "as_of", "schema_version", "purpose"},
+        "market snapshot ref",
+    )
+    return MarketSnapshotRef(
+        EntityId.parse(_text(payload["snapshot_id"], "snapshot_id")),
+        _text(payload["content_sha256"], "snapshot content_sha256"),
+        RecordedAt.parse(_text(payload["as_of"], "snapshot as_of")),
+        SchemaVersion.parse(_text(payload["schema_version"], "snapshot schema_version")),
+        SnapshotPurpose(_text(payload["purpose"], "snapshot purpose")),
+    )
+
+
+def _hydrate_input_ref(value: object) -> InputObservationRef:
+    payload = _mapping(value, "input observation ref")
+    _exact_keys(payload, {"observation_id", "content_sha256"}, "input observation ref")
+    return InputObservationRef(
+        EntityId.parse(_text(payload["observation_id"], "observation_id")),
+        _text(payload["content_sha256"], "observation content_sha256"),
+    )

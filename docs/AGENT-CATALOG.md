@@ -1,7 +1,7 @@
 # Versioned Agent Catalog and bounded collaboration protocol
 
-Version: `1.4`
-Status: V1-009 catalog contract
+Version: `1.5`
+Status: V1-010 catalog contract
 
 `src/futures_agent_os/agent_orchestration/catalog.py` is the machine-readable source of this catalog. It defines the twelve logical roles, their version, enablement version, responsibility boundary, all six trigger origins, input/output artifact types, declared tools, budget, failure disposition and metrics. It is not an activation record or an executable permission grant.
 
@@ -22,7 +22,9 @@ Status: V1-009 catalog contract
 
 Every role documents user, schedule, market, explicit `DATA`, account/position and system/lifecycle trigger origins. The exact examples are intentionally broad: the deterministic Workflow Orchestrator determines whether a concrete trigger creates a task, enforces lifecycle, retries, cancellation, deadline and recovery. In V1-008 Main coordinates only the observe/research graph; it neither schedules work, grants authority, nor creates `TradePlan`/`StrategyCandidate`. No role is a permanent process merely by existing in this catalog.
 
-In V1-009 Pre-trade Critic is strictly a research-artifact adapter. It consumes only exact `hypothesis`, `evidence_synthesis`, and `experiment_request` identities, emits one `critique`, and invokes no tools. V1-010 deterministic diagnostic artifacts do not yet exist, so V1-009 rejects caller diagnostics and emits the fixed closed eight-category `GAP`/`UNRESOLVED` set (with `DATA_LEAKAGE` HIGH), fixed validation codes, and `DEFER`; it never claims `CLEAR`, `RESOLVED`, `PASS`, or `REJECT`. Catalog 1.3 remains separately resolvable for historical replay and is not reinterpreted under this contract.
+Under the historical Catalog 1.4 contract, Pre-trade Critic is strictly a research-artifact adapter. It consumes only exact `hypothesis`, `evidence_synthesis`, and `experiment_request` identities, emits one `critique`, and invokes no tools. V1-010 deterministic diagnostic artifacts did not yet exist, so that contract rejects caller diagnostics and emits the fixed closed eight-category `GAP`/`UNRESOLVED` set (with `DATA_LEAKAGE` HIGH), fixed validation codes, and `DEFER`; it never claims `CLEAR`, `RESOLVED`, `PASS`, or `REJECT`. Catalog 1.3 remains separately resolvable for historical replay and is not reinterpreted under this contract.
+
+Catalog 1.5 adds only synchronous, deterministic research tools and diagnostic composition. Research may invoke versioned market/historical/feature/contract queries, read-only memory/experiment search, L0 signal test, approximate L1 close-to-next-open bar proxy, fixed chronological walk-forward, cost/slippage stress, and one-variable counterfactual. Every result binds a frozen config, `as_of`, exact source/artifact refs, warnings and a stable failure code. Pre-trade Critic consumes all eight typed diagnostics only when they share the exact MarketSnapshot, validation run, config and V1-007 research lineage. Failed or missing diagnostics force `DEFER`; tools have no trading side effects. Historical Catalog 1.4 and migration 0006 retain their fixed GAP/DEFER semantics unchanged.
 
 ## Contract boundaries
 
