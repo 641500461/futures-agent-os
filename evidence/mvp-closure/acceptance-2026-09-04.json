@@ -1,0 +1,134 @@
+{
+  "schema_version": "mvp-closure.acceptance.v1",
+  "task": "MVP-R-CLOSURE",
+  "date": "2026-09-04",
+  "decision": "MVP_ACCEPTED",
+  "mode": "evidence_reuse_minimal_acceptance",
+  "scope": "Close MVP validation; do not rerun formal v3, holdout, or shadow.",
+  "executor": "Codex",
+  "model": "gpt-5.6-sol",
+  "reasoning_effort": "high",
+  "formal_eval_status": {
+    "v1": "FAIL",
+    "v2": "FORMAL_DIAGNOSTIC_FAIL",
+    "changed": false,
+    "blocking_for_mvp_closure": false
+  },
+  "failure_triage": [
+    {
+      "episode_id": "formal-diagnostic-013",
+      "classification": "NON_BLOCKING_PRODUCT_QUALITY",
+      "evidence": "evidence/mvp-r-formal-eval-v2/diagnostic/formal-diagnostic-013-attempt-1-failure.json",
+      "basis": "The run reached product hypothesis handling but produced fewer than the required 2-3 well-typed hypotheses; no tool or trading side effect occurred."
+    },
+    {
+      "episode_id": "formal-diagnostic-015",
+      "classification": "EVAL_OR_RUNTIME_FAILURE",
+      "evidence": "evidence/mvp-r-formal-eval-v2/diagnostic/formal-diagnostic-015-attempt-1-failure.json",
+      "basis": "App Server observation failed closed with STATUS_NOT_COMPLETED, zero final texts, and no dynamic or server tool calls."
+    },
+    {
+      "episode_id": "formal-diagnostic-016",
+      "classification": "EVAL_OR_RUNTIME_FAILURE",
+      "evidence": "evidence/mvp-r-formal-eval-v2/diagnostic/formal-diagnostic-016-attempt-1-failure.json",
+      "basis": "App Server observation failed closed with STATUS_NOT_COMPLETED, no final text, and no dynamic or server tool calls."
+    }
+  ],
+  "representative_scenarios": [
+    {
+      "id": "E2E-01",
+      "scenario": "AG uptrend",
+      "source": "evidence/mvp-r-005/correction-v5/scorecard.json",
+      "observed": "research_agent_loop and single_prompt complete; deterministic experiment and decision brief bound; REJECT",
+      "result": "PASS"
+    },
+    {
+      "id": "E2E-02",
+      "scenario": "AG noise",
+      "source": "evidence/mvp-r-005/correction-v5/scorecard.json",
+      "observed": "Both arms complete the experiment/report path with exact packet-to-view and verdict binding; REJECT",
+      "result": "PASS"
+    },
+    {
+      "id": "E2E-03",
+      "scenario": "CU extreme volatility",
+      "source": "evidence/mvp-r-005/correction-v5/scorecard.json",
+      "observed": "Both arms complete all five deterministic experiments and produce exact reports; REJECT",
+      "result": "PASS"
+    },
+    {
+      "id": "E2E-04",
+      "scenario": "CU range",
+      "source": "evidence/mvp-r-005/correction-v5/scorecard.json",
+      "observed": "Both arms complete the research-to-result loop and preserve treatment-view lineage; REJECT",
+      "result": "PASS"
+    },
+    {
+      "id": "E2E-05",
+      "scenario": "MA downtrend",
+      "source": "evidence/mvp-r-005/correction-v5/scorecard.json",
+      "observed": "Both arms complete; differing verdicts remain explicit and bound to their own reports (REJECT vs ACCEPT)",
+      "result": "PASS"
+    },
+    {
+      "id": "E2E-06",
+      "scenario": "MA reversal",
+      "source": "evidence/mvp-r-005/correction-v5/scorecard.json",
+      "observed": "Both arms complete deterministic experiments, result feedback, and four-block decision brief; REJECT",
+      "result": "PASS"
+    },
+    {
+      "id": "E2E-07",
+      "scenario": "SR false breakout",
+      "source": "evidence/mvp-r-005/correction-v5/scorecard.json",
+      "observed": "Both arms complete and preserve exact visible/view/predicate/report binding; REJECT",
+      "result": "PASS"
+    },
+    {
+      "id": "E2E-08",
+      "scenario": "SR extreme volatility",
+      "source": "evidence/mvp-r-005/correction-v5/scorecard.json",
+      "observed": "Both arms complete all five experiments and produce exact decision reports; REJECT",
+      "result": "PASS"
+    }
+  ],
+  "cross_cutting_safety_checks": [
+    {
+      "id": "SAFE-01",
+      "scope": "future leak, ungrounded evidence, unsupported operator, and trading request",
+      "source": "tests/contract/test_mvp_r_003_contracts.py::test_future_leak_ungrounded_claim_unsupported_operator_and_trading_request_fail_closed",
+      "observed": "All four cases fail closed; no trading object is created",
+      "result": "PASS"
+    },
+    {
+      "id": "SAFE-02",
+      "scope": "missing/empty visible payload, contradictory report, and brief/final verdict mismatch",
+      "source": "tests/contract/test_mvp_r_005_correction_v5_contracts.py",
+      "observed": "All malformed or contradictory report cases fail closed; exact existing payload/report passes",
+      "result": "PASS"
+    },
+    {
+      "id": "SAFE-03",
+      "scope": "runtime observation, bad object, impossible usage, direct provider, and public experiment-call boundaries",
+      "source": "tests/contract/test_mvp_r_002_runtime_adapter_contracts.py",
+      "observed": "Observation and authority violations preserve failure receipts or never reach the port",
+      "result": "PASS"
+    }
+  ],
+  "acceptance_answers": {
+    "core_components_end_to_end": "PASS",
+    "agent_core_task": "PASS",
+    "critical_safety_boundaries": "PASS",
+    "architecture_level_blocker": "NONE_EVIDENCED"
+  },
+  "verification": {
+    "acceptance_command": "uv run pytest -q tests/replay/test_mvp_r_003_vertical_slice.py tests/contract/test_mvp_r_003_contracts.py tests/contract/test_mvp_r_005_correction_v5_contracts.py tests/contract/test_mvp_r_002_runtime_adapter_contracts.py -k 'selected_hypothesis_executes_all_existing_v1_010_experiments_and_replays or all_contracts_round_trip_with_content_hashes or future_leak_ungrounded_claim_unsupported_operator_and_trading_request_fail_closed or modify_creates_a_new_version_without_mutating_or_reexecuting_the_original or exact_existing_report_and_visible_payload_pass or missing_null_or_empty_visible_payload_fails_closed or extra_h2_or_contradictory_markdown_fails_report_gate or structured_brief_verdict_must_match_final_verdict or closed_wire_failure_replaces_unissued_success_without_losing_observation or impossible_usage_relationships_never_complete or public_experiment_call_with_bad_object_never_reaches_port'",
+    "acceptance_result": "16 passed",
+    "command": "make check",
+    "observed": "ruff format/check, mypy, secret scan, schema, unit, property, contract (461 passed), and health all passed",
+    "diff_check": "PASS"
+  },
+  "next_roadmap_task": "V1-011",
+  "next_roadmap_task_name": "基础 Experiment Manager 与异步 Research Job 状态机",
+  "formal_quality_backlog": "formal evaluation reliability / quality improvement"
+}

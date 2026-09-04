@@ -4,7 +4,7 @@
 日期：2026-08-18  
 项目性质：Greenfield，全新独立项目  
 适用范围：研究、回测、模拟交易与纸面验证；不含真实交易  
-关联文档：[PRD](./PRD.md) · [多 Agent 与工具体系](./AGENT-AND-TOOL-DESIGN.md) · [系统架构与生命周期](./SYSTEM-ARCHITECTURE-AND-LIFECYCLE.md) · [上下文地图](./CONTEXT-MAP.md) · [路线图](./ROADMAP.md)
+关联文档：[PRD](./PRD.md) · [多 Agent 与工具体系](./AGENT-AND-TOOL-DESIGN.md) · [LLM 场景与模型路由](./LLM-SCENARIO-AND-MODEL-ROUTING.md) · [系统架构与生命周期](./SYSTEM-ARCHITECTURE-AND-LIFECYCLE.md) · [上下文地图](./CONTEXT-MAP.md) · [路线图](./ROADMAP.md)
 
 ## 0. 结论先行
 

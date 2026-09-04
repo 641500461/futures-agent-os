@@ -1,0 +1,1 @@
+{"attempt":1,"completed_at":"2026-09-01T18:36:20Z","counts_as_completed_episode":false,"episode_id":"r005-ag-uptrend","failure":"ValueError: FOLLOW treatment positive_fold_ratio is not the raw FOLLOW metric","manual_output_repair":false,"schema_version":"mvp-r-005.discovery-failure.v1","status":"FAILED_CLOSED","tool_or_trading_side_effect":false}

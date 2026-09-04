@@ -16,6 +16,8 @@ from futures_agent_os.reference_market_data import BarStatus, MarketObservation,
 from futures_agent_os.shared_kernel import EntityId, RecordedAt, SchemaVersion, canonical_json_text, canonical_sha256
 from futures_agent_os.shared_kernel.observability import JsonValue
 
+from .walk_forward import plan_walk_forward_fold_windows
+
 if TYPE_CHECKING:
     from futures_agent_os.market_intelligence.feature_engine import FeatureObservation
 
@@ -1443,12 +1445,19 @@ def _l1(samples: tuple[_Sample, ...], config: ValidationConfig) -> tuple[tuple[s
 
 def _walk(samples: tuple[_Sample, ...], config: ValidationConfig) -> tuple[tuple[str, str], ...]:
     folds: list[dict[str, JsonValue]] = []
-    cursor = config.train_bars + 1
     failures = 0
     stopped = False
-    while cursor + config.test_bars <= len(samples):
-        train = samples[cursor - config.train_bars - 1 : cursor - 1]
-        test = samples[cursor : cursor + config.test_bars]
+    embargo_bars = 1
+    windows = plan_walk_forward_fold_windows(
+        len(samples),
+        train_bars=config.train_bars,
+        test_bars=config.test_bars,
+        step_bars=config.step_bars,
+        embargo_bars=embargo_bars,
+    )
+    for window in windows:
+        train = samples[window.train_start : window.train_end]
+        test = samples[window.test_start : window.test_end]
         signalled = tuple(item for item in test if item.signal)
         accuracy = (
             Decimal(sum(item.signal == item.label for item in signalled)) / Decimal(len(signalled))
@@ -1469,7 +1478,6 @@ def _walk(samples: tuple[_Sample, ...], config: ValidationConfig) -> tuple[tuple
         if failures >= config.stop_after_failures:
             stopped = True
             break
-        cursor += config.step_bars
     positive = sum(Decimal(_str(fold["test_accuracy"])) >= config.minimum_signal_accuracy for fold in folds)
     return (
         ("fold_count", str(len(folds))),

@@ -1,0 +1,65 @@
+{
+  "schema_version": "mvp-r-005.correction-v5-independent-review.v1",
+  "task": "MVP-R-005",
+  "reviewed_phase": "correction-v5-evidence-only",
+  "reviewed_gate_decision": "R005_CORRECTION_V5_PASS",
+  "reviewed_at": "2026-09-02",
+  "independent_review_result": "PASS",
+  "reviewer_executor": "Codex",
+  "reviewer_model": "NOT_EXPOSED",
+  "reasoning_effort": "NOT_EXPOSED",
+  "implementation_executor_separation": true,
+  "functional_findings": [],
+  "acceptance_verified": {
+    "main_path_has_no_pre_experiment_critic_gate": true,
+    "bounded_research_hypotheses": true,
+    "deterministic_validator_and_experiments": true,
+    "research_agent_verdicts": true,
+    "exact_four_block_reports": true,
+    "critic_shadow_only_and_non_blocking": true,
+    "new_eight_episode_agent_vs_single_prompt_comparison": true,
+    "per_fold_registered_metrics": true,
+    "predecessor_evidence_preserved": true
+  },
+  "artifact_recalculation": {
+    "arms_checked": 16,
+    "visible_view_exact_binding": 16,
+    "markdown_brief_final_exact_binding": 16,
+    "packet_view_lineage": 16,
+    "predicate_verdict_congruence": 16,
+    "actual_final_verdict_hypothesis_result_falsification_lineage": 16,
+    "product_result_regeneration_required": false
+  },
+  "non_blocking_hardening_note": {
+    "finding": "The offline Gate does not hydrate full ResearchFinalVerdict lineage before comparing the verdict enum, so a deliberately rewritten and validly rehashed local Evidence file can preserve the enum while changing other lineage fields.",
+    "classification": "NON_BLOCKING_LOCAL_EVIDENCE_TAMPER_HARDENING",
+    "product_owner_decision": "Ignore adversarial or security-related Evidence tamper hardening for this personal, non-adversarial system.",
+    "actual_artifacts_affected": false,
+    "runtime_behavior_affected": false
+  },
+  "validation": {
+    "targeted_correction_v3_v4_v5_contracts": "29 passed",
+    "uv_run_pytest": "465 passed, 42 skipped",
+    "make_check": {
+      "mypy_source_files": 102,
+      "schema_tests": 2,
+      "unit_tests": 1,
+      "property_tests": 9,
+      "contract_tests": 450,
+      "repository_scan": "passed",
+      "health": "ok"
+    },
+    "git_diff_check": "passed"
+  },
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "model_upgrade": "NONE_RECORDED",
+  "commit": "UNCOMMITTED_WORKTREE",
+  "model_output_not_authoritative": true,
+  "deterministic_rules_and_artifacts_decided_acceptance": true,
+  "not_go": true,
+  "independent_real_user_validation": false,
+  "approve_formal_30_50_shadow": false,
+  "approve_v1_011": false,
+  "task_checkbox": "checked"
+}

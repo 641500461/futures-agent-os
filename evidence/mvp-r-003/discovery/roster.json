@@ -1,0 +1,68 @@
+{
+  "schema_version": "mvp-r-003.discovery-roster.v1",
+  "selection_rule": "two fixed PIT episodes per AG/CU/MA/SR covering eight distinct instrument-state cells; lexicographically earliest eligible candidate in each chosen cell",
+  "frozen_before_discovery_model_calls": true,
+  "manifests": [
+    {
+      "manifest_sha256": "7bb35b19d86178a6924b932a7f2012b309f6b1d4525f0c775c3ecfe009317fe7",
+      "source_revision": "4facac07f0b15ac924fbd6e902f6b2e8df6d2758102df5732b245625a879fb8b",
+      "source_uri": "https://www.shfe.com.cn/data/tradedata/future/dailydata/"
+    },
+    {
+      "manifest_sha256": "e2128412c29b0475acda6d0ea833f30313fbdc94ac0386ea0f55df56f6be4038",
+      "source_revision": "d15ef4c86204652f473b3df47a8bd34b7cd72abf7e476c30a8ae89b403ba2623",
+      "source_uri": "https://www.czce.com.cn/cn/DFSStaticFiles/Future/"
+    }
+  ],
+  "episodes": [
+    {
+      "episode_id": "r003-ag-uptrend",
+      "instrument": "SHFE.AG.DOMINANT_OI",
+      "stratum": "UP_TREND",
+      "market_cutoff": "2026-04-21T07:00:00Z"
+    },
+    {
+      "episode_id": "r003-ag-noise",
+      "instrument": "SHFE.AG.DOMINANT_OI",
+      "stratum": "NOISE",
+      "market_cutoff": "2026-08-04T07:00:00Z"
+    },
+    {
+      "episode_id": "r003-cu-extreme",
+      "instrument": "SHFE.CU.DOMINANT_OI",
+      "stratum": "EXTREME_VOLATILITY",
+      "market_cutoff": "2026-03-09T07:00:00Z"
+    },
+    {
+      "episode_id": "r003-cu-range",
+      "instrument": "SHFE.CU.DOMINANT_OI",
+      "stratum": "RANGE",
+      "market_cutoff": "2026-06-12T07:00:00Z"
+    },
+    {
+      "episode_id": "r003-ma-downtrend",
+      "instrument": "CZCE.MA.DOMINANT_OI",
+      "stratum": "DOWN_TREND",
+      "market_cutoff": "2026-07-02T07:00:00Z"
+    },
+    {
+      "episode_id": "r003-ma-reversal",
+      "instrument": "CZCE.MA.DOMINANT_OI",
+      "stratum": "REVERSAL",
+      "market_cutoff": "2026-04-14T07:00:00Z"
+    },
+    {
+      "episode_id": "r003-sr-false-breakout",
+      "instrument": "CZCE.SR.DOMINANT_OI",
+      "stratum": "FALSE_BREAKOUT",
+      "market_cutoff": "2026-03-09T07:00:00Z"
+    },
+    {
+      "episode_id": "r003-sr-extreme",
+      "instrument": "CZCE.SR.DOMINANT_OI",
+      "stratum": "EXTREME_VOLATILITY",
+      "market_cutoff": "2026-08-11T07:00:00Z"
+    }
+  ],
+  "content_sha256": "3662d58eccee23c699d24ea6c324962cb00425b7d9cd72af9ef4a4d825f6d307"
+}

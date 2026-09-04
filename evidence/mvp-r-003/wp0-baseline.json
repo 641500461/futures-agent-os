@@ -1,0 +1,67 @@
+{
+  "schema_version": "mvp-r-003.wp-evidence.v1",
+  "task": "MVP-R-003",
+  "work_package": "WP0",
+  "status": "COMPLETED",
+  "executor": "Cursor",
+  "implementation_model": "GPT-5.6 Sol",
+  "reasoning_effort": "NOT_EXPOSED",
+  "workspace": "/Users/qiu/work/futures-agent-os",
+  "branch": "main",
+  "baseline_head": "sha256-not-applicable:git:d72afbeed54e83bb9bec4afdff9884a423cce0ac",
+  "started_at": "2026-09-01T13:20:00Z",
+  "completed_at": "2026-09-01T13:23:50Z",
+  "baseline_protection": {
+    "dirty_worktree_preserved": true,
+    "reset_used": false,
+    "clean_used": false,
+    "checkout_overwrite_used": false,
+    "files_deleted": false,
+    "worktree_created": false,
+    "commit_created": false,
+    "mvp_r_002_probe_rerun": false
+  },
+  "secret_scan_repair": {
+    "strategy": "audited exact-value detect-secrets baseline",
+    "baseline_path": ".secrets.baseline",
+    "approved_false_positive_count": 2,
+    "approved_file": "evidence/mvp-r-002/capability-probe-f1fe3e67-bf91-4a8f-9b7f-5baf1d1402d4.json",
+    "all_plugins_forced": true,
+    "evidence_directory_excluded": false
+  },
+  "verification": [
+    {
+      "command": "uv run pytest tests/contract/test_quality_gate_contract.py -q",
+      "result": "4 passed"
+    },
+    {
+      "command": "uv run python scripts/verify_secret_scan.py",
+      "result": "exit 0"
+    },
+    {
+      "command": "uv run pytest",
+      "result": "402 passed, 42 skipped in 6.09s"
+    },
+    {
+      "command": "make check",
+      "result": "exit 0; mypy 74 source files; schema 2; unit 1; property 9; contract 392; health ok"
+    },
+    {
+      "command": "git diff --check",
+      "result": "exit 0"
+    }
+  ],
+  "changed_files": [
+    ".secrets.baseline",
+    "scripts/verify_secret_scan.py",
+    "tests/contract/test_quality_gate_contract.py",
+    "evidence/mvp-r-003/wp0-baseline.json"
+  ],
+  "scope_not_implemented": [
+    "MVP-R-002 qualification runtime",
+    "capability probe replay",
+    "baseline commit or branch",
+    "MVP-R-003 WP1-WP5 behavior"
+  ],
+  "safety_boundary_changed": false
+}

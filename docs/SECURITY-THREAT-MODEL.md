@@ -1,7 +1,15 @@
 # V0 security foundation and threat model
 
-Status: active V0 contract
+Status: historical V0 baseline; future adversarial hardening deferred under the trusted-local scope
 Scope: research and simulation only; this document creates no live-trading, model, code-execution, data-ingest, or network capability.
+
+## Current project-level security scope
+
+As of 2026-09-02, the intended deployment is single-user, local, operator-controlled, and assumes the operator and local machine state are trusted. The V0 controls and their Evidence remain valid historical implementation, but they are not a standing mandate to add more security machinery.
+
+The following are not default Roadmap work, Acceptance conditions, or blocking review findings: defense against an operator deliberately editing local files or database rows and recomputing hashes, signed Evidence/provenance, multi-user IAM/RBAC, tenant isolation, zero-trust infrastructure, and adversarial hardening whose only value is resisting a local attacker. Reopen these concerns only after explicit user authorization or a boundary change to public/network service, multiple or untrusted users, untrusted code execution, or real-money trading.
+
+This scope decision does not waive product correctness or low-cost protections against immediate personal harm. The research-and-simulation-only boundary, deterministic risk/order/fill/ledger truth, idempotency/concurrency/recovery, reproducible Evidence, keeping secret values out of Git/logs, and preventing untrusted code from receiving unrestricted host access remain required. Existing authorization and audit mechanisms may remain when they support deterministic workflow correctness; do not extend them solely for adversarial tamper resistance.
 
 ## Security invariants
 
@@ -65,4 +73,4 @@ The future executor must independently enforce these same limits at the OS/conta
 
 ## V0 non-goals and hand-off conditions
 
-V0-009 deliberately does not implement a secret-manager client, logging backend, browser, package installer, code runner, container runtime, external data connector, network stack, or legacy integration. Before a future execution runtime is enabled, it needs independent security review plus integration tests proving OS-level resource containment and enforced egress isolation, not only these contract tests.
+V0-009 deliberately does not implement a secret-manager client, logging backend, browser, package installer, code runner, container runtime, external data connector, network stack, or legacy integration. Under the current trusted-local scope, enabling a future execution runtime does not automatically require an independent adversarial security review. It still requires tests proportionate to product correctness and personal-harm risk, including bounded resource use and protection against accidental unrestricted host access. A separate security review becomes required only when one of the boundary-change triggers above applies.

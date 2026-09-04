@@ -1,0 +1,62 @@
+{
+  "schema_version": "mvp-r-003.wp-evidence.v1",
+  "task": "MVP-R-003",
+  "work_package": "WP1",
+  "status": "COMPLETED",
+  "executor": "Cursor",
+  "implementation_model": "GPT-5.6 Sol",
+  "reasoning_effort": "NOT_EXPOSED",
+  "workspace": "/Users/qiu/work/futures-agent-os",
+  "branch": "main",
+  "commit": "NOT_CREATED_USER_PROHIBITED_UNREQUESTED_COMMIT",
+  "completed_at": "2026-09-01T13:29:00Z",
+  "implemented": [
+    "ResearchEpisodeInput",
+    "HypothesisSpec",
+    "HypothesisValidation",
+    "CriticReview",
+    "ExecutableExperimentPlan",
+    "ExperimentResultPacket",
+    "ResearchFinalVerdict",
+    "deterministic hypothesis executability validator",
+    "2-to-3 distinct hypothesis batch bound"
+  ],
+  "critical_counterexamples": [
+    "future result in episode fails closed",
+    "ungrounded evidence reference is unsupported",
+    "unregistered executable operator is unsupported",
+    "trading-capable hypothesis fails closed"
+  ],
+  "verification": [
+    {
+      "command": "uv run pytest tests/contract/test_mvp_r_003_contracts.py -q",
+      "result": "4 passed"
+    },
+    {
+      "command": "uv run ruff check src/futures_agent_os/research_experiment/mvp_r_003 tests/contract/test_mvp_r_003_contracts.py",
+      "result": "all checks passed"
+    },
+    {
+      "command": "uv run mypy src/futures_agent_os/research_experiment/mvp_r_003",
+      "result": "no issues in 3 source files"
+    },
+    {
+      "command": "make check",
+      "result": "exit 0; mypy 77 source files; schema 2; unit 1; property 9; contract 396; secret scan; health ok"
+    }
+  ],
+  "changed_files": [
+    "src/futures_agent_os/research_experiment/mvp_r_003/__init__.py",
+    "src/futures_agent_os/research_experiment/mvp_r_003/contracts.py",
+    "src/futures_agent_os/research_experiment/mvp_r_003/hypothesis_validator.py",
+    "tests/contract/test_mvp_r_003_contracts.py",
+    "evidence/mvp-r-003/wp1-contracts.json"
+  ],
+  "scope_not_implemented": [
+    "real model calls",
+    "experiment execution",
+    "CLI and reports",
+    "Discovery Episodes"
+  ],
+  "safety_boundary_changed": false
+}

@@ -2,7 +2,7 @@
 
 一个完全独立的期货智能研究与模拟交易绿地项目。系统目标是让受约束的 Agent 自主发现机会、研究、模拟交易、盯盘与复盘；交易真值和风险许可始终由确定性内核掌握。
 
-当前阶段：V1 自主研究与机会雷达；已完成 `V1-010`，下一任务为强制研究可用性门槛 `MVP-R-001`。在门槛取得 `GO` 前不进入 `V1-011`。
+当前阶段：V1 自主研究与机会雷达；已完成 `V1-010`，`MVP-R-001` 与 `MVP-R-002` 均已在 Gate 停止。`MVP-R-003` v1 记为测量方案失败，不是多 Agent 产品失败。当前任务为 `MVP-R-004`（canary `CANARY_PASS`，discovery `DISCOVERY_PASS`，用户盲评未开始）；正式 MVP-R 取得 `GO` 前不进入 `V1-011`。
 
 ## 本地开始
 
@@ -44,10 +44,12 @@ CI 使用无密码的临时 PostgreSQL `trust` 服务；本地连接串必须指
 
 开发进度只以 [`docs/ROADMAP.md`](docs/ROADMAP.md) 为准，跨任务交接先阅读 [`docs/HANDOFF.md`](docs/HANDOFF.md)。
 开发任务的模型选择与升级规则见 [`docs/DEVELOPMENT-MODEL-POLICY.md`](docs/DEVELOPMENT-MODEL-POLICY.md)。
+产品运行时 V1–V5 的 LLM workload、模型 Profile 与升级规则见 [`docs/LLM-SCENARIO-AND-MODEL-ROUTING.md`](docs/LLM-SCENARIO-AND-MODEL-ROUTING.md)。
 
 ## 产品边界
 
 - 仅用于研究与模拟交易，不接入真实资金或真实下单。
+- 默认是个人自用、单用户、可信本机部署；对抗性本地防篡改、多租户和零信任安全加固不作为默认开发目标，具体边界见 [`docs/SECURITY-THREAT-MODEL.md`](docs/SECURITY-THREAT-MODEL.md)。
 - 旧 `futures_workflow` 仅是 donor，不得成为运行时依赖。
 - Agent 不得直接创建 Order、Fill、Position 或 LedgerEntry。
 - 风控、执行、账本、保护与恢复必须可在没有 LLM 的情况下确定性运行。

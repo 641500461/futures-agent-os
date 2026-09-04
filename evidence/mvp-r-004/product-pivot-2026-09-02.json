@@ -1,0 +1,25 @@
+{
+  "schema_version": "mvp-r-004.product-pivot.v1",
+  "task": "MVP-R-004",
+  "status": "STOP/PIVOT",
+  "confirmed_at": "2026-09-02T01:25:00+08:00",
+  "machine_discovery_gate": "DISCOVERY_PASS",
+  "user_value_gate": "USER_VALUE_FAIL",
+  "blind_eval_evaluator": "product_owner_assisted_by_codex",
+  "independent_real_user_validation": false,
+  "rejected_pivot": "DELETE_AGENT_KEEP_DETERMINISTIC_ENGINE_ONLY",
+  "confirmed_pivot": "SINGLE_RESEARCH_AGENT_PLUS_DETERMINISTIC_EXPERIMENT_LOOP",
+  "critic_role": "OPTIONAL_NON_BLOCKING_SHADOW_QA",
+  "product_decision": "Stop the forced multi-agent main path. Keep the Agent research loop. Remove Critic as a pre-experiment gate.",
+  "reasons": [
+    "research_without_critic preferred 5/8",
+    "single_prompt_analyst preferred 2/8 and remains a baseline or fallback",
+    "complete flow preferred 1/8; mandatory Critic added complexity without stable decision gain",
+    "deterministic_template preferred 0/8; do not fall back to template-only"
+  ],
+  "retain_r003_evidence": true,
+  "retain_r004_evidence": true,
+  "approve_formal_30_50_shadow": false,
+  "approve_v1_011": false,
+  "successor_task": "MVP-R-005"
+}
