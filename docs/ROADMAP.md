@@ -186,10 +186,11 @@ Exit：新仓库可独立启动和恢复；领域、Agent、Tool、数据、安�
   Depends: `MVP-R-005` 已通过 correction-v5 独立功能复核，且最小 MVP Closure Acceptance 为 `MVP_ACCEPTED`。Formal Eval v1/v2 失败保留为后续质量 backlog，不阻塞本任务启动。<br>
   Acceptance: 每个任务有算力/时间预算；结果可回流原对话；Experiment Manager 不能交易或晋升策略。  
   Evidence: [`evidence/v1-011/implementation-2026-09-04.json`](../evidence/v1-011/implementation-2026-09-04.json)。
-- [ ] `V1-012` 建立 Agent 研究评测集：工具选择、引用正确性、数字 grounding、反证覆盖、`NO_TRADE/DEFER` 和相同证据重放。  
+- [x] `V1-012` 建立 Agent 研究评测集：工具选择、引用正确性、数字 grounding、反证覆盖、`NO_TRADE/DEFER` 和相同证据重放。
   Depends: `MVP-R-005` 通过，并完成正式 MVP-R eval、取得 `GO`、`V1-011`。<br>
   Acceptance: 评测集、评分规则和版本已冻结；每次模型/Prompt/Toolset 变更都会生成可比较报告。  
-  Evidence: 待补。
+  Status: COMPLETE；实现、定向测试和未主导实现的 Sol/high 独立验收均通过。<br>
+  Evidence: [`evidence/v1-012/implementation-2026-09-04.json`](../evidence/v1-012/implementation-2026-09-04.json)。
 - [ ] `V1-013` 实现 `OBSERVE` Opportunity Radar：按 ScanPolicy/UniversePolicy 或事件扫描品种宇宙，产出 `OpportunityScan` 与 `OpportunityCandidate`，并形成重要研究摘要。  
   Depends: `V1-011`、`V1-012`。<br>
   Acceptance: 每次扫描绑定宇宙、时点、数据/特征版本和预算；OBSERVE 的 account/mandate 可空；候选有支持与反对证据、时间尺度、去重/冷却信息和 `NO_OPPORTUNITY`结果；漏跑可补跑，且不能创建 TradePlan、Order 或账务副作用。  

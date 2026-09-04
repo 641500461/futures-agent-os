@@ -1,0 +1,19 @@
+{
+  "task": "V1-012",
+  "status": "COMPLETE",
+  "implementation": {"executor": "Codex", "model": "gpt-5.6-terra", "reasoning_effort": "medium"},
+  "review": {"model": "gpt-5.6-sol", "reasoning_effort": "high", "status": "PASS"},
+  "scope": "Frozen research evaluation suite and deterministic comparable reports; no trading or formal-eval changes.",
+  "acceptance": {
+    "frozen_suite_dataset_rubric_versions": true,
+    "tool_selection": true,
+    "citation_correctness": true,
+    "numeric_grounding": true,
+    "counter_evidence": true,
+    "no_trade_defer": true,
+    "same_evidence_replay": true,
+    "model_prompt_toolset_comparison": true
+  },
+  "tests": ["uv run pytest -q tests/contract/test_v1_012_evaluation.py", "uv run mypy src/futures_agent_os/research_experiment/v1_012_evaluation.py"],
+  "results": ["4 passed", "Success: no issues found", "make check: 470 contract tests passed; all gates green"]
+}
