@@ -191,10 +191,11 @@ Exit：新仓库可独立启动和恢复；领域、Agent、Tool、数据、安�
   Acceptance: 评测集、评分规则和版本已冻结；每次模型/Prompt/Toolset 变更都会生成可比较报告。  
   Status: COMPLETE；实现、定向测试和未主导实现的 Sol/high 独立验收均通过。<br>
   Evidence: [`evidence/v1-012/implementation-2026-09-04.json`](../evidence/v1-012/implementation-2026-09-04.json)。
-- [ ] `V1-013` 实现 `OBSERVE` Opportunity Radar：按 ScanPolicy/UniversePolicy 或事件扫描品种宇宙，产出 `OpportunityScan` 与 `OpportunityCandidate`，并形成重要研究摘要。  
+- [x] `V1-013` 实现 `OBSERVE` Opportunity Radar：按 ScanPolicy/UniversePolicy 或事件扫描品种宇宙，产出 `OpportunityScan` 与 `OpportunityCandidate`，并形成重要研究摘要。
+  Status: COMPLETE；OBSERVE-only 最小扫描契约与独立 Sol/high 验收均通过。<br>
   Depends: `V1-011`、`V1-012`。<br>
   Acceptance: 每次扫描绑定宇宙、时点、数据/特征版本和预算；OBSERVE 的 account/mandate 可空；候选有支持与反对证据、时间尺度、去重/冷却信息和 `NO_OPPORTUNITY`结果；漏跑可补跑，且不能创建 TradePlan、Order 或账务副作用。  
-  Evidence: 待补。
+  Evidence: [`evidence/v1-013/implementation-2026-09-05.json`](../evidence/v1-013/implementation-2026-09-05.json)。
 
 Exit：`MVP-R-005` 单 Agent 研究决策简报通过，且最小 MVP Closure Acceptance 证明从用户问题或时间表/市场事件到 Hypothesis、实验结果和证据化答复的核心路径可完整重放；Critic 若存在只作为影子质检。没有任何 Order、Fill、Position 或账本副作用。Formal Eval v1/v2 仍作为独立质量记录，不再阻塞本 MVP Exit；formal evaluation reliability / quality improvement 进入后续 backlog。`MVP-R-003` v1 与 `MVP-R-004` 强制多 Agent 主路径均不得单独作为该 Exit 的通过证据。
 
