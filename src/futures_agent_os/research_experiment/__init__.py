@@ -25,6 +25,18 @@ from .critique import (
 )
 from .features import FeatureAlgorithm, FeatureDefinition, FeatureDefinitionRef, FeatureSpec, FeatureSpecRef
 from .experiment_manager import ExperimentManager, ExperimentPlan, ResearchBudget, ResearchJob, ResearchJobStatus
+from .v1_012_evaluation import (
+    CaseScore,
+    ComparableReport,
+    EvaluationCase,
+    EvaluationDimension,
+    EvaluationManager,
+    EvaluationRun,
+    EvidenceBinding,
+    NumericGrounding,
+    ResearchEvaluationSuite,
+    ResearchOutcome,
+)
 from .research_hypothesis import (
     EvidenceGap,
     EvidenceSynthesis,
@@ -315,6 +327,16 @@ from .model_routing import (
 )
 
 __all__ = [
+    "CaseScore",
+    "ComparableReport",
+    "EvaluationCase",
+    "EvaluationDimension",
+    "EvaluationManager",
+    "EvaluationRun",
+    "EvidenceBinding",
+    "NumericGrounding",
+    "ResearchEvaluationSuite",
+    "ResearchOutcome",
     "ExperimentManager",
     "ExperimentPlan",
     "ResearchBudget",
