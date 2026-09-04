@@ -1,0 +1,34 @@
+{
+  "schema_version": "mvp-r-005.correction-v2-reviewer-rejection.v1",
+  "task": "MVP-R-005",
+  "rejected_phase": "correction-v2",
+  "rejected_gate_decision": "R005_CORRECTION_V2_PASS",
+  "rejected_at": "2026-09-02",
+  "v2_scorecard_rewritten": false,
+  "v2_scorecard_path": "evidence/mvp-r-005/correction-v2/scorecard.json",
+  "independent_review_result": "REJECT",
+  "blocking_defects": [
+    {
+      "id": "P1_FAIL_COVERED_BY_INSUFFICIENT",
+      "summary": "evaluate_falsification_predicate returned NEED_MORE_DATA whenever any clause was INSUFFICIENT, even when another clause had already FAILed."
+    },
+    {
+      "id": "P1_FOLD_PREDICATE_METRIC_MISBIND",
+      "summary": "each_oos_fold_primary_beats_control and at_least_n accepted metrics such as stressed_net_return or proxy_net_return but always compared fold_N_signal_accuracy."
+    },
+    {
+      "id": "P1_STOPPED_FOLD_LEAK",
+      "summary": "Stop rule removed standard fold_3_* fields but left raw_follow_fold_3_* and raw_invert_fold_3_* in the Agent-visible packet."
+    },
+    {
+      "id": "P1_TRANSFORMED_METRICS_KEEP_RAW_SOURCE_REFS",
+      "summary": "bind_tool_runs_to_hypothesis wrote treatment-relative values back onto raw ToolRunResult rows while retaining the original tool source_refs."
+    },
+    {
+      "id": "P1_HARDCODED_PREDECESSOR_UNTOUCHED",
+      "summary": "Gate and WP recorded predecessor_evidence_untouched=true and v1_scorecard_untouched=true without a SHA-256 predecessor file baseline."
+    }
+  ],
+  "not_go": true,
+  "independent_real_user_validation": false
+}

@@ -1,0 +1,104 @@
+{
+  "schema_version": "mvp-r-003.wp-evidence.v1",
+  "task": "MVP-R-003",
+  "work_package": "WP3",
+  "status": "COMPLETED",
+  "executor": "Cursor",
+  "implementation_model": "GPT-5.6 Sol",
+  "reasoning_effort": "NOT_EXPOSED",
+  "workspace": "/Users/qiu/work/futures-agent-os",
+  "branch": "main",
+  "commit": "NOT_CREATED_USER_PROHIBITED_UNREQUESTED_COMMIT",
+  "completed_at": "2026-09-01T13:55:00Z",
+  "implemented": [
+    "structured hypothesis_generation workload",
+    "structured independent_critic workload",
+    "structured result_feedback workload",
+    "fixed output schemas and positive token/time budgets",
+    "empty model toolset with forbidden-activity fail closed",
+    "grounded Critic source validation",
+    "immutable MODIFY version creation without recursive execution",
+    "model profile, actual effort, usage, latency, request and response receipts"
+  ],
+  "frozen_assets": {
+    "prompt_sha256s": {
+      "hypothesis_generation": "e99b767688674bb2a9fc18021b09f58b4fe75f759ec3aa70c0f9311cd79adec5",
+      "independent_critic": "4fec8a5d8a523aefc1fce0282d837de7ea5d2c66dda8dc438ad3c6f0332c48ef",
+      "result_feedback": "38cb77faa6eee6dbac17cb44fa8167bff88325859eada6dc094fdcb70a3014da"
+    },
+    "schema_sha256s": {
+      "hypothesis_generation": "6d391d05ab42ab225bed447ce5864bad1a9af7c0fcc4ae91cc9077a978418d87",
+      "independent_critic": "3488f138180baf5bec685509c22ec1b259df90da2fba0e31fd6429152e416473",
+      "result_feedback": "2f56a9dbd7390329077a9aa5cd0b0fcead400b8149f6442a03dfdad4a954c3e1"
+    },
+    "toolset_sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "runtime_sha256": "0f96d418979c6724e7c5b6d48d1ec8ea6a4dc545a00f3b8b09baa9d4b83333fa"
+  },
+  "real_model_smoke": {
+    "workload": "hypothesis_generation",
+    "provider": "openai",
+    "model": "gpt-5.6-terra",
+    "requested_and_observed_reasoning_effort": "xhigh",
+    "result": "2 schema-valid distinct hypotheses",
+    "families": [
+      "MOMENTUM_CONTINUATION",
+      "MEAN_REVERSION"
+    ],
+    "input_tokens": 13597,
+    "output_tokens": 828,
+    "reasoning_tokens": 516,
+    "latency_ms": 26970,
+    "request_sha256": "da0db38a281100e91cf231331caca43a423f85cf212ec4eef5e28ccb2dfd9f9d",
+    "response_sha256": "c1b52fa5ea9100707c09d9f0552b6d6793bc0176e6a9bda70fb16b2c7286a2a2",
+    "receipt_sha256": "f1644fb6bb8e42239098932cc8751926fddc83c3ec94895055963d51ced1eb7c"
+  },
+  "provider_failures_and_retries": [
+    {
+      "attempt": 1,
+      "requested_effort": "medium",
+      "result": "FAIL_CLOSED_OBSERVATION_MISMATCH"
+    },
+    {
+      "attempt": 2,
+      "purpose": "metadata-only diagnosis",
+      "requested_effort": "medium",
+      "observed_effort": "xhigh",
+      "provider_turn_started": true,
+      "provider_response_observed": true,
+      "tool_activity": false,
+      "result": "FAIL_CLOSED_EFFORT_DRIFT"
+    },
+    {
+      "attempt": 3,
+      "requested_effort": "xhigh",
+      "observed_effort": "xhigh",
+      "result": "SUCCESS"
+    }
+  ],
+  "verification": [
+    {
+      "command": "uv run pytest tests/agent_eval/test_mvp_r_003_eval_fixtures.py -q",
+      "result": "3 passed"
+    },
+    {
+      "command": "uv run pytest tests/contract/test_mvp_r_003_contracts.py tests/replay/test_mvp_r_003_vertical_slice.py tests/agent_eval/test_mvp_r_003_eval_fixtures.py -q",
+      "result": "8 passed"
+    },
+    {
+      "command": "make check",
+      "result": "exit 0; mypy 79 source files; schema 2; unit 1; property 9; contract 396; secret scan; health ok"
+    }
+  ],
+  "artifact_paths": [
+    "src/futures_agent_os/research_experiment/mvp_r_003/model_workloads.py",
+    "tests/agent_eval/test_mvp_r_003_eval_fixtures.py",
+    "evidence/mvp-r-003/wp3-model-workloads.json"
+  ],
+  "scope_not_implemented": [
+    "live independent Critic invocation",
+    "live result-feedback invocation",
+    "CLI and reports",
+    "eight Discovery Episodes"
+  ],
+  "safety_boundary_changed": false
+}

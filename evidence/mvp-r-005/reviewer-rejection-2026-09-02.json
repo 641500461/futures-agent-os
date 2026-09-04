@@ -1,0 +1,40 @@
+{
+  "schema_version": "mvp-r-005.reviewer-rejection.v1",
+  "task": "MVP-R-005",
+  "status": "IN_PROGRESS",
+  "rejected_artifact": "evidence/mvp-r-005/scorecard.json",
+  "rejected_gate_schema": "mvp-r-005.discovery-gate.v1",
+  "rejected_gate_decision": "R005_PASS",
+  "v1_scorecard_rewritten": false,
+  "v1_scorecard_retained_as_historical": true,
+  "correction": "correction-v2",
+  "rejected_at": "2026-09-02T02:17:00+08:00",
+  "reviewer": "independent_review",
+  "executor_recording_rejection": "Cursor Grok 4.6",
+  "reasoning_effort": "NOT_EXPOSED",
+  "summary": "Independent review rejected v1 R005_PASS because the machine gate only verified completion and field presence, not metric semantics.",
+  "blocking_defects": [
+    {
+      "id": "P1-direction-not-bound",
+      "severity": "P1",
+      "detail": "execute_replay did not bind HypothesisSpec FOLLOW/INVERT. Replay always computed raw FOLLOW PRIOR_CLOSE_RETURN_THRESHOLD signals, and resolve_registered_metrics did not swap treatment/control. INVERT hypotheses such as r005-sr-false-breakout treated FOLLOW signal_accuracy as the treatment."
+    },
+    {
+      "id": "P1-fold-not-authentic-oos",
+      "severity": "P1",
+      "detail": "chronological_fold_diagnostics partitioned the full-window 38 signals into 12/13/13 and labeled them fold_1/2/3. The frozen plan is train_bars=20, test_bars=5, step_bars=5, embargo_bars=1. Those counts are not the V1-010 walk-forward OOS test windows."
+    },
+    {
+      "id": "P1-verdict-rewrites-predicate",
+      "severity": "P1",
+      "detail": "Machine consistency used natural-language falsification_condition. r005-cu-extreme registered an aggregate comparison, had overall signal_accuracy 0.526 > 0.474 and 38 samples, but REJECT because fold 3 failed, adding an unregistered condition."
+    }
+  ],
+  "v1_gate_limitation": "v1 compute_r005_gate counted complete episodes, experiment runs, four-block reports, and presence of fold_1/2/3 fields. It did not compute direction binding, treatment/control semantic mirror, authentic walk-forward fold manifests, fold-metric binding, or verdict/predicate congruence.",
+  "required_correction": "Implement MVP-R-005 correction-v2 with semantic gates. Keep the v1 scorecard byte-stable. Write new runs to evidence/mvp-r-005/correction-v2/ and datasets/mvp-r-001/runs/mvp-r-005-correction-v2/. Do not check the Roadmap task complete in this round.",
+  "not_go": true,
+  "independent_real_user_validation": false,
+  "approve_formal_30_50_shadow": false,
+  "approve_v1_011": false,
+  "task_checkbox": "unchecked"
+}

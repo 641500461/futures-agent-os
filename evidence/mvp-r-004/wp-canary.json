@@ -1,0 +1,46 @@
+{
+  "schema_version": "mvp-r-004.wp-evidence.v1",
+  "task": "MVP-R-004",
+  "phase": "canary",
+  "status": "CANARY_PASS",
+  "executor": "Cursor",
+  "implementation_model": "Cursor Grok 4.6",
+  "reasoning_effort": "NOT_EXPOSED",
+  "product_models": {
+    "research": "gpt-5.6-terra/xhigh",
+    "critic": "gpt-5.6-sol/xhigh",
+    "feedback": "gpt-5.6-terra/xhigh"
+  },
+  "r003_v1_evidence_untouched": true,
+  "roster_sha256": "b1b0ec9b1a7ec7b6480a0d70b0be07fe7bf79b7285c64ce668f9d84f8cad8f5a",
+  "gate": {
+    "decision": "CANARY_PASS",
+    "hardcoded": false,
+    "full_arm_complete": "2/2",
+    "experiments_run": "2/2",
+    "result_feedback_present": "2/2",
+    "clean_retention": "2/2",
+    "bad_recall": "2/2",
+    "bad_selected_into_experiment": 0
+  },
+  "episodes": [
+    "r004-canary-ag-uptrend",
+    "r004-canary-sr-false-breakout"
+  ],
+  "agent_generation": {
+    "r004-canary-ag-uptrend": 3,
+    "r004-canary-sr-false-breakout": 2
+  },
+  "scope_not_started": [
+    "freeze new eight-episode roster",
+    "run repaired eight-episode discovery",
+    "user blind eval",
+    "formal 30/50/shadow",
+    "V1-011"
+  ],
+  "artifact_paths": [
+    "evidence/mvp-r-004/canary/roster.json",
+    "evidence/mvp-r-004/canary/scorecard.json",
+    "datasets/mvp-r-001/runs/mvp-r-004-canary/"
+  ]
+}

@@ -1,10 +1,12 @@
 # MVP-R：研究可用性验证
 
-文档版本：`1.0-proposed`<br>
-最后更新：2026-08-25<br>
-状态：PLANNED<br>
+文档版本：`1.1-historical-policy`<br>
+最后更新：2026-08-31<br>
+状态：`MVP-R-001/MVP-R-002 STOPPED；跨任务原则继续有效`<br>
 启动条件：`V1-010` Acceptance 与 Evidence 完成<br>
-路线图任务：`MVP-R-001`
+历史路线图任务：`MVP-R-001`、`MVP-R-002`、`MVP-R-003` v1、`MVP-R-004`；当前后继任务：`MVP-R-005`
+
+> 2026-09-02：`MVP-R-001` 与 `MVP-R-002` 均已停止。`MVP-R-003` v1 记为测量方案失败。`MVP-R-004` 机器门槛 `CANARY_PASS` / `DISCOVERY_PASS`，协助盲评 `USER_VALUE_FAIL`；产品确认 `STOP/PIVOT`，方向是单 Research Agent + 确定性实验闭环，Critic 降为影子质检，不是删掉 Agent。评估人是 `product_owner_assisted_by_codex`，不是独立真实用户验证。当前任务 `MVP-R-005` 为 `IN_PROGRESS`，机器门槛 `R005_PASS`，不是 `GO`。正式 30/50/shadow 与 `V1-011` 仍锁定。
 
 ## 1. 决策
 

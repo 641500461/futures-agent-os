@@ -1,0 +1,21 @@
+{
+  "schema_version": "mvp-r-003.discovery-failure.v1",
+  "episode_id": "r003-ag-uptrend",
+  "attempt": 1,
+  "completed_at": "2026-09-01T14:32:00Z",
+  "status": "FAILED_CLOSED",
+  "completed_before_failure": [
+    "deterministic template experiment",
+    "single-prompt analyst model turn",
+    "hypothesis generation model turn",
+    "research-without-critic experiment",
+    "research-without-critic result-feedback model turn",
+    "first independent Critic model turn"
+  ],
+  "failure_stage": "independent_critic_grounding_validation",
+  "failure": "Critic emitted a source reference outside the then-accepted URI-only set",
+  "tool_or_trading_side_effect": false,
+  "manual_output_repair": false,
+  "resolution": "accept exact content hashes of the same frozen ArtifactRefs as grounded aliases; arbitrary references remain rejected",
+  "counts_as_completed_episode": false
+}

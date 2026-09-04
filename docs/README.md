@@ -55,7 +55,11 @@ Risk Constitution、Signal/Forecast Models、Position Sizing、Execution Planner
 8. [架构决策记录](./adr/)：需要确认的难逆转决策。
 9. [设计完整性与 Deep Research 覆盖审计](./DESIGN-COVERAGE-AUDIT.md)：来源需求、Agent、Tool、产品与技术覆盖矩阵。
 10. [系统架构、用户生命周期与盯盘调度](./SYSTEM-ARCHITECTURE-AND-LIFECYCLE.md)：从用户进入到交易结束、复盘、定时任务和持续盯盘的全链路图。
-11. [V0 安全基础与威胁模型](./SECURITY-THREAT-MODEL.md)：服务身份、密钥引用、日志脱敏、Prompt Injection、研究沙箱、网络出口与供应链策略。
+11. [V0 安全基础与威胁模型](./SECURITY-THREAT-MODEL.md)：记录既有 V0 控制，并明确当前个人自用、可信本机范围下不再默认扩张对抗性安全工作。
+12. [V1–V5 LLM 场景与模型路由设计](./LLM-SCENARIO-AND-MODEL-ROUTING.md)：产品运行时的 workload、模型 Profile、确定性边界、升级、fallback 与 Evidence。
+13. [MVP-R-002 确定性候选研究简报预注册](./MVP-R-002-PREREGISTRATION.md)：已停止任务的 authority、基线、holdout 和历史停止规则。
+14. [MVP-R-003 真实研究闭环纵向验证执行方案](./MVP-R-003-VERTICAL-SLICE-PLAN.md)：已执行的 v1 Discovery 方案；产品解释为测量方案失败，Evidence 保留。
+15. [路线图 `MVP-R-005`](./ROADMAP.md)：当前授权的研究决策简报任务（单 Agent 闭环，Critic 影子质检）；`MVP-R-004` 已 `STOP/PIVOT`。Acceptance 以 ROADMAP 条目为准。
 
 ## 推荐阅读顺序
 

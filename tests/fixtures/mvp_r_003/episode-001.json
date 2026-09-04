@@ -1,0 +1,16 @@
+{
+  "schema_version": "mvp-r-003.demo-fixture.v1",
+  "fixture_notice": "DETERMINISTIC_RENDER_FIXTURE_ONLY_NOT_DISCOVERY_EVIDENCE",
+  "episode_id": "fixture-episode-001",
+  "instrument": "CU",
+  "as_of": "2025-05-31T12:00:00Z",
+  "market_cutoff": "2025-05-30T15:00:00Z",
+  "acquired_at": "2026-09-01T00:00:00Z",
+  "market_state": "RANGE",
+  "direction": "FOLLOW",
+  "threshold": "0.010",
+  "signal_accuracy": "0.60000000",
+  "counterfactual_signal_accuracy": "0.40000000",
+  "stressed_net_return": "0.03000000",
+  "counterfactual_stressed_net_return": "-0.05000000"
+}

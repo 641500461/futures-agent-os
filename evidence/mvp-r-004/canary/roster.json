@@ -1,0 +1,22 @@
+{
+  "schema_version": "mvp-r-004.canary-roster.v1",
+  "task": "MVP-R-004",
+  "phase": "canary",
+  "frozen_before_model_calls": true,
+  "selection_rule": "two known-clean PIT windows copied from R-003 v1 instrument-state cells with new episode ids; does not overwrite R-003 evidence",
+  "episodes": [
+    {
+      "episode_id": "r004-canary-ag-uptrend",
+      "instrument": "SHFE.AG.DOMINANT_OI",
+      "stratum": "UP_TREND",
+      "market_cutoff": "2026-04-21T07:00:00Z"
+    },
+    {
+      "episode_id": "r004-canary-sr-false-breakout",
+      "instrument": "CZCE.SR.DOMINANT_OI",
+      "stratum": "FALSE_BREAKOUT",
+      "market_cutoff": "2026-03-09T07:00:00Z"
+    }
+  ],
+  "content_sha256": "b1b0ec9b1a7ec7b6480a0d70b0be07fe7bf79b7285c64ce668f9d84f8cad8f5a"
+}

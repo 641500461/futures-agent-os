@@ -1,0 +1,65 @@
+{
+  "schema_version": "mvp-r-003.wp-evidence.v1",
+  "task": "MVP-R-003",
+  "work_package": "WP4",
+  "status": "COMPLETED",
+  "executor": "Cursor",
+  "implementation_model": "GPT-5.6 Sol",
+  "reasoning_effort": "NOT_EXPOSED",
+  "workspace": "/Users/qiu/work/futures-agent-os",
+  "branch": "main",
+  "commit": "NOT_CREATED_USER_PROHIBITED_UNREQUESTED_COMMIT",
+  "completed_at": "2026-09-01T14:08:00Z",
+  "implemented": [
+    "run_mvp_r_003_demo.py fixture CLI",
+    "default offline fixture rendering with zero model receipts",
+    "explicit --execute-model opt-in",
+    "auditable JSON episode report",
+    "user-facing Markdown report",
+    "lineage checks from selected hypothesis through plan, result and final verdict",
+    "explicit fixture mode that cannot be represented as Discovery Evidence"
+  ],
+  "secret_scan_audit": {
+    "new_exact_digest_findings_reviewed_as_non_secrets": 12,
+    "evidence_directory_excluded": false,
+    "plugins_disabled": false,
+    "threshold_lowered": false
+  },
+  "verification": [
+    {
+      "command": "uv run pytest tests/agent_eval/test_mvp_r_003_eval_fixtures.py -q",
+      "result": "4 passed"
+    },
+    {
+      "command": "uv run python scripts/run_mvp_r_003_demo.py --fixture tests/fixtures/mvp_r_003/episode-001.json",
+      "result": "exit 0; FIXTURE_RENDER_ONLY; verdict ACCEPT"
+    },
+    {
+      "command": "uv run pytest tests/agent_eval/test_mvp_r_003_eval_fixtures.py tests/replay/test_mvp_r_003_vertical_slice.py -q",
+      "result": "5 passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "exit 0"
+    },
+    {
+      "command": "uv run python scripts/verify_secret_scan.py",
+      "result": "exit 0 after exact-value digest audit"
+    }
+  ],
+  "artifact_paths": [
+    "scripts/run_mvp_r_003_demo.py",
+    "src/futures_agent_os/research_experiment/mvp_r_003/reporting.py",
+    "tests/fixtures/mvp_r_003/episode-001.json",
+    "tests/agent_eval/test_mvp_r_003_eval_fixtures.py",
+    "evidence/mvp-r-003/demo/fixture-episode-001.json",
+    "evidence/mvp-r-003/demo/fixture-episode-001.md",
+    "evidence/mvp-r-003/wp4-cli-reporting.json"
+  ],
+  "scope_not_implemented": [
+    "eight real-data Discovery Episodes",
+    "four-arm aggregate scorecard",
+    "user blinded evaluation"
+  ],
+  "safety_boundary_changed": false
+}

@@ -123,6 +123,8 @@ flowchart TB
 
 ### 3.5 运行契约总表
 
+各角色实际需要 LLM 的业务内容、默认能力档位和版本化模型路由见 [`LLM-SCENARIO-AND-MODEL-ROUTING.md`](./LLM-SCENARIO-AND-MODEL-ROUTING.md)。Agent 角色不等于固定模型或独立常驻模型实例。
+
 详细规格中的 Mission、输入、输出、工具、禁止项和评测，与下表的触发和失败行为共同构成完整角色契约：
 
 | Agent | 触发条件 | 失败/超时时的系统行为 |

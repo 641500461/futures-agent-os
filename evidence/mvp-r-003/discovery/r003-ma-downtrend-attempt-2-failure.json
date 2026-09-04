@@ -1,0 +1,13 @@
+{
+  "schema_version": "mvp-r-003.discovery-failure.v1",
+  "episode_id": "r003-ma-downtrend",
+  "attempt": 2,
+  "completed_at": "2026-09-01T15:01:00Z",
+  "status": "FAILED_CLOSED",
+  "failure_stage": "single_prompt_provider_observation",
+  "failure": "provider did not complete with the conditional if/then/else output schema",
+  "tool_or_trading_side_effect": false,
+  "manual_output_repair": false,
+  "resolution": "use a provider-supported exact enum/null schema for the single-prompt arm; multi-stage final workload retains MODIFY",
+  "counts_as_completed_episode": false
+}

@@ -1,0 +1,62 @@
+{
+  "schema_version": "mvp-r-003.wp-evidence.v1",
+  "task": "MVP-R-003",
+  "work_package": "WP5",
+  "status": "COMPLETED_STOP_PIVOT",
+  "executor": "Cursor",
+  "implementation_model": "Cursor Grok 4.6",
+  "reasoning_effort": "NOT_EXPOSED",
+  "workspace": "/Users/qiu/work/futures-agent-os",
+  "branch": "main",
+  "commit": "NOT_CREATED_USER_PROHIBITED_UNREQUESTED_COMMIT",
+  "completed_at": "2026-09-01T15:00:00Z",
+  "verification": {
+    "r003_targeted_tests": "9 passed",
+    "demo_fixture": "FIXTURE_RENDER_ONLY",
+    "discovery_summarize_only": true,
+    "pytest": "411 passed, 42 skipped",
+    "make_check": true,
+    "mypy_source_files": 80,
+    "contract_tests": 396,
+    "secret_scan": true,
+    "git_diff_check": true,
+    "health": "ok"
+  },
+  "implemented": [
+    "frozen eight-episode AG/CU/MA/SR PIT roster before remaining Discovery model calls",
+    "four-arm Discovery runner over official SHFE/CZCE daily bars",
+    "real L0/L1/walk-forward/stress/counterfactual execution in the without-critic arm",
+    "independent Critic reviews recorded without fabricating experiments",
+    "blind option A-D reports per episode",
+    "offline scorecard and STOP/PIVOT gate decision"
+  ],
+  "discovery_gate": {
+    "unattended_complete": "5/8",
+    "executable_hypothesis_episodes": "8/8",
+    "without_critic_experiments_complete": "8/8",
+    "full_arm_experiments_complete": "0/8",
+    "critic_select_count": "0/16",
+    "template_single_prompt_agreement": "8/8",
+    "user_blind_eval": "NOT_STARTED",
+    "decision": "STOP/PIVOT"
+  },
+  "fail_closed_repairs_retained": [
+    "r003-ag-uptrend-attempt-1-failure.json",
+    "r003-ag-noise-attempt-1-failure.json",
+    "r003-ma-downtrend-attempt-1-failure.json",
+    "r003-ma-downtrend-attempt-2-failure.json"
+  ],
+  "artifact_paths": [
+    "evidence/mvp-r-003/discovery/roster.json",
+    "evidence/mvp-r-003/discovery/scorecard.json",
+    "datasets/mvp-r-001/runs/mvp-r-003-discovery/",
+    "scripts/run_mvp_r_003_discovery.py"
+  ],
+  "scope_not_implemented": [
+    "user blinded evaluation of eight episode groups",
+    "formal 30/50/shadow MVP-R eval",
+    "V1-011"
+  ],
+  "safety_boundary_changed": false,
+  "recommend_formal_eval": false
+}

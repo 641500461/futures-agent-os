@@ -1,0 +1,13 @@
+{
+  "schema_version": "mvp-r-003.discovery-failure.v1",
+  "episode_id": "r003-ma-downtrend",
+  "attempt": 1,
+  "completed_at": "2026-09-01T14:58:00Z",
+  "status": "FAILED_CLOSED",
+  "failure_stage": "single_prompt_final_verdict_validation",
+  "failure": "non-MODIFY verdict included non-null modified parameters",
+  "tool_or_trading_side_effect": false,
+  "manual_output_repair": false,
+  "resolution": "add conditional output schema requiring modified parameters only when verdict is MODIFY",
+  "counts_as_completed_episode": false
+}

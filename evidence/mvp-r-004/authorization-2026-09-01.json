@@ -1,0 +1,74 @@
+{
+  "schema_version": "mvp-r-004.authorization.v1",
+  "task": "MVP-R-004",
+  "status": "AUTHORIZED_NOT_STARTED",
+  "authorized_at": "2026-09-01T15:25:00Z",
+  "product_decision": "APPROVE_SMALL_MEASUREMENT_REPAIR",
+  "r003_v1_interpretation": "MEASUREMENT_PROTOCOL_FAILED",
+  "not_a_finding": "MULTI_AGENT_PRODUCT_FAILURE",
+  "retain_r003_evidence": true,
+  "overwrite_r003_as_pass": false,
+  "run_r003_user_blind_eval": false,
+  "approve_formal_30_50_shadow": false,
+  "approve_v1_011": false,
+  "approve_immediate_product_shrink_to_deterministic_plus_llm_interpreter": false,
+  "r003_cursor_grok_executor_exception_extends": false,
+  "verified_measurement_defects": [
+    {
+      "id": "opaque_episode_input",
+      "summary": "Research Agent and Critic receive market_state plus hashed artifact refs, not numeric PIT facts; candidate space is one operator, one frozen threshold, two directions.",
+      "evidence": [
+        "src/futures_agent_os/research_experiment/mvp_r_003/contracts.py:ResearchEpisodeInput",
+        "scripts/run_mvp_r_003_discovery.py:_episode_input allowed_parameter_values"
+      ]
+    },
+    {
+      "id": "critic_missing_protocol",
+      "summary": "Critic prompt and payload contain episode.to_dict() and hypothesis.to_dict() only; no deterministic window, cost, sample, fold, embargo, PIT, or multiple-testing budget digest.",
+      "evidence": [
+        "src/futures_agent_os/research_experiment/mvp_r_003/model_workloads.py:critique"
+      ]
+    },
+    {
+      "id": "hardcoded_gate_and_pseudo_retention",
+      "summary": "Scorecard decision is hardcoded STOP/PIVOT. clean_hypothesis_retention uses SELECT over all executable reviews instead of a gold-label clean/bad set.",
+      "evidence": [
+        "scripts/run_mvp_r_003_discovery.py:write_discovery_summaries"
+      ]
+    },
+    {
+      "id": "primary_metric_mismatch",
+      "summary": "Hypothesis schema allows net_directional_mean, but replay ResultPacket metrics are signal_accuracy, proxy_net_return, stressed_net_return, and related names. Template verdict reads those proxy fields.",
+      "evidence": [
+        "src/futures_agent_os/research_experiment/mvp_r_003/hypothesis_validator.py:_SUPPORTED_METRICS",
+        "src/futures_agent_os/research_experiment/mvp_replay.py",
+        "scripts/run_mvp_r_003_discovery.py:_deterministic_verdict"
+      ]
+    },
+    {
+      "id": "template_single_prompt_shared_packet",
+      "summary": "Template and single-prompt arms share the same template Hypothesis and ResultPacket, so 8/8 verdict agreement is not evidence against multi-agent value.",
+      "evidence": [
+        "scripts/run_mvp_r_003_discovery.py:_template_hypothesis",
+        "scripts/run_mvp_r_003_discovery.py:single_prompt_verdict"
+      ]
+    }
+  ],
+  "repair_scope": [
+    "shared numeric ResearchEvidenceBundle for Research and Critic",
+    "deterministic validation/protocol digest for Critic",
+    "direction/control/primary_metric mapped to actual ResultPacket fields",
+    "gold-label clean/bad hypothesis set for critic retention and recall",
+    "computed Discovery Gate, no hardcoded decision",
+    "two known-clean canary episodes with full arm 2/2 SELECT then experiment then result feedback",
+    "only after canary pass: freeze a new roster, run eight new episodes, then user blind eval"
+  ],
+  "formal_pivot_only_if_repaired_round_still_shows": [
+    "agent produces only template variants",
+    "critic false-kills gold-label clean hypotheses at high rate",
+    "full-loop blind preference does not beat single-prompt",
+    "critic does not reduce known-bad hypotheses entering experiments"
+  ],
+  "r003_scorecard_untouched": "evidence/mvp-r-003/discovery/scorecard.json",
+  "implementation_started": false
+}

@@ -1,0 +1,67 @@
+{
+  "schema_version": "mvp-r-005.correction-v4-reviewer-rejection.v1",
+  "task": "MVP-R-005",
+  "rejected_phase": "correction-v4-evidence-only",
+  "rejected_gate_decision": "R005_CORRECTION_V4_PASS",
+  "rejected_at": "2026-09-02",
+  "v4_scorecard_rewritten": false,
+  "v4_scorecard_path": "evidence/mvp-r-005/correction-v4/scorecard.json",
+  "independent_review_result": "REJECT_GATE_ONLY",
+  "reviewer_executor": "Codex",
+  "reviewer_model": "NOT_EXPOSED",
+  "reasoning_effort": "NOT_EXPOSED",
+  "blocking_defects": [
+    {
+      "id": "P1_AGENT_VISIBLE_ABSENCE_FALLS_BACK_TO_VIEW",
+      "summary": "artifact_checks._agent_model_input uses truthy fallback from agent_visible_experiment to treatment_metric_view. Removing agent_visible_experiment or setting it to null, an empty object, or another empty container therefore passes the claimed exact visible binding instead of failing closed for either arm."
+    },
+    {
+      "id": "P1_FOUR_BLOCK_REPORT_NOT_EXACTLY_BOUND",
+      "summary": "artifact_checks._four_blocks only searches for the four required heading substrings and the English text Independent Critic. A fifth H2 block or a four-block Markdown report whose verdict and contents contradict the structured DecisionBrief and FinalVerdict still passes four_block_report and complete."
+    }
+  ],
+  "reproduction": {
+    "mutation": "Set the Single-prompt agent_visible_experiment to an empty object while leaving its bound treatment_metric_view unchanged.",
+    "observed": {
+      "complete": true,
+      "raw_packet_to_view_lineage": true,
+      "stopped_folds_invisible": true,
+      "treatment_view_bound": true
+    },
+    "expected": {
+      "treatment_view_bound": false
+    },
+    "report_mutations": {
+      "fifth_h2_block_observed_four_block_report": true,
+      "contradictory_four_block_markdown_observed_four_block_report": true,
+      "expected_four_block_report": false
+    }
+  },
+  "artifact_recalculation": {
+    "correction_v3_arms_checked": 16,
+    "agent_visible_present_and_nonempty": 16,
+    "markdown_exactly_matches_structured_brief": 16,
+    "brief_verdict_matches_final_verdict": 16,
+    "product_result_regeneration_required": false
+  },
+  "validation": {
+    "targeted_correction_v3_v4_contracts": "20 passed",
+    "uv_run_pytest": "456 passed, 42 skipped",
+    "make_check": {
+      "mypy_source_files": 102,
+      "schema_tests": 2,
+      "unit_tests": 1,
+      "property_tests": 9,
+      "contract_tests": 441,
+      "repository_scan": "passed",
+      "health": "ok"
+    },
+    "git_diff_check": "passed"
+  },
+  "recommended_correction": "Require agent_visible_experiment to be present and an exact mapping, never fall back to treatment_metric_view; compare it canonically to view.agent_visible_dict for both arms and add missing, null, empty-object, empty-list, and altered-payload fail-closed tests. Also bind the structured DecisionBrief verdict to FinalVerdict and require the stored Markdown to equal the deterministic four-block renderer output, rejecting extra H2 sections and contradictory or stale content. This is Evidence-only and does not require product model calls or result regeneration.",
+  "not_go": true,
+  "independent_real_user_validation": false,
+  "approve_formal_30_50_shadow": false,
+  "approve_v1_011": false,
+  "task_checkbox": "unchecked"
+}

@@ -1,0 +1,48 @@
+{
+  "schema_version": "mvp-r-005.authorization.v1",
+  "task": "MVP-R-005",
+  "title": "Research Decision Brief",
+  "status": "IN_PROGRESS",
+  "machine_gate": "R005_PASS",
+  "not_go": true,
+  "authorized_at": "2026-09-02T01:25:00+08:00",
+  "started_at": "2026-09-02T01:29:00+08:00",
+  "executor": "Cursor",
+  "implementation_model": "Cursor Grok 4.6",
+  "reasoning_effort": "NOT_EXPOSED",
+  "product_decision": "SINGLE_RESEARCH_AGENT_PLUS_DETERMINISTIC_EXPERIMENT_LOOP",
+  "critic_role": "OPTIONAL_NON_BLOCKING_SHADOW_QA",
+  "rejected_pivot": "DELETE_AGENT_KEEP_DETERMINISTIC_ENGINE_ONLY",
+  "predecessor": "MVP-R-004",
+  "predecessor_status": "STOP/PIVOT",
+  "retain_r003_evidence": true,
+  "retain_r004_evidence": true,
+  "overwrite_r003_as_pass": false,
+  "overwrite_r004_as_go": false,
+  "approve_formal_30_50_shadow": false,
+  "approve_v1_011": false,
+  "r003_cursor_grok_executor_exception_extends": false,
+  "r004_cursor_grok_executor_exception_extends": false,
+  "independent_real_user_validation_from_r004": false,
+  "main_path": [
+    "Research Agent proposes bounded hypotheses",
+    "deterministic validator rejects illegal operators, missing metrics, and direction mismatches",
+    "deterministic tools execute the experiment",
+    "Research Agent emits ACCEPT / REJECT / NEED_MORE_DATA / MODIFY",
+    "user report has only four blocks: what was tested, what the results were, current judgment, next action"
+  ],
+  "critic_path": [
+    "Critic runs in shadow only",
+    "Critic records risk notes",
+    "Critic must not be a mandatory pre-experiment gate"
+  ],
+  "comparison": [
+    "new eight episodes",
+    "single-agent loop versus Single-prompt",
+    "Single-prompt remains the baseline or fallback",
+    "Template is not the product"
+  ],
+  "carry_over_measurement_fix": [
+    "If a falsification condition requires per-fold signal_accuracy, the ResultPacket must report it. positive_fold_ratio must not substitute."
+  ]
+}

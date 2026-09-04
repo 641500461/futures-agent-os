@@ -1,0 +1,44 @@
+{
+  "schema_version": "mvp-r-005.correction-v3-reviewer-rejection.v1",
+  "task": "MVP-R-005",
+  "rejected_phase": "correction-v3",
+  "rejected_gate_decision": "R005_CORRECTION_V3_PASS",
+  "rejected_at": "2026-09-02",
+  "v3_scorecard_rewritten": false,
+  "v3_scorecard_path": "evidence/mvp-r-005/correction-v3/scorecard.json",
+  "independent_review_result": "REJECT_GATE_ONLY",
+  "reviewer_executor": "Codex",
+  "reviewer_model": "NOT_EXPOSED",
+  "reasoning_effort": "NOT_EXPOSED",
+  "blocking_defects": [
+    {
+      "id": "P1_SINGLE_PROMPT_VIEW_NOT_REBUILT",
+      "summary": "The gate rebuilt only the Research Agent treatment view; a validly rehashed Single-prompt INVERT metric mutation still passed lineage, binding, congruence, and treatment-view checks."
+    },
+    {
+      "id": "P1_AGENT_VISIBLE_NOT_EXACTLY_BOUND",
+      "summary": "The gate searched visible payloads for stopped-fold tokens but did not require either arm's agent_visible_experiment to equal its bound TreatmentMetricView."
+    },
+    {
+      "id": "P1_INVERT_LINEAGE_VALUE_NOT_CHECKED",
+      "summary": "INVERT lineage checked owner names and source refs without requiring the mapped raw value to equal the treatment-view metric."
+    },
+    {
+      "id": "P2_RAW_LINEAGE_SCOPE_OVERSTATED",
+      "summary": "raw_tool_result_lineage proved packet-to-view consistency, not authenticity of the referenced ResearchToolResult body; correction-v4 uses the honest name raw_packet_to_view_lineage."
+    }
+  ],
+  "artifact_recalculation": {
+    "correction_v3_arms_checked": 16,
+    "exact_view_rebuild_matches": 16,
+    "treatment_control_mirror_matches": 16,
+    "fold_manifest_matches": 16,
+    "authentic_walk_forward_matches": 16,
+    "product_result_regeneration_required": false
+  },
+  "not_go": true,
+  "independent_real_user_validation": false,
+  "approve_formal_30_50_shadow": false,
+  "approve_v1_011": false,
+  "task_checkbox": "unchecked"
+}

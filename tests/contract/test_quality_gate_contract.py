@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import re
 from pathlib import Path
 
@@ -45,3 +46,16 @@ def test_ci_third_party_actions_are_pinned_to_commit_shas() -> None:
     action_refs = re.findall(r"uses:\s+[^@\s]+@([^\s]+)", workflow)
     assert action_refs
     assert all(re.fullmatch(r"[0-9a-f]{40}", reference) for reference in action_refs)
+
+
+def test_secret_scan_uses_audited_exact_value_baseline() -> None:
+    baseline = json.loads((PROJECT_ROOT / ".secrets.baseline").read_text(encoding="utf-8"))
+    findings = baseline["results"]["evidence/mvp-r-002/capability-probe-f1fe3e67-bf91-4a8f-9b7f-5baf1d1402d4.json"]
+    assert len(findings) == 2
+    assert all(finding["is_secret"] is False for finding in findings)
+
+    scanner = (PROJECT_ROOT / "scripts/verify_secret_scan.py").read_text(encoding="utf-8")
+    assert '"--baseline",' in scanner
+    assert "str(scan_baseline)" in scanner
+    assert "TemporaryDirectory" in scanner
+    assert 'finding.get("is_secret") is not False' in scanner

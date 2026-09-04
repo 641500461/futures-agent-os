@@ -1,0 +1,61 @@
+{
+  "schema_version": "mvp-r-003.wp-evidence.v1",
+  "task": "MVP-R-003",
+  "work_package": "WP2",
+  "status": "COMPLETED",
+  "executor": "Cursor",
+  "implementation_model": "GPT-5.6 Sol",
+  "reasoning_effort": "NOT_EXPOSED",
+  "workspace": "/Users/qiu/work/futures-agent-os",
+  "branch": "main",
+  "commit": "NOT_CREATED_USER_PROHIBITED_UNREQUESTED_COMMIT",
+  "completed_at": "2026-09-01T13:40:00Z",
+  "implemented": [
+    "thin MVP-R-003 adapter over existing V1-010 deterministic replay calculations",
+    "frozen hypothesis-to-ValidationConfig threshold binding",
+    "real L0 signal test execution",
+    "real L1 daily-bar backtest execution",
+    "real chronological walk-forward execution",
+    "real cost and slippage stress execution",
+    "real inverted-direction counterfactual execution",
+    "content-addressed ExperimentResultPacket",
+    "byte-identical repeated replay"
+  ],
+  "verification": [
+    {
+      "command": "uv run pytest tests/replay/test_mvp_r_003_vertical_slice.py -q",
+      "result": "1 passed"
+    },
+    {
+      "command": "uv run pytest tests/replay/test_mvp_r_003_vertical_slice.py tests/contract/test_mvp_r_validation_contracts.py -q",
+      "result": "38 passed"
+    },
+    {
+      "command": "uv run pytest tests/replay/test_mvp_r_003_vertical_slice.py tests/contract -q",
+      "result": "397 passed"
+    },
+    {
+      "command": "make check",
+      "result": "exit 0; mypy 78 source files; schema 2; unit 1; property 9; contract 396; secret scan; health ok"
+    }
+  ],
+  "artifact_paths": [
+    "src/futures_agent_os/research_experiment/mvp_r_003/experiment_adapter.py",
+    "tests/replay/test_mvp_r_003_vertical_slice.py",
+    "evidence/mvp-r-003/wp2-experiment-adapter.json"
+  ],
+  "acceptance": {
+    "selected_hypothesis_instantiates_real_experiment": true,
+    "all_five_required_experiment_kinds_execute": true,
+    "replay_is_byte_identical": true,
+    "real_trading_or_order_routing_added": false
+  },
+  "scope_not_implemented": [
+    "model hypothesis generation",
+    "independent model Critic",
+    "model result-feedback verdict",
+    "MVP-R-003 CLI and reports",
+    "eight Discovery Episodes"
+  ],
+  "safety_boundary_changed": false
+}

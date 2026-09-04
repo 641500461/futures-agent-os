@@ -22,6 +22,7 @@
 ### 0.2 相关文档
 
 - [多 Agent 与工具体系](./AGENT-AND-TOOL-DESIGN.md)
+- [V1–V5 LLM 场景与模型路由设计](./LLM-SCENARIO-AND-MODEL-ROUTING.md)
 - [技术方案](./TECHNICAL-DESIGN.md)
 - [旧项目资产复用评估](./LEGACY-ASSET-REUSE.md)
 - [版本路线图](./ROADMAP.md)
@@ -1123,7 +1124,7 @@ Exit：旧仓库和旧数据库完全离线时，新项目仍可独立启动和�
 
 Exit：连续覆盖约定扫描时段，完成可重放的 OBSERVE scan → hypothesis → experiment → critique → candidate/NO_TRADE 链路，不产生 TradePlan 或交易副作用。
 
-阶段性产品门槛：`V1-010` 完成后先执行 [`MVP-R-001`](./MVP-RESEARCH-VALIDATION.md)，用真实模型、授权真实 PIT 数据、Replay/基线/Critic ablation 和真实用户 shadow 使用验证研究价值。`V1-010` 只是试验起跑线；只有取得用户/产品治理 `GO` 才可声明 MVP-R，并继续 Experiment Manager 和 Opportunity Radar 的工业化建设。
+阶段性产品门槛：`V1-010` 完成后先执行研究可用性 Gate。原 [`MVP-R-001`](./MVP-RESEARCH-VALIDATION.md) 与 [`MVP-R-002`](./MVP-R-002-PREREGISTRATION.md) 均已停止并保留失败/重定向 Evidence；[`MVP-R-003`](./MVP-R-003-VERTICAL-SLICE-PLAN.md) v1 记为测量方案失败，Evidence 保留且不得改写成通过。[`MVP-R-004`](./ROADMAP.md) 完成测量修复后，协助盲评未过强制多 Agent 主路径；产品 Pivot 为单 Research Agent + 确定性实验闭环，Critic 降为可选影子质检。当前任务为 `MVP-R-005`。R-004 协助盲评不是独立真实用户验证，也不是 `GO`。正式 30/50/shadow 与 `V1-011` 仍锁定。
 
 ### V2 — Deterministic Simulation Core
 

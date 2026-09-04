@@ -1,0 +1,13 @@
+{
+  "schema_version": "mvp-r-003.discovery-failure.v1",
+  "episode_id": "r003-ag-noise",
+  "attempt": 1,
+  "completed_at": "2026-09-01T14:43:00Z",
+  "status": "FAILED_CLOSED",
+  "failure_stage": "independent_critic_grounding_validation",
+  "failure": "Critic selected a source-ref string outside every exact frozen URI, digest and hypothesis identity",
+  "tool_or_trading_side_effect": false,
+  "manual_output_repair": false,
+  "resolution": "bind the Critic JSON schema source_refs enum to the exact episode-specific grounded set before provider invocation",
+  "counts_as_completed_episode": false
+}
