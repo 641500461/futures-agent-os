@@ -204,6 +204,7 @@ Exit：`MVP-R-005` 单 Agent 研究决策简报通过，且最小 MVP Closure Ac
 目标：不依赖 LLM、飞书或 Agent 在线，系统也能安全地校验计划、裁决风险、模拟成交、记账、结算、保护和恢复。
 
 - [ ] `V2-001` 定义 `TradePlan`、`ProtectionIntent`、`RiskReductionRequest`、`RiskReductionValidation`、`ProtectiveRiskAction`、`AuthorizationBasis`、`SimulationAutonomyMandate`、可选 `PlanApproval`、`RiskDecision`、`ProtectionMandate`、`ExecutionPlan`、`StopPolicy`、`Order`、`Fill`、`PositionLot`、`LedgerEntry` 和 `Settlement` 契约。  
+  Status: IN_PROGRESS；已完成首批不可变 `TradePlan`/`ProtectionIntent` 契约，后续补齐风险、执行、成交和账本对象。<br>
   Depends: V0；复用 V1 市场/规则快照。  
   Acceptance: 所有对象具有 schema/version/ID/时间/来源；跨对象引用和非法状态有契约测试。  
   Evidence: 待补。

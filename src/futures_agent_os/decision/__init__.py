@@ -30,6 +30,7 @@ from .autonomy_contracts import (
     ReceiptIssuanceRegistry,
     SimulationAutonomyMandate,
 )
+from .trade_contracts import ProtectionIntent, TradeAction, TradeDirection, TradePlan, TradePlanStatus
 
 __all__ = [
     "AuthorizationBasis",
@@ -60,4 +61,9 @@ __all__ = [
     "ReceiptRegistry",
     "ReceiptIssuanceRegistry",
     "SimulationAutonomyMandate",
+    "ProtectionIntent",
+    "TradeAction",
+    "TradeDirection",
+    "TradePlan",
+    "TradePlanStatus",
 ]
