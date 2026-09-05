@@ -48,6 +48,7 @@ from .trade_contracts import (
     LedgerEntry,
     Settlement,
 )
+from .submission import SubmissionResult, TradePlanSubmitter
 
 __all__ = [
     "AuthorizationBasis",
@@ -94,4 +95,6 @@ __all__ = [
     "PositionLot",
     "LedgerEntry",
     "Settlement",
+    "SubmissionResult",
+    "TradePlanSubmitter",
 ]
