@@ -2,7 +2,7 @@ from decimal import Decimal
 
 import pytest
 
-from futures_agent_os.decision import ExecutionPlan, Order, OrderStatus, TradeDirection
+from futures_agent_os.decision import Order, OrderStatus, TradeDirection
 from futures_agent_os.execution_simulation import FillOrderType, L1Bar, L1FillModel
 from futures_agent_os.shared_kernel import EntityId
 

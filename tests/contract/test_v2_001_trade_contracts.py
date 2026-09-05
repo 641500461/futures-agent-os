@@ -45,7 +45,7 @@ def test_trade_plan_rejects_empty_evidence() -> None:
 
 
 def test_order_transitions_and_fill_cap() -> None:
-    from futures_agent_os.decision import ExecutionPlan, Order, OrderStatus
+    from futures_agent_os.decision import Order, OrderStatus
 
     order = Order(
         EntityId.new("order"), EntityId.new("execution_plan"), "SHFE_AG_2601", TradeDirection.LONG, Decimal("2")
