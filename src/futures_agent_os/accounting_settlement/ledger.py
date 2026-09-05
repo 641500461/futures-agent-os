@@ -5,7 +5,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 
-from futures_agent_os.decision import Fill, PositionLot, Settlement
+from futures_agent_os.decision import Fill, PositionLot, Settlement, TradeDirection
 from futures_agent_os.shared_kernel import EntityId
 
 
@@ -63,5 +63,45 @@ class SimulationAccount:
             self._state.realized_pnl + settlement.realized_pnl,
             self._state.fees + settlement.fees,
             self._state.lots,
+        )
+        return self._state
+
+    def close(self, fill: Fill) -> AccountState:
+        """Apply a reducing fill against the oldest compatible lot."""
+        candidates = [
+            lot for lot in self._state.lots if lot.instrument == fill.instrument and lot.direction is not fill.direction
+        ]
+        available = sum((lot.quantity for lot in candidates), Decimal("0"))
+        if fill.quantity > available:
+            raise ValueError("close quantity exceeds position")
+        remaining = fill.quantity
+        realized = Decimal("0")
+        lots: list[PositionLot] = []
+        for lot in self._state.lots:
+            if lot not in candidates or remaining <= 0:
+                lots.append(lot)
+                continue
+            matched = min(lot.quantity, remaining)
+            direction_sign = Decimal("1") if lot.direction is TradeDirection.LONG else Decimal("-1")
+            realized += (fill.price - lot.average_price) * matched * direction_sign * self._multiplier
+            remaining -= matched
+            if lot.quantity > matched:
+                lots.append(
+                    PositionLot(
+                        lot.lot_id,
+                        lot.account_id,
+                        lot.instrument,
+                        lot.direction,
+                        lot.quantity - matched,
+                        lot.average_price,
+                        lot.opened_at,
+                    )
+                )
+        self._state = AccountState(
+            self._state.cash + realized - fill.fee,
+            self._state.margin,
+            self._state.realized_pnl + realized,
+            self._state.fees + fill.fee,
+            tuple(lots),
         )
         return self._state

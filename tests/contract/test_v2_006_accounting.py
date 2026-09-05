@@ -1,5 +1,6 @@
 from datetime import UTC, datetime
 from decimal import Decimal
+import pytest
 
 from futures_agent_os.accounting_settlement import SimulationAccount
 from futures_agent_os.decision import Fill, Settlement, TradeDirection
@@ -29,3 +30,45 @@ def test_account_fill_and_settlement_are_deterministic() -> None:
         )
     )
     assert state.cash == Decimal("10009") and state.realized_pnl == Decimal("10")
+
+
+def test_account_close_realizes_pnl_and_rejects_overclose() -> None:
+    account_id = EntityId.new("simulation_account")
+    now = RecordedAt.from_datetime(datetime.now(UTC))
+    account = SimulationAccount(Decimal("1000"), account_id=account_id)
+    open_fill = Fill(
+        EntityId.new("fill"),
+        EntityId.new("order"),
+        "SHFE_AG_2601",
+        TradeDirection.LONG,
+        Decimal("2"),
+        Decimal("100"),
+        Decimal("1"),
+        now,
+    )
+    account.apply_fill(open_fill, lot_id=EntityId.new("position_lot"), account_id=account_id)
+    close_fill = Fill(
+        EntityId.new("fill"),
+        EntityId.new("order"),
+        "SHFE_AG_2601",
+        TradeDirection.SHORT,
+        Decimal("1"),
+        Decimal("110"),
+        Decimal("1"),
+        now,
+    )
+    state = account.close(close_fill)
+    assert state.realized_pnl == Decimal("10") and state.lots[0].quantity == Decimal("1")
+    with pytest.raises(ValueError):
+        account.close(
+            Fill(
+                EntityId.new("fill"),
+                EntityId.new("order"),
+                "SHFE_AG_2601",
+                TradeDirection.SHORT,
+                Decimal("2"),
+                Decimal("110"),
+                Decimal("0"),
+                now,
+            )
+        )
