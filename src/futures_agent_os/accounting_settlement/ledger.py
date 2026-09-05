@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from decimal import Decimal
 
 from futures_agent_os.decision import Fill, PositionLot, Settlement, TradeDirection
-from futures_agent_os.shared_kernel import EntityId
+from futures_agent_os.shared_kernel import EntityId, RecordedAt
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,6 +56,25 @@ class SimulationAccount:
             self._state.cash, self._state.margin - amount, self._state.realized_pnl, self._state.fees, self._state.lots
         )
         return self._state
+
+    def mark_to_market(
+        self, settlement_id: EntityId, trading_date: str, settlement_price: Decimal, now: RecordedAt
+    ) -> Settlement:
+        if not isinstance(settlement_price, Decimal) or not settlement_price.is_finite() or settlement_price <= 0:
+            raise ValueError("settlement price must be positive")
+        pnl = Decimal("0")
+        for lot in self._state.lots:
+            sign = Decimal("1") if lot.direction is TradeDirection.LONG else Decimal("-1")
+            pnl += (settlement_price - lot.average_price) * lot.quantity * sign * self._multiplier
+        return Settlement(
+            settlement_id,
+            self._account_id or EntityId.new("simulation_account"),
+            trading_date,
+            pnl,
+            pnl,
+            Decimal("0"),
+            now,
+        )
 
     def apply_fill(self, fill: Fill, *, lot_id, account_id) -> AccountState:
         if fill.fill_id in self._applied_fills:

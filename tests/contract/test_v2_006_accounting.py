@@ -81,3 +81,22 @@ def test_margin_is_frozen_and_released_without_notional_cash_debit() -> None:
     assert account.release_margin(Decimal("200")).margin == Decimal("0")
     with pytest.raises(ValueError):
         account.release_margin(Decimal("1"))
+
+
+def test_mark_to_market_generates_settlement_pnl() -> None:
+    account_id = EntityId.new("simulation_account")
+    now = RecordedAt.from_datetime(datetime.now(UTC))
+    account = SimulationAccount(Decimal("1000"), account_id=account_id)
+    fill = Fill(
+        EntityId.new("fill"),
+        EntityId.new("order"),
+        "SHFE_AG_2601",
+        TradeDirection.LONG,
+        Decimal("2"),
+        Decimal("100"),
+        Decimal("0"),
+        now,
+    )
+    account.apply_fill(fill, lot_id=EntityId.new("position_lot"), account_id=account_id)
+    settlement = account.mark_to_market(EntityId.new("settlement"), "2026-09-05", Decimal("105"), now)
+    assert settlement.realized_pnl == Decimal("10") and settlement.cash_delta == Decimal("10")
