@@ -10,7 +10,14 @@ if TYPE_CHECKING:
 from futures_agent_os.shared_kernel import EntityId, RecordedAt
 
 from .autonomy_contracts import AutonomyGateReceipt
-from .trade_contracts import ExecutionPlan, ProtectionMandate, RiskDecision, RiskDecisionOutcome, TradePlan
+from .trade_contracts import (
+    ExecutionPlan,
+    ProtectionMandate,
+    RiskDecision,
+    RiskDecisionOutcome,
+    TradePlan,
+    TradePlanStatus,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -21,6 +28,17 @@ class SubmissionResult:
 
 class TradePlanSubmitter:
     """Fail-closed final binding check; execution remains a separate owner."""
+
+    @staticmethod
+    def validate_plan(plan: TradePlan, *, now: RecordedAt) -> str:
+        """Validate the pre-authorization portion without creating side effects."""
+        if plan.status not in {TradePlanStatus.DRAFT, TradePlanStatus.VALIDATED}:
+            return "PLAN_NOT_SUBMITTABLE"
+        if plan.expires_at.value <= now.value:
+            return "PLAN_EXPIRED"
+        if plan.protection.max_loss <= 0 or not plan.evidence_refs:
+            return "PLAN_PROTECTION_OR_EVIDENCE_MISSING"
+        return "PLAN_VALID"
 
     def submit(
         self,

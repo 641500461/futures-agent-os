@@ -3,7 +3,7 @@ from decimal import Decimal
 
 import pytest
 
-from futures_agent_os.decision import ProtectionIntent, TradeAction, TradeDirection, TradePlan
+from futures_agent_os.decision import ProtectionIntent, TradeAction, TradeDirection, TradePlan, TradePlanSubmitter
 from futures_agent_os.shared_kernel import EntityId, RecordedAt
 
 
@@ -42,6 +42,12 @@ def test_trade_plan_is_hashed_and_requires_protection() -> None:
 def test_trade_plan_rejects_empty_evidence() -> None:
     with pytest.raises(ValueError):
         _plan(evidence_refs=())
+
+
+def test_submission_preflight_rejects_expired_plan() -> None:
+    now = RecordedAt.from_datetime(datetime.now(UTC))
+    plan = _plan(expires_at=RecordedAt.from_datetime(now.value - timedelta(seconds=1)))
+    assert TradePlanSubmitter.validate_plan(plan, now=now) == "PLAN_EXPIRED"
 
 
 def test_order_transitions_and_fill_cap() -> None:
