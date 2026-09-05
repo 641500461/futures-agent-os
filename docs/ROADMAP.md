@@ -218,6 +218,7 @@ Exit：`MVP-R-005` 单 Agent 研究决策简报通过，且最小 MVP Closure Ac
   Acceptance: 非法状态转换被拒绝；任何 Fill 总量不超过 Order；重复命令不重复产生业务效果。  
   Evidence: 待补。
 - [ ] `V2-005` 实现 L1 Bar/Quote 和 L2 Event FillModel：市价、限价、止损触发、滑点、无对手价、涨跌停和部分成交。  
+  Status: IN_PROGRESS；已完成 L1 Bar 与 market/limit/stop 基础 FillModel，继续补齐 L2 事件语义。<br>
   Acceptance: 触发不等于成交；同 Bar 止盈止损歧义采用声明的保守规则。  
   Evidence: 待补。
 - [ ] `V2-006` 实现账户、持仓批次和统一账本：开仓、平仓、平今、手续费、保证金、冻结、逐日盯市、PnL 和每日结算。  
