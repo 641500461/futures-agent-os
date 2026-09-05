@@ -39,6 +39,10 @@ class SimulationAccount:
     def state(self) -> AccountState:
         return self._state
 
+    @property
+    def account_id(self) -> EntityId | None:
+        return self._account_id
+
     def reserve_margin(self, amount: Decimal) -> AccountState:
         if not isinstance(amount, Decimal) or not amount.is_finite() or amount <= 0:
             raise ValueError("margin reservation must be positive")

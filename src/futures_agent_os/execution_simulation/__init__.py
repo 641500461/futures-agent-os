@@ -13,6 +13,7 @@ from .protection import (
 )
 from .l2_model import BookEvent, L2EventFillModel
 from .fault_injection import FaultInjector, FaultKind, FaultResult
+from .engine import EngineResult, SimulationEngine
 
 __all__ = [
     "FillDecision",
@@ -32,4 +33,6 @@ __all__ = [
     "FaultInjector",
     "FaultKind",
     "FaultResult",
+    "EngineResult",
+    "SimulationEngine",
 ]
