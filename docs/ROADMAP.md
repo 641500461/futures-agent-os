@@ -232,6 +232,7 @@ Exit：`MVP-R-005` 单 Agent 研究决策简报通过，且最小 MVP Closure Ac
   Acceptance: MANUAL_TEST 的 PlanApproval/AuthorizationBasis 缺失、失效、过期或范围不匹配时 fail closed；每次增加风险都同时要求有效 Receipt 与 RiskDecision；Receipt 绑定 Plan/AuthorizationBasis/源授权 hash、execution_origin、快照/预留、过期且只消费一次；等待授权时不占 reservation；API 不向调用方暴露 matcher、数据库或账本写句柄。  
   Evidence: 待补。
 - [ ] `V2-009` 实现回测与模拟共享的规则、订单、FillModel、账本和结算接口，并支持冻结 StrategySpec fixture 的 L2 事件驱动验证。  
+  Status: IN_PROGRESS；已加入 L2 有序事件与可用深度消耗模型，尚未接入共享回测/账本接口。<br>
   Acceptance: 相同事件和 FillModel 产生相同订单/账本结果；V1 的基础 walk-forward/stress/counterfactual 可在 L2 语义下重跑以证明引擎能力；V3 Strategy Agent 创建 StrategyCandidate 后可复用同一引擎形成资格证据。  
   Evidence: 待补。
 - [ ] `V2-010` 实现追加式审计、当前态投影、历史重放、日终对账和更正事件。  
