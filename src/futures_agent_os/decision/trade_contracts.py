@@ -31,6 +31,25 @@ class TradePlanStatus(StrEnum):
     STALE = "STALE"
 
 
+class RiskDecisionOutcome(StrEnum):
+    APPROVE = "APPROVE"
+    MODIFY = "MODIFY"
+    REJECT = "REJECT"
+    PROTECT_ONLY = "PROTECT_ONLY"
+    HALT = "HALT"
+
+
+class OrderStatus(StrEnum):
+    CREATED = "CREATED"
+    ACCEPTED = "ACCEPTED"
+    WORKING = "WORKING"
+    PARTIALLY_FILLED = "PARTIALLY_FILLED"
+    FILLED = "FILLED"
+    CANCELLED = "CANCELLED"
+    EXPIRED = "EXPIRED"
+    REJECTED = "REJECTED"
+
+
 def _text(value: str, label: str) -> str:
     if not isinstance(value, str) or not value or value != value.strip() or any(c.isspace() for c in value):
         raise ValueError(f"{label} must be canonical non-empty text")
@@ -125,3 +144,146 @@ class TradePlan:
             "evidence_refs": self.evidence_refs, "snapshot_ref": self.snapshot_ref,
             "expires_at": self.expires_at.to_dict()["recorded_at"], "version": self.version,
         })
+
+
+@dataclass(frozen=True, slots=True)
+class RiskDecision:
+    decision_id: EntityId
+    plan_id: EntityId
+    plan_version: int
+    outcome: RiskDecisionOutcome
+    approved_quantity: Decimal
+    max_loss: Decimal
+    margin: Decimal
+    rule_refs: tuple[str, ...]
+    risk_constitution_ref: str
+    issued_at: RecordedAt
+
+    def __post_init__(self) -> None:
+        if not all(isinstance(value, EntityId) for value in (self.decision_id, self.plan_id)):
+            raise TypeError("risk decision requires typed identifiers")
+        if isinstance(self.plan_version, bool) or not isinstance(self.plan_version, int) or self.plan_version < 1:
+            raise ValueError("plan_version must be positive")
+        if not isinstance(self.outcome, RiskDecisionOutcome):
+            raise TypeError("outcome must be typed")
+        for value, label in ((self.approved_quantity, "approved_quantity"), (self.max_loss, "max_loss"), (self.margin, "margin")):
+            if not isinstance(value, Decimal) or not value.is_finite() or value < 0:
+                raise ValueError(f"{label} must be finite and non-negative")
+        if not isinstance(self.rule_refs, tuple) or any(not isinstance(value, str) or not value for value in self.rule_refs):
+            raise ValueError("rule_refs must be immutable text references")
+        _text(self.risk_constitution_ref, "risk_constitution_ref")
+        if not isinstance(self.issued_at, RecordedAt):
+            raise TypeError("issued_at must be a RecordedAt")
+        if self.outcome is RiskDecisionOutcome.APPROVE and self.approved_quantity <= 0:
+            raise ValueError("APPROVE requires positive quantity")
+
+
+@dataclass(frozen=True, slots=True)
+class ProtectionMandate:
+    mandate_id: EntityId
+    plan_id: EntityId
+    stop_price: Decimal
+    max_loss: Decimal
+    issued_at: RecordedAt
+    version: int = 1
+
+    def __post_init__(self) -> None:
+        if not all(isinstance(value, EntityId) for value in (self.mandate_id, self.plan_id)):
+            raise TypeError("protection mandate requires typed identifiers")
+        for value, label in ((self.stop_price, "stop_price"), (self.max_loss, "max_loss")):
+            if not isinstance(value, Decimal) or not value.is_finite() or value <= 0:
+                raise ValueError(f"{label} must be positive")
+        if not isinstance(self.issued_at, RecordedAt) or self.version < 1:
+            raise ValueError("mandate requires timestamp and positive version")
+
+
+@dataclass(frozen=True, slots=True)
+class ExecutionPlan:
+    execution_plan_id: EntityId
+    plan_id: EntityId
+    order_type: str
+    quantity: Decimal
+    limit_price: Decimal | None
+    stop_price: Decimal | None
+    protection_mandate_id: EntityId
+    created_at: RecordedAt
+
+    def __post_init__(self) -> None:
+        if not all(isinstance(value, EntityId) for value in (self.execution_plan_id, self.plan_id, self.protection_mandate_id)):
+            raise TypeError("execution plan requires typed identifiers")
+        _text(self.order_type, "order_type")
+        if not isinstance(self.quantity, Decimal) or not self.quantity.is_finite() or self.quantity <= 0:
+            raise ValueError("execution quantity must be positive")
+        for value, label in ((self.limit_price, "limit_price"), (self.stop_price, "stop_price")):
+            if value is not None and (not isinstance(value, Decimal) or not value.is_finite() or value <= 0):
+                raise ValueError(f"{label} must be positive when provided")
+        if not isinstance(self.created_at, RecordedAt):
+            raise TypeError("created_at must be a RecordedAt")
+
+
+@dataclass(frozen=True, slots=True)
+class StopPolicy:
+    policy_id: EntityId
+    position_id: EntityId
+    stop_price: Decimal
+    max_loss: Decimal
+    active: bool = True
+
+    def __post_init__(self) -> None:
+        if not all(isinstance(value, EntityId) for value in (self.policy_id, self.position_id)):
+            raise TypeError("stop policy requires typed identifiers")
+        if not isinstance(self.stop_price, Decimal) or self.stop_price <= 0 or not self.stop_price.is_finite():
+            raise ValueError("stop price must be positive")
+        if not isinstance(self.max_loss, Decimal) or self.max_loss <= 0 or not self.max_loss.is_finite():
+            raise ValueError("max loss must be positive")
+
+
+@dataclass(frozen=True, slots=True)
+class Order:
+    order_id: EntityId
+    execution_plan_id: EntityId
+    instrument: str
+    direction: TradeDirection
+    quantity: Decimal
+    status: OrderStatus = OrderStatus.CREATED
+    filled_quantity: Decimal = Decimal("0")
+
+    def __post_init__(self) -> None:
+        if not all(isinstance(value, EntityId) for value in (self.order_id, self.execution_plan_id)):
+            raise TypeError("order requires typed identifiers")
+        _text(self.instrument, "instrument")
+        if not isinstance(self.direction, TradeDirection):
+            raise TypeError("direction must be typed")
+        for value, label in ((self.quantity, "quantity"), (self.filled_quantity, "filled_quantity")):
+            if not isinstance(value, Decimal) or not value.is_finite() or value < 0:
+                raise ValueError(f"{label} must be finite and non-negative")
+        if self.quantity <= 0 or self.filled_quantity > self.quantity:
+            raise ValueError("order quantity must be positive and fills cannot exceed it")
+        if not isinstance(self.status, OrderStatus):
+            raise TypeError("status must be typed")
+
+
+@dataclass(frozen=True, slots=True)
+class Fill:
+    fill_id: EntityId
+    order_id: EntityId
+    instrument: str
+    direction: TradeDirection
+    quantity: Decimal
+    price: Decimal
+    fee: Decimal
+    filled_at: RecordedAt
+
+    def __post_init__(self) -> None:
+        if not all(isinstance(value, EntityId) for value in (self.fill_id, self.order_id)):
+            raise TypeError("fill requires typed identifiers")
+        _text(self.instrument, "instrument")
+        if not isinstance(self.direction, TradeDirection):
+            raise TypeError("direction must be typed")
+        for value, label in ((self.quantity, "quantity"), (self.price, "price")):
+            if not isinstance(value, Decimal) or not value.is_finite() or value <= 0:
+                raise ValueError(f"{label} must be positive")
+        if not isinstance(self.fee, Decimal) or not self.fee.is_finite() or self.fee < 0:
+            raise ValueError("fee must be non-negative")
+        if not isinstance(self.filled_at, RecordedAt):
+            raise TypeError("filled_at must be a RecordedAt")

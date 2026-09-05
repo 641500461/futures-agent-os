@@ -30,7 +30,11 @@ from .autonomy_contracts import (
     ReceiptIssuanceRegistry,
     SimulationAutonomyMandate,
 )
-from .trade_contracts import ProtectionIntent, TradeAction, TradeDirection, TradePlan, TradePlanStatus
+from .trade_contracts import (
+    ExecutionPlan, Fill, Order, OrderStatus, ProtectionIntent, ProtectionMandate,
+    RiskDecision, RiskDecisionOutcome, StopPolicy, TradeAction, TradeDirection,
+    TradePlan, TradePlanStatus,
+)
 
 __all__ = [
     "AuthorizationBasis",
@@ -66,4 +70,12 @@ __all__ = [
     "TradeDirection",
     "TradePlan",
     "TradePlanStatus",
+    "RiskDecision",
+    "RiskDecisionOutcome",
+    "ProtectionMandate",
+    "ExecutionPlan",
+    "StopPolicy",
+    "Order",
+    "OrderStatus",
+    "Fill",
 ]
