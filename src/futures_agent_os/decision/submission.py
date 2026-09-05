@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from futures_agent_os.portfolio_risk import RiskBudgetReservation
@@ -85,3 +85,23 @@ class TradePlanSubmitter:
             now,
         )
         return SubmissionResult(execution, "EXECUTION_PLAN_CREATED")
+
+    @staticmethod
+    def consume_authorized_receipt(
+        receipt_registry: Any,
+        receipt: AutonomyGateReceipt,
+        *,
+        now: RecordedAt,
+        request: Any,
+        basis: Any,
+        reservation: Any,
+        ledger: Any,
+        **gate_context: object,
+    ) -> bool:
+        """Atomically consume the single-use receipt and its risk reservation."""
+        if not receipt_registry.consume(
+            receipt, now, request=request, basis=basis, reservation=reservation, **gate_context
+        ):
+            return False
+        consumed = ledger.consume(reservation.reservation_id, now)
+        return consumed is not None
