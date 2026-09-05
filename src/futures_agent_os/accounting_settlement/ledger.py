@@ -39,6 +39,24 @@ class SimulationAccount:
     def state(self) -> AccountState:
         return self._state
 
+    def reserve_margin(self, amount: Decimal) -> AccountState:
+        if not isinstance(amount, Decimal) or not amount.is_finite() or amount <= 0:
+            raise ValueError("margin reservation must be positive")
+        if self._state.cash - self._state.margin < amount:
+            raise ValueError("insufficient available cash for margin")
+        self._state = AccountState(
+            self._state.cash, self._state.margin + amount, self._state.realized_pnl, self._state.fees, self._state.lots
+        )
+        return self._state
+
+    def release_margin(self, amount: Decimal) -> AccountState:
+        if not isinstance(amount, Decimal) or not amount.is_finite() or amount <= 0 or amount > self._state.margin:
+            raise ValueError("margin release exceeds frozen margin")
+        self._state = AccountState(
+            self._state.cash, self._state.margin - amount, self._state.realized_pnl, self._state.fees, self._state.lots
+        )
+        return self._state
+
     def apply_fill(self, fill: Fill, *, lot_id, account_id) -> AccountState:
         if fill.fill_id in self._applied_fills:
             return self._state

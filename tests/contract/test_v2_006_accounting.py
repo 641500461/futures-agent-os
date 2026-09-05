@@ -72,3 +72,12 @@ def test_account_close_realizes_pnl_and_rejects_overclose() -> None:
                 now,
             )
         )
+
+
+def test_margin_is_frozen_and_released_without_notional_cash_debit() -> None:
+    account = SimulationAccount(Decimal("1000"))
+    assert account.reserve_margin(Decimal("200")).margin == Decimal("200")
+    assert account.state.cash == Decimal("1000")
+    assert account.release_margin(Decimal("200")).margin == Decimal("0")
+    with pytest.raises(ValueError):
+        account.release_margin(Decimal("1"))
