@@ -222,6 +222,7 @@ Exit：`MVP-R-005` 单 Agent 研究决策简报通过，且最小 MVP Closure Ac
   Acceptance: 触发不等于成交；同 Bar 止盈止损歧义采用声明的保守规则。  
   Evidence: 待补。
 - [ ] `V2-006` 实现账户、持仓批次和统一账本：开仓、平仓、平今、手续费、保证金、冻结、逐日盯市、PnL 和每日结算。  
+  Status: IN_PROGRESS；已覆盖开仓/部分平仓、手续费、保证金冻结释放、逐日盯市和幂等成交，平今与完整账本守恒仍待补齐。<br>
   Acceptance: 资金与账本不变量通过；Position 只能由 Fill/Settlement 改变。  
   Evidence: 待补。
 - [ ] `V2-007` 实现 Position Protection：初始止损、Strategy Spec 显式且可重放的确定性 Thesis 失效谓词、追踪止损、时间止损、组合止损、Kill Switch，以及 RiskReductionRequest/ProtectionTrigger 到 RiskReductionValidation/ProtectiveRiskAction 的 T4-SAFE 链。  
@@ -236,12 +237,15 @@ Exit：`MVP-R-005` 单 Agent 研究决策简报通过，且最小 MVP Closure Ac
   Acceptance: 相同事件和 FillModel 产生相同订单/账本结果；V1 的基础 walk-forward/stress/counterfactual 可在 L2 语义下重跑以证明引擎能力；V3 Strategy Agent 创建 StrategyCandidate 后可复用同一引擎形成资格证据。  
   Evidence: 待补。
 - [ ] `V2-010` 实现追加式审计、当前态投影、历史重放、日终对账和更正事件。  
+  Status: IN_PROGRESS；已完成顺序事件日志与基础重放，尚未接入完整对账/更正事件。<br>
   Acceptance: 任一模拟交易可重建完整链路，重放结果与当前投影和账本校验一致。  
   Evidence: 待补。
 - [ ] `V2-011` 建立故障注入：进程崩溃、重复命令、乱序/断档行情、数据库重启、时钟偏移、规则缺失和无流动性。  
+  Status: IN_PROGRESS；已覆盖重复命令、乱序事件和无流动性，其他故障场景待补。<br>
   Acceptance: 已提交命令 RPO=0，恢复后无重复业务副作用。  
   Evidence: 待补。
 - [ ] `V2-012` 实现授权操作者的短期 `MANUAL_TEST PlanApproval` request/grant/reject/expire/consume 状态机，并提供人工 CLI/API 验收、应急模拟入口与确定性回放报告。  
+  Status: IN_PROGRESS；已加入 MANUAL_TEST simulation-only context 边界，完整 Approval 状态机、Receipt 消费与回放入口待接入。<br>
   Acceptance: GRANTED PlanApproval 仅能在原子创建唯一 PLAN_APPROVAL AuthorizationBasis 时转为 CONSUMED，记录 consumer_basis_id/consumed_at；数据库唯一约束、并发与重放测试证明同一 Approval 不能生成第二个 Basis/成功交易。用户可在无 LLM 环境以 `execution_origin=MANUAL_TEST`、被该 Basis 消费一次的 PlanApproval 完成一笔 SHADOW 校验后的计划、成交、保护退出和结算；本入口标记为测试/应急 fallback，不需伪装 AUTONOMOUS_SIMULATION，也不是 V3 日常操作模式。  
   Evidence: 待补。
 

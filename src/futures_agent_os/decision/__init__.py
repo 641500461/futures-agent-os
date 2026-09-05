@@ -49,6 +49,7 @@ from .trade_contracts import (
     Settlement,
 )
 from .submission import SubmissionResult, TradePlanSubmitter
+from .manual_test import ManualTestContext, require_manual_test
 
 __all__ = [
     "AuthorizationBasis",
@@ -97,4 +98,6 @@ __all__ = [
     "Settlement",
     "SubmissionResult",
     "TradePlanSubmitter",
+    "ManualTestContext",
+    "require_manual_test",
 ]
