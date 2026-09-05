@@ -239,8 +239,10 @@ class ExecutionPlan:
         _text(self.order_type, "order_type")
         if not isinstance(self.quantity, Decimal) or not self.quantity.is_finite() or self.quantity <= 0:
             raise ValueError("execution quantity must be positive")
-        for value, label in ((self.limit_price, "limit_price"), (self.stop_price, "stop_price")):
-            if value is not None and (not isinstance(value, Decimal) or not value.is_finite() or value <= 0):
+        for optional_value, label in ((self.limit_price, "limit_price"), (self.stop_price, "stop_price")):
+            if optional_value is not None and (
+                not isinstance(optional_value, Decimal) or not optional_value.is_finite() or optional_value <= 0
+            ):
                 raise ValueError(f"{label} must be positive when provided")
         if not isinstance(self.created_at, RecordedAt):
             raise TypeError("created_at must be a RecordedAt")
@@ -288,9 +290,10 @@ class Order:
             raise ValueError("order quantity must be positive and fills cannot exceed it")
         if not isinstance(self.status, OrderStatus):
             raise TypeError("status must be typed")
-        for value, label in ((self.limit_price, "limit_price"), (self.stop_price, "stop_price")):
-            if value is not None and (not isinstance(value, Decimal) or not value.is_finite() or value <= 0):
-                raise ValueError(f"{label} must be positive when provided")
+        if self.limit_price is not None and (not self.limit_price.is_finite() or self.limit_price <= 0):
+            raise ValueError("limit_price must be positive when provided")
+        if self.stop_price is not None and (not self.stop_price.is_finite() or self.stop_price <= 0):
+            raise ValueError("stop_price must be positive when provided")
 
     @classmethod
     def from_execution_plan(cls, execution_plan: ExecutionPlan, *, instrument: str, direction: TradeDirection) -> Order:
