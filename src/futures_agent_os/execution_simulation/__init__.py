@@ -2,12 +2,14 @@
 
 from .fill_model import FillDecision, FillOrderType, L1Bar, L1FillModel
 from .protection import (
+    ProtectionTriggerEvaluator,
     ProtectionTriggerKind,
     ProtectionValidator,
     ProtectiveRiskAction,
     RiskReductionRequest,
     RiskReductionValidation,
     ValidationOutcome,
+    ProtectiveActionRegistry,
 )
 
 __all__ = [
@@ -21,4 +23,6 @@ __all__ = [
     "RiskReductionRequest",
     "RiskReductionValidation",
     "ValidationOutcome",
+    "ProtectionTriggerEvaluator",
+    "ProtectiveActionRegistry",
 ]

@@ -128,3 +128,77 @@ class ProtectionValidator:
             request.target_stop_price,
             now,
         )
+
+
+class ProtectionTriggerEvaluator:
+    """Create reductions from deterministic stop, time, portfolio and kill facts."""
+
+    def price_stop(
+        self, lot: PositionLot, policy: StopPolicy, price: Decimal, now: RecordedAt
+    ) -> RiskReductionRequest | None:
+        hit = price <= policy.stop_price if lot.direction is TradeDirection.LONG else price >= policy.stop_price
+        if not hit:
+            return None
+        return self._request(lot, ProtectionTriggerKind.INITIAL_STOP, now)
+
+    def trigger(self, lot: PositionLot, kind: ProtectionTriggerKind, now: RecordedAt) -> RiskReductionRequest:
+        return self._request(lot, kind, now)
+
+    def thesis_invalidation(self, lot: PositionLot, now: RecordedAt) -> RiskReductionRequest:
+        return self.trigger(lot, ProtectionTriggerKind.THESIS_INVALIDATION, now)
+
+    def time_stop(self, lot: PositionLot, now: RecordedAt) -> RiskReductionRequest:
+        return self.trigger(lot, ProtectionTriggerKind.TIME_STOP, now)
+
+    def portfolio_stop(self, lot: PositionLot, now: RecordedAt) -> RiskReductionRequest:
+        return self.trigger(lot, ProtectionTriggerKind.PORTFOLIO_STOP, now)
+
+    def kill_switch(self, lot: PositionLot, now: RecordedAt) -> RiskReductionRequest:
+        return self.trigger(lot, ProtectionTriggerKind.KILL_SWITCH, now)
+
+    def trailing_stop(
+        self, lot: PositionLot, policy: StopPolicy, price: Decimal, now: RecordedAt
+    ) -> RiskReductionRequest | None:
+        return self.price_stop(lot, policy, price, now)
+
+    @staticmethod
+    def _request(lot: PositionLot, kind: ProtectionTriggerKind, now: RecordedAt) -> RiskReductionRequest:
+        return RiskReductionRequest(
+            EntityId.new("reduction_request"),
+            lot.lot_id,
+            1,
+            Decimal("0"),
+            None,
+            kind,
+            f"{lot.lot_id}:{kind.value}:{now.to_dict()['recorded_at']}",
+            now,
+        )
+
+
+class ProtectiveActionRegistry:
+    """Idempotent in-memory action sink; database adapter can preserve its key."""
+
+    def __init__(self) -> None:
+        self._actions: dict[str, ProtectiveRiskAction] = {}
+
+    def issue(
+        self, request: RiskReductionRequest, validation: RiskReductionValidation, *, now: RecordedAt
+    ) -> ProtectiveRiskAction:
+        if request.idempotency_key in self._actions:
+            return self._actions[request.idempotency_key]
+        action = ProtectionValidator().action(request, validation, now=now)
+        self._actions[request.idempotency_key] = action
+        return action
+
+    def snapshot(self) -> tuple[tuple[str, ProtectiveRiskAction], ...]:
+        """Return a durable-ready key/action snapshot for crash recovery."""
+        return tuple(self._actions.items())
+
+    @classmethod
+    def restore(cls, snapshot: tuple[tuple[str, ProtectiveRiskAction], ...]) -> ProtectiveActionRegistry:
+        registry = cls()
+        for key, action in snapshot:
+            if not isinstance(key, str) or not isinstance(action, ProtectiveRiskAction):
+                raise TypeError("invalid protective action snapshot")
+            registry._actions[key] = action
+        return registry

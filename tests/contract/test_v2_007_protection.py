@@ -5,10 +5,12 @@ import pytest
 
 from futures_agent_os.decision import PositionLot, StopPolicy, TradeDirection
 from futures_agent_os.execution_simulation import (
+    ProtectionTriggerEvaluator,
     ProtectionTriggerKind,
     ProtectionValidator,
     RiskReductionRequest,
     ValidationOutcome,
+    ProtectiveActionRegistry,
 )
 from futures_agent_os.shared_kernel import EntityId, RecordedAt
 
@@ -92,3 +94,25 @@ def test_unvalidated_request_cannot_create_action() -> None:
     )
     with pytest.raises(ValueError):
         ProtectionValidator().action(request, type("V", (), {"outcome": ValidationOutcome.REJECTED})(), now=now)
+
+
+def test_price_trigger_and_action_registry_are_idempotent() -> None:
+    now = RecordedAt.from_datetime(datetime.now(UTC))
+    position = EntityId.new("position_lot")
+    lot = PositionLot(
+        position,
+        EntityId.new("simulation_account"),
+        "SHFE_AG_2601",
+        TradeDirection.LONG,
+        Decimal("5"),
+        Decimal("100"),
+        now,
+    )
+    policy = StopPolicy(EntityId.new("stop_policy"), position, Decimal("95"), Decimal("25"))
+    request = ProtectionTriggerEvaluator().price_stop(lot, policy, Decimal("94"), now)
+    assert request is not None and request.trigger is ProtectionTriggerKind.INITIAL_STOP
+    validation = ProtectionValidator().validate(request, lot, policy, position_version=1, now=now)
+    registry = ProtectiveActionRegistry()
+    first = registry.issue(request, validation, now=now)
+    restored = ProtectiveActionRegistry.restore(registry.snapshot())
+    assert first == restored.issue(request, validation, now=now)
