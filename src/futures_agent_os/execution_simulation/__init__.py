@@ -11,6 +11,7 @@ from .protection import (
     ValidationOutcome,
     ProtectiveActionRegistry,
 )
+from .l2_model import BookEvent, L2EventFillModel
 
 __all__ = [
     "FillDecision",
@@ -25,4 +26,6 @@ __all__ = [
     "ValidationOutcome",
     "ProtectionTriggerEvaluator",
     "ProtectiveActionRegistry",
+    "BookEvent",
+    "L2EventFillModel",
 ]
