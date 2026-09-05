@@ -272,6 +272,8 @@ class Order:
     quantity: Decimal
     status: OrderStatus = OrderStatus.CREATED
     filled_quantity: Decimal = Decimal("0")
+    limit_price: Decimal | None = None
+    stop_price: Decimal | None = None
 
     def __post_init__(self) -> None:
         if not all(isinstance(value, EntityId) for value in (self.order_id, self.execution_plan_id)):
@@ -286,6 +288,21 @@ class Order:
             raise ValueError("order quantity must be positive and fills cannot exceed it")
         if not isinstance(self.status, OrderStatus):
             raise TypeError("status must be typed")
+        for value, label in ((self.limit_price, "limit_price"), (self.stop_price, "stop_price")):
+            if value is not None and (not isinstance(value, Decimal) or not value.is_finite() or value <= 0):
+                raise ValueError(f"{label} must be positive when provided")
+
+    @classmethod
+    def from_execution_plan(cls, execution_plan: ExecutionPlan, *, instrument: str, direction: TradeDirection) -> Order:
+        return cls(
+            EntityId.new("order"),
+            execution_plan.execution_plan_id,
+            instrument,
+            direction,
+            execution_plan.quantity,
+            limit_price=execution_plan.limit_price,
+            stop_price=execution_plan.stop_price,
+        )
 
     def transition(self, target: OrderStatus) -> Order:
         allowed = {
