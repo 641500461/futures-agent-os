@@ -7,6 +7,8 @@
 当前开发任务：`V1-013` 已完成独立验收。MVP 验证阶段已关闭，结论为 `MVP_ACCEPTED`；正式 MVP-R eval v1/v2 的失败结论保持原样，但不再阻塞 Roadmap。
 建议下一步：完成 `V1-013` 独立验收后进入后续 Roadmap 规划；不要启动 formal eval v3、v2 holdout/shadow，也不要解锁任何交易能力。v1/v2 历史失败均不得修补、覆盖或重跑为成功。
 
+开发模型路由（2026-09-05）：复杂任务由 GPT-6 Astra 统筹，明确的常规实现默认由 GPT-5.6 Sol 执行；机械任务可由 Luna 执行。GPT-6 仅在需求/Acceptance 歧义、跨模块冲突、一次返工仍未解决或关键验收反复失败时接管。产品运行时 ModelProfile 不因该开发路由自动改变。
+
 ## V1-012 当前进展（2026-09-04）
 
 已完成最小评测闭环：`research_experiment.v1_012_evaluation` 提供不可变、内容寻址的评测集，冻结 dataset/rubric revision；逐例覆盖工具选择、引用正确性、数字 grounding、反证覆盖、`NO_TRADE/DEFER` 决策纪律与相同证据重放。`EvaluationRun` 固化 model/prompt/toolset revision，`EvaluationManager.report` 仅允许同一冻结 suite 生成确定性可比较差异报告。无交易、副作用、Formal Eval v3 或 UI。契约测试 4 项通过；Evidence 见 [`evidence/v1-012/implementation-2026-09-04.json`](../evidence/v1-012/implementation-2026-09-04.json)。
