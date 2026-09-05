@@ -12,6 +12,7 @@ from .protection import (
     ProtectiveActionRegistry,
 )
 from .l2_model import BookEvent, L2EventFillModel
+from .fault_injection import FaultInjector, FaultKind, FaultResult
 
 __all__ = [
     "FillDecision",
@@ -28,4 +29,7 @@ __all__ = [
     "ProtectiveActionRegistry",
     "BookEvent",
     "L2EventFillModel",
+    "FaultInjector",
+    "FaultKind",
+    "FaultResult",
 ]
