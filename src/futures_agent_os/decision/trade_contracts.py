@@ -109,7 +109,11 @@ class TradePlan:
     def __post_init__(self) -> None:
         if not all(isinstance(value, EntityId) for value in (self.plan_id, self.account_id)):
             raise TypeError("trade plan requires typed identifiers")
-        for value, label in ((self.instrument, "instrument"), (self.strategy_ref, "strategy_ref"), (self.snapshot_ref, "snapshot_ref")):
+        for value, label in (
+            (self.instrument, "instrument"),
+            (self.strategy_ref, "strategy_ref"),
+            (self.snapshot_ref, "snapshot_ref"),
+        ):
             _text(value, label)
         if not isinstance(self.action, TradeAction) or not isinstance(self.direction, TradeDirection):
             raise TypeError("trade plan action and direction must be typed")
@@ -122,7 +126,11 @@ class TradePlan:
         for value, label in ((self.thesis, "thesis"), (self.invalidation, "invalidation")):
             if not isinstance(value, str) or not value.strip():
                 raise ValueError(f"{label} must be non-empty")
-        if not isinstance(self.evidence_refs, tuple) or not self.evidence_refs or any(not _text(v, "evidence_ref") for v in self.evidence_refs):
+        if (
+            not isinstance(self.evidence_refs, tuple)
+            or not self.evidence_refs
+            or any(not _text(v, "evidence_ref") for v in self.evidence_refs)
+        ):
             raise ValueError("trade plan requires immutable evidence references")
         if any(not isinstance(v, str) or len(v) != 64 for v in self.evidence_refs):
             raise ValueError("evidence references must be digest identifiers")
@@ -135,15 +143,24 @@ class TradePlan:
 
     @property
     def plan_hash(self) -> str:
-        return canonical_sha256({
-            "plan_id": str(self.plan_id), "account_id": str(self.account_id),
-            "instrument": self.instrument, "strategy_ref": self.strategy_ref,
-            "action": self.action.value, "direction": self.direction.value,
-            "quantity": str(self.quantity), "entry_price": str(self.entry_price),
-            "thesis": self.thesis, "invalidation": self.invalidation,
-            "evidence_refs": self.evidence_refs, "snapshot_ref": self.snapshot_ref,
-            "expires_at": self.expires_at.to_dict()["recorded_at"], "version": self.version,
-        })
+        return canonical_sha256(
+            {
+                "plan_id": str(self.plan_id),
+                "account_id": str(self.account_id),
+                "instrument": self.instrument,
+                "strategy_ref": self.strategy_ref,
+                "action": self.action.value,
+                "direction": self.direction.value,
+                "quantity": str(self.quantity),
+                "entry_price": str(self.entry_price),
+                "thesis": self.thesis,
+                "invalidation": self.invalidation,
+                "evidence_refs": self.evidence_refs,
+                "snapshot_ref": self.snapshot_ref,
+                "expires_at": self.expires_at.to_dict()["recorded_at"],
+                "version": self.version,
+            }
+        )
 
 
 @dataclass(frozen=True, slots=True)
@@ -166,10 +183,16 @@ class RiskDecision:
             raise ValueError("plan_version must be positive")
         if not isinstance(self.outcome, RiskDecisionOutcome):
             raise TypeError("outcome must be typed")
-        for value, label in ((self.approved_quantity, "approved_quantity"), (self.max_loss, "max_loss"), (self.margin, "margin")):
+        for value, label in (
+            (self.approved_quantity, "approved_quantity"),
+            (self.max_loss, "max_loss"),
+            (self.margin, "margin"),
+        ):
             if not isinstance(value, Decimal) or not value.is_finite() or value < 0:
                 raise ValueError(f"{label} must be finite and non-negative")
-        if not isinstance(self.rule_refs, tuple) or any(not isinstance(value, str) or not value for value in self.rule_refs):
+        if not isinstance(self.rule_refs, tuple) or any(
+            not isinstance(value, str) or not value for value in self.rule_refs
+        ):
             raise ValueError("rule_refs must be immutable text references")
         _text(self.risk_constitution_ref, "risk_constitution_ref")
         if not isinstance(self.issued_at, RecordedAt):
@@ -209,7 +232,9 @@ class ExecutionPlan:
     created_at: RecordedAt
 
     def __post_init__(self) -> None:
-        if not all(isinstance(value, EntityId) for value in (self.execution_plan_id, self.plan_id, self.protection_mandate_id)):
+        if not all(
+            isinstance(value, EntityId) for value in (self.execution_plan_id, self.plan_id, self.protection_mandate_id)
+        ):
             raise TypeError("execution plan requires typed identifiers")
         _text(self.order_type, "order_type")
         if not isinstance(self.quantity, Decimal) or not self.quantity.is_finite() or self.quantity <= 0:

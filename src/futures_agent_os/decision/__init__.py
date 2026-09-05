@@ -31,9 +31,19 @@ from .autonomy_contracts import (
     SimulationAutonomyMandate,
 )
 from .trade_contracts import (
-    ExecutionPlan, Fill, Order, OrderStatus, ProtectionIntent, ProtectionMandate,
-    RiskDecision, RiskDecisionOutcome, StopPolicy, TradeAction, TradeDirection,
-    TradePlan, TradePlanStatus,
+    ExecutionPlan,
+    Fill,
+    Order,
+    OrderStatus,
+    ProtectionIntent,
+    ProtectionMandate,
+    RiskDecision,
+    RiskDecisionOutcome,
+    StopPolicy,
+    TradeAction,
+    TradeDirection,
+    TradePlan,
+    TradePlanStatus,
 )
 
 __all__ = [
