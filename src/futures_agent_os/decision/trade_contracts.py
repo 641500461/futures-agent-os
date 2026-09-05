@@ -6,7 +6,7 @@ create orders, fills, positions, or ledger effects.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from decimal import Decimal
 from enum import StrEnum
 
@@ -287,6 +287,38 @@ class Order:
         if not isinstance(self.status, OrderStatus):
             raise TypeError("status must be typed")
 
+    def transition(self, target: OrderStatus) -> Order:
+        allowed = {
+            OrderStatus.CREATED: {OrderStatus.ACCEPTED, OrderStatus.REJECTED},
+            OrderStatus.ACCEPTED: {OrderStatus.WORKING, OrderStatus.EXPIRED},
+            OrderStatus.WORKING: {
+                OrderStatus.PARTIALLY_FILLED,
+                OrderStatus.FILLED,
+                OrderStatus.CANCELLED,
+                OrderStatus.EXPIRED,
+            },
+            OrderStatus.PARTIALLY_FILLED: {
+                OrderStatus.PARTIALLY_FILLED,
+                OrderStatus.FILLED,
+                OrderStatus.CANCELLED,
+                OrderStatus.EXPIRED,
+            },
+        }
+        if target not in allowed.get(self.status, set()):
+            raise ValueError(f"invalid order transition {self.status} -> {target}")
+        return replace(self, status=target)
+
+    def apply_fill(self, quantity: Decimal) -> Order:
+        if self.status not in {OrderStatus.WORKING, OrderStatus.PARTIALLY_FILLED}:
+            raise ValueError("fills require a working order")
+        if not isinstance(quantity, Decimal) or not quantity.is_finite() or quantity <= 0:
+            raise ValueError("fill quantity must be positive")
+        new_filled = self.filled_quantity + quantity
+        if new_filled > self.quantity:
+            raise ValueError("fills cannot exceed order quantity")
+        target = OrderStatus.FILLED if new_filled == self.quantity else OrderStatus.PARTIALLY_FILLED
+        return replace(self, filled_quantity=new_filled, status=target)
+
 
 @dataclass(frozen=True, slots=True)
 class Fill:
@@ -312,3 +344,70 @@ class Fill:
             raise ValueError("fee must be non-negative")
         if not isinstance(self.filled_at, RecordedAt):
             raise TypeError("filled_at must be a RecordedAt")
+
+
+@dataclass(frozen=True, slots=True)
+class PositionLot:
+    lot_id: EntityId
+    account_id: EntityId
+    instrument: str
+    direction: TradeDirection
+    quantity: Decimal
+    average_price: Decimal
+    opened_at: RecordedAt
+
+    def __post_init__(self) -> None:
+        if not all(isinstance(value, EntityId) for value in (self.lot_id, self.account_id)):
+            raise TypeError("position lot requires typed identifiers")
+        _text(self.instrument, "instrument")
+        if not isinstance(self.direction, TradeDirection):
+            raise TypeError("direction must be typed")
+        for value, label in ((self.quantity, "quantity"), (self.average_price, "average_price")):
+            if not isinstance(value, Decimal) or not value.is_finite() or value <= 0:
+                raise ValueError(f"{label} must be positive")
+        if not isinstance(self.opened_at, RecordedAt):
+            raise TypeError("opened_at must be a RecordedAt")
+
+
+@dataclass(frozen=True, slots=True)
+class LedgerEntry:
+    entry_id: EntityId
+    account_id: EntityId
+    event_ref: EntityId
+    amount: Decimal
+    currency: str
+    entry_type: str
+    recorded_at: RecordedAt
+
+    def __post_init__(self) -> None:
+        if not all(isinstance(value, EntityId) for value in (self.entry_id, self.account_id, self.event_ref)):
+            raise TypeError("ledger entry requires typed identifiers")
+        if not isinstance(self.amount, Decimal) or not self.amount.is_finite():
+            raise ValueError("ledger amount must be finite")
+        _text(self.currency, "currency")
+        _text(self.entry_type, "entry_type")
+        if not isinstance(self.recorded_at, RecordedAt):
+            raise TypeError("recorded_at must be a RecordedAt")
+
+
+@dataclass(frozen=True, slots=True)
+class Settlement:
+    settlement_id: EntityId
+    account_id: EntityId
+    trading_date: str
+    cash_delta: Decimal
+    realized_pnl: Decimal
+    fees: Decimal
+    recorded_at: RecordedAt
+
+    def __post_init__(self) -> None:
+        if not all(isinstance(value, EntityId) for value in (self.settlement_id, self.account_id)):
+            raise TypeError("settlement requires typed identifiers")
+        _text(self.trading_date, "trading_date")
+        for value, label in ((self.cash_delta, "cash_delta"), (self.realized_pnl, "realized_pnl"), (self.fees, "fees")):
+            if not isinstance(value, Decimal) or not value.is_finite():
+                raise ValueError(f"{label} must be finite")
+        if self.fees < 0:
+            raise ValueError("fees must be non-negative")
+        if not isinstance(self.recorded_at, RecordedAt):
+            raise TypeError("recorded_at must be a RecordedAt")

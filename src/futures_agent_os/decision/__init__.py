@@ -44,6 +44,9 @@ from .trade_contracts import (
     TradeDirection,
     TradePlan,
     TradePlanStatus,
+    PositionLot,
+    LedgerEntry,
+    Settlement,
 )
 
 __all__ = [
@@ -88,4 +91,7 @@ __all__ = [
     "Order",
     "OrderStatus",
     "Fill",
+    "PositionLot",
+    "LedgerEntry",
+    "Settlement",
 ]
