@@ -1,0 +1,9 @@
+{
+  "task": "V1-013",
+  "status": "COMPLETE",
+  "implementation": {"executor": "Codex", "model": "gpt-5.6-terra", "reasoning_effort": "medium"},
+  "scope": "OBSERVE-only opportunity scans and candidates with frozen policy/data/feature refs, evidence, dedupe/cooldown and missed-scan rerun.",
+  "non_scope": ["TradePlan", "Order", "Position", "Ledger", "Mandate", "UI", "distributed scheduler", "Formal Eval v3", "MVP-R repair"],
+  "tests": [{"command": "uv run pytest tests/contract/test_v1_013_opportunity_radar.py", "result": "4 passed"}, {"command": "uv run mypy src/futures_agent_os/research_experiment/opportunity_radar.py", "result": "passed"}],
+  "review": {"model": "gpt-5.6-sol", "reasoning_effort": "high", "status": "PASS", "results": "4 targeted tests; full make check green"}
+}

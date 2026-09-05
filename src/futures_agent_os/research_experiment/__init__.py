@@ -37,6 +37,16 @@ from .v1_012_evaluation import (
     ResearchEvaluationSuite,
     ResearchOutcome,
 )
+from .opportunity_radar import (
+    OpportunityCandidate,
+    OpportunityRadar,
+    OpportunityScan,
+    ResearchEvidence,
+    ScanPolicy,
+    ScanResult,
+    TimeHorizon,
+    UniversePolicy,
+)
 from .research_hypothesis import (
     EvidenceGap,
     EvidenceSynthesis,
@@ -327,6 +337,14 @@ from .model_routing import (
 )
 
 __all__ = [
+    "OpportunityCandidate",
+    "OpportunityRadar",
+    "OpportunityScan",
+    "ResearchEvidence",
+    "ScanPolicy",
+    "ScanResult",
+    "TimeHorizon",
+    "UniversePolicy",
     "CaseScore",
     "ComparableReport",
     "EvaluationCase",
