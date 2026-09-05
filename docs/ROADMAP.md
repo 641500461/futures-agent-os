@@ -225,6 +225,7 @@ Exit：`MVP-R-005` 单 Agent 研究决策简报通过，且最小 MVP Closure Ac
   Acceptance: 资金与账本不变量通过；Position 只能由 Fill/Settlement 改变。  
   Evidence: 待补。
 - [ ] `V2-007` 实现 Position Protection：初始止损、Strategy Spec 显式且可重放的确定性 Thesis 失效谓词、追踪止损、时间止损、组合止损、Kill Switch，以及 RiskReductionRequest/ProtectionTrigger 到 RiskReductionValidation/ProtectiveRiskAction 的 T4-SAFE 链。  
+  Status: IN_PROGRESS；已实现基础 RiskReductionRequest、单调降险校验和 ProtectiveRiskAction，尚未覆盖六类触发器、持久幂等与崩溃恢复。<br>
   Acceptance: 六层保护在无 Agent/模型/交互服务时仍运行；V2 P2 不依赖自由文本或语义推理；每个降险请求绑定 Position expected version 和幂等键，REJECTED/STALE 零 Action，VALIDATED Action 只能单调降险且可跨崩溃恢复；无保护 OPEN Position 为最高级故障。  
   Evidence: 待补。
 - [ ] `V2-008` 实现 `submit_trade_plan` 最小两阶段安全链：计划硬校验 → Authorization Preflight/AuthorizationBasis → 仓位计算 → 原子 RiskBudgetReservation → Final Receipt Gate → 风险裁决/ProtectionMandate → ExecutionPlan/StopPolicy → Order。  
