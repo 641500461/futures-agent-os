@@ -25,6 +25,17 @@ class DurableState:
     receipt_hash: str | None = None
     risk_hash: str | None = None
 
+    def to_dict(self) -> dict[str, str | None]:
+        return {
+            "run_id": self.run_id,
+            "checkpoint": self.checkpoint.value,
+            "plan_hash": self.plan_hash,
+            "snapshot_hash": self.snapshot_hash,
+            "basis_hash": self.basis_hash,
+            "receipt_hash": self.receipt_hash,
+            "risk_hash": self.risk_hash,
+        }
+
 
 class DurableOrchestrator:
     def __init__(self) -> None:
