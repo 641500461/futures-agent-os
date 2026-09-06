@@ -22,5 +22,6 @@ __all__ = [
     "OutboundNotification",
     "FeishuAdapter",
     "ChannelGateway",
+    "ChannelRegistry",
 ]
 from .registry import ChannelRegistry
