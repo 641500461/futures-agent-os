@@ -26,3 +26,18 @@ class SimulationAutonomyMandate:
     @property
     def effective(self) -> bool:
         return self.status is MandateStatus.ACTIVE and self.expires_at > datetime.now(timezone.utc)
+
+
+@dataclass(frozen=True)
+class AutonomyModeBinding:
+    mandate_id: str
+    mode: str
+    expires_at: datetime
+
+    def effective(self, mandate: SimulationAutonomyMandate) -> bool:
+        return (
+            self.mode == "AUTONOMOUS_SIMULATION"
+            and self.mandate_id == mandate.mandate_id
+            and mandate.effective
+            and self.expires_at > datetime.now(timezone.utc)
+        )
