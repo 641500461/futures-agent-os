@@ -134,3 +134,12 @@ from futures_agent_os.agent_orchestration.strategy_agent import StrategyAgent, S
 def test_strategy_agent_outputs_candidate_without_order():
     c = StrategyAgent().propose(thesis="t", invalidation="i", evidence=("e",), target_risk="r", exit_intent="x")
     assert isinstance(c, StrategyCandidate) and not hasattr(c, "order")
+
+
+from decimal import Decimal
+from futures_agent_os.agent_orchestration.portfolio_agent import PortfolioAgent, PortfolioProposal
+
+
+def test_portfolio_agent_outputs_proposal():
+    p = PortfolioAgent().propose(target_exposure=Decimal("1.0"), rationale="r")
+    assert isinstance(p, PortfolioProposal)
