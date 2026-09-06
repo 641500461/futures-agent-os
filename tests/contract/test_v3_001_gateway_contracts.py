@@ -168,3 +168,10 @@ from futures_agent_os.agent_orchestration.pre_trade_critic import PreTradeCritic
 def test_pre_trade_critic_is_distinct_structured_role():
     c = PreTradeCritic().review(concerns=("cost",), verdict="DEFER")
     assert isinstance(c, PreTradeCritique)
+
+
+from futures_agent_os.agent_orchestration.v3_parallel import ParallelFanout
+
+
+def test_parallel_fanout_returns_named_results():
+    assert ParallelFanout().run({"risk": lambda: "r", "critic": lambda: "c"}) == {"risk": "r", "critic": "c"}
