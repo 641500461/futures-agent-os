@@ -143,3 +143,11 @@ from futures_agent_os.agent_orchestration.portfolio_agent import PortfolioAgent,
 def test_portfolio_agent_outputs_proposal():
     p = PortfolioAgent().propose(target_exposure=Decimal("1.0"), rationale="r")
     assert isinstance(p, PortfolioProposal)
+
+
+from futures_agent_os.agent_orchestration.risk_analyst_agent import RiskAnalystAgent, RiskAssessment
+
+
+def test_risk_analyst_is_non_authoritative():
+    a = RiskAnalystAgent().assess(scenarios=("stress",), counter_evidence=("ce",), proposed_loss=Decimal("10"))
+    assert isinstance(a, RiskAssessment) and not hasattr(a, "risk_decision")
