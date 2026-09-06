@@ -41,3 +41,7 @@ class AutonomyModeBinding:
             and mandate.effective
             and self.expires_at > datetime.now(timezone.utc)
         )
+
+
+def effective_autonomy(mandate: SimulationAutonomyMandate, binding: AutonomyModeBinding) -> bool:
+    return mandate.effective and binding.effective(mandate)
