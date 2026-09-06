@@ -10,6 +10,7 @@ class FeishuAdapter:
 
     def __init__(self) -> None:
         self.outbox: list[OutboundNotification] = []
+        self._inbox: list[InboundEvent] = []
 
     def parse_event(self, payload: Mapping[str, Any]) -> InboundEvent:
         event_id = str(payload["event_id"])
@@ -22,6 +23,15 @@ class FeishuAdapter:
             dict(payload.get("data", {})),
             datetime.now(timezone.utc),
         )
+
+    def receive(self) -> list[InboundEvent]:
+        events, self._inbox = self._inbox, []
+        return events
+
+    def enqueue(self, payload: Mapping[str, Any]) -> InboundEvent:
+        event = self.parse_event(payload)
+        self._inbox.append(event)
+        return event
 
     def parse_callback(self, payload: Mapping[str, Any]) -> ControlCallback:
         return ControlCallback(
