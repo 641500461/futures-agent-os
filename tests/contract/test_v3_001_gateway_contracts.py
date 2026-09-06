@@ -151,3 +151,12 @@ from futures_agent_os.agent_orchestration.risk_analyst_agent import RiskAnalystA
 def test_risk_analyst_is_non_authoritative():
     a = RiskAnalystAgent().assess(scenarios=("stress",), counter_evidence=("ce",), proposed_loss=Decimal("10"))
     assert isinstance(a, RiskAssessment) and not hasattr(a, "risk_decision")
+
+
+from futures_agent_os.agent_orchestration.execution_advisor import ExecutionAdvisor, ExecutionRecommendation
+
+
+def test_execution_advisor_only_recommends_registered_algorithms():
+    assert isinstance(ExecutionAdvisor().recommend(algorithm="MARKET", rationale="cost"), ExecutionRecommendation)
+    with pytest.raises(ValueError):
+        ExecutionAdvisor().recommend(algorithm="TWAP", rationale="x")
