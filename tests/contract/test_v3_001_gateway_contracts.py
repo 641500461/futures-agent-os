@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import pytest
+
 # ruff: noqa: E402
 from futures_agent_os.channel_gateway.contracts import InboundEvent, IdempotentInbox
 
@@ -106,3 +107,15 @@ def test_orchestrator_start_and_advance():
     o = DurableOrchestrator()
     assert o.start("x", "p", "s").checkpoint is Checkpoint.SNAPSHOT
     assert o.advance("x", Checkpoint.SCAN).checkpoint is Checkpoint.SCAN
+
+
+from futures_agent_os.channel_gateway.registry import ChannelRegistry
+
+
+def test_channel_registry_is_replaceable():
+    r = ChannelRegistry()
+    a = FeishuAdapter()
+    r.register(a)
+    assert r.get("feishu") is a
+    with pytest.raises(ValueError):
+        r.register(a)

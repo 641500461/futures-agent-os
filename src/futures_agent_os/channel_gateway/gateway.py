@@ -1,4 +1,12 @@
-from .contracts import ChannelAdapter, ControlCallback, IdempotentInbox, IdempotentControls, NotificationDispatcher, InboundEvent, OutboundNotification
+from .contracts import (
+    ChannelAdapter,
+    ControlCallback,
+    IdempotentInbox,
+    IdempotentControls,
+    NotificationDispatcher,
+    InboundEvent,
+    OutboundNotification,
+)
 
 
 class ChannelGateway:

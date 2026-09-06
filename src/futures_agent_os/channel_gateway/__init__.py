@@ -23,3 +23,4 @@ __all__ = [
     "FeishuAdapter",
     "ChannelGateway",
 ]
+from .registry import ChannelRegistry
