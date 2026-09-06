@@ -117,3 +117,19 @@ class MemoryInboxStore:
 
     def get(self, key: str) -> InboundEvent | None:
         return self._items.get(key)
+
+
+class NotificationSink(Protocol):
+    def send(self, adapter: ChannelAdapter, notification: OutboundNotification) -> bool: ...
+
+
+class MemoryNotificationSink:
+    def __init__(self) -> None:
+        self._sent: set[str] = set()
+
+    def send(self, adapter: ChannelAdapter, notification: OutboundNotification) -> bool:
+        if notification.idempotency_key in self._sent:
+            return False
+        adapter.send(notification)
+        self._sent.add(notification.idempotency_key)
+        return True

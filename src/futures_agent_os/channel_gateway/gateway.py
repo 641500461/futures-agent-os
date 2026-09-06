@@ -7,6 +7,8 @@ from .contracts import (
     OutboundNotification,
     InboxStore,
     MemoryInboxStore,
+    NotificationSink,
+    MemoryNotificationSink,
 )
 
 
@@ -14,7 +16,7 @@ class ChannelGateway:
     def __init__(self) -> None:
         self.inbox: InboxStore = MemoryInboxStore()
         self.controls = IdempotentControls()
-        self.notifications = NotificationDispatcher()
+        self.notifications: NotificationSink = MemoryNotificationSink()
 
     def ingest(self, event: InboundEvent) -> bool:
         return self.inbox.put_if_absent(event)
@@ -30,4 +32,4 @@ class ChannelGateway:
         return self.controls.accept(callback)
 
     def notify(self, adapter: ChannelAdapter, notification: OutboundNotification) -> bool:
-        return self.notifications.dispatch(adapter, notification)
+        return self.notifications.send(adapter, notification)
