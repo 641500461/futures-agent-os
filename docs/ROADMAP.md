@@ -260,9 +260,10 @@ Exit：确定性黄金链路可在固定数据集上完全重放；任何新增�
 
 目标：用户激活 Simulation Autonomy Mandate，并为通过资格的版本组合激活 AUTONOMOUS_SIMULATION Mode、健康门禁通过后，系统可在 EffectiveAutonomy 范围内按时间表与市场/账户/系统事件自主找机会、研究、质疑、形成 TradePlan、调用 V2 内核模拟执行、持续盯盘与复盘；用户主要接收重要信息、学习决策证据并在异常时介入。
 
-- [ ] `V3-001` 实现飞书长连接 Gateway、用户/群映射、快速去重入箱、异步通知和监督控制回调防重放。  
+- [ ] `V3-001` 实现渠道无关的 Gateway 与首个飞书长连接适配器、用户/群映射、快速去重入箱、异步通知和监督控制回调防重放。  
+  Status: IN_PROGRESS；负责人：Codex；工作区：`codex/v3`；开始日期：2026-09-06。
   Depends: V1、V2。  
-  Acceptance: 入站事件在目标时限内去重入箱；重复消息/回调不会重复创建任务或交易效果；飞书定位为通知、解释、例外介入与紧急控制台，常规周期无需用户回调。  
+  Acceptance: 核心层仅依赖统一 InboundEvent、OutboundNotification、ControlCallback 和 ChannelAdapter 契约；飞书是首个可替换实现，新增其他渠道无需修改核心处理逻辑。用户/群映射、去重入箱、通知分级与回调防重放由渠道无关的应用层负责，渠道身份与事件 ID 带渠道命名空间；适配器声明支持的通知和控制能力，不支持的操作明确拒绝。入站事件在目标时限内去重入箱；重复消息/回调不会重复创建任务或交易效果；通讯渠道仅承担通知、解释、例外介入与紧急控制台，不直接写入订单、账本或风险真值；常规周期无需用户回调。  
   Evidence: 待补。
 - [ ] `V3-002` 实现由确定性 Workflow Orchestrator 推进、Autonomous Quant PM / Main 负责决策的 durable 自治图：用户/时间表/市场/账户/系统事件触发 → 快照固化 → 机会扫描 → 委派与质疑 → TradePlan → Authorization Preflight/AuthorizationBasis → sizing/RiskBudgetReservation → Final Receipt Gate → Risk/Execution → 盯盘 → 通知/复盘。  
   Acceptance: 图可在任一 checkpoint 或例外 interrupt 后跨重启恢复；恢复前重新校验计划、AuthorizationBasis、AutonomyGateReceipt、RiskDecision 和快照有效性；范围内常规周期不等待用户输入。  
