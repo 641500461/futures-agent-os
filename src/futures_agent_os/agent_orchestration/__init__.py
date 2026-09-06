@@ -104,4 +104,16 @@ __all__ = [
     "WorkflowTask",
     "WorkflowTaskResult",
     "WorkflowTaskStatus",
+    "StrategyAgent",
+    "StrategyCandidate",
+    "PortfolioAgent",
+    "PortfolioProposal",
+    "RiskAnalystAgent",
+    "RiskAssessment",
+    "ExecutionAdvisor",
+    "ExecutionRecommendation",
 ]
+from .strategy_agent import StrategyAgent, StrategyCandidate
+from .portfolio_agent import PortfolioAgent, PortfolioProposal
+from .risk_analyst_agent import RiskAnalystAgent, RiskAssessment
+from .execution_advisor import ExecutionAdvisor, ExecutionRecommendation
