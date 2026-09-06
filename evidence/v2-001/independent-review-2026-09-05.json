@@ -1,0 +1,95 @@
+{
+  "schema_version": "v2-001-independent-review.v1",
+  "task": "V2-001",
+  "reviewed_at": "2026-09-05",
+  "reviewer_executor": "Codex",
+  "reviewer_model": "gpt-5 (exact host profile not exposed)",
+  "reasoning_effort": "NOT_EXPOSED",
+  "implementation_executor": "Codex",
+  "implementation_model": "gpt-5.6-sol",
+  "implementation_reasoning_effort": "xhigh",
+  "independent_review_result": "BLOCKED",
+  "acceptance_result": "V2-001_ACCEPTANCE_NOT_PROVEN",
+  "scope_reviewed": [
+    "decision/trade_contracts.py",
+    "decision/autonomy_contracts.py",
+    "decision/submission.py",
+    "execution_simulation/protection.py",
+    "owner contract exports and tests/contract/test_v2_001_trade_contracts.py"
+  ],
+  "findings": [
+    {
+      "priority": "P0",
+      "title": "Constructors have nondeterministic identity and time defaults",
+      "evidence": "ProtectionIntent.intent_id/created_at, TradePlan.created_at, StopPolicy.created_at, Order.created_at, and generated validation/action/request IDs use uuid7 or datetime.now(). Two otherwise equivalent TradePlan constructions with generated ProtectionIntent identity produce different plan_hash values. Replay callers must know to override every default; no canonical hydrate/replay constructor or test proves this.",
+      "reproduction": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run python - <<'PY' ... construct two equivalent TradePlans while omitting ProtectionIntent intent_id ... print(a.plan_hash != b.plan_hash) ... PY => True",
+      "required_fix": "Make persisted/replay construction explicit and deterministic (canonical hydrate/deserialize with required IDs/timestamps, or deterministic IDs/times); add byte/hash-identical replay tests for every V2 contract and generated protection artifact."
+    },
+    {
+      "priority": "P0",
+      "title": "Cross-object references are not validated against real referenced facts",
+      "evidence": "The contracts validate that some fields are EntityId values and that a few namespaces match, but do not bind IDs plus versions/hashes to the referenced object. LedgerEntry.event_ref accepts a trade_plan ID; SimulationAutonomyMandate and MandateScope accept wrong namespaces; RiskDecision.plan_hash is optional; ProtectionMandate and ExecutionPlan can carry non-existent or unrelated IDs. Existing tests only exercise type/namespace checks and do not hydrate a graph or reject these cases.",
+      "reproduction": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run python - <<'PY' ... LedgerEntry(..., event_ref=EntityId.new('trade_plan'), ...) ... PY => object is accepted; RiskDecision(..., plan_hash=None) => accepted; Mandate with EntityId.new('wrong') => accepted.",
+      "required_fix": "Add explicit reference contracts/resolvers (or owner-issued typed refs) that verify target namespace, target version and target content hash, and fail closed when target is absent/mismatched. Expand tests to construct invalid reference graphs, not only malformed scalar IDs."
+    },
+    {
+      "priority": "P1",
+      "title": "Protection trigger requests are stale for versioned positions and mislabel trailing stops",
+      "evidence": "ProtectionTriggerEvaluator._request hardcodes expected_position_version=1. A lot at version 7 therefore yields a request that ProtectionValidator marks STALE when validated against the lot's current version. trailing_stop delegates to price_stop, so a trailing trigger is emitted as INITIAL_STOP rather than TRAILING_STOP.",
+      "reproduction": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run python - <<'PY' ... lot=PositionLot(..., version=7); r=ProtectionTriggerEvaluator().price_stop(...); print(r.expected_position_version) => 1; validator outcome => STALE; trailing_stop(...).trigger => INITIAL_STOP ... PY",
+      "required_fix": "Populate expected_position_version from lot.version and preserve the requested trigger kind in each evaluator path; add tests for non-1 versions and all six trigger kinds."
+    },
+    {
+      "priority": "P1",
+      "title": "TradePlan accepts an expiry that is already before creation",
+      "evidence": "TradePlan validates that expires_at is a RecordedAt but never requires expires_at > created_at. A plan with created_at=2026-01-01T00:00:20Z and expires_at=2026-01-01T00:00:10Z is constructed successfully, undermining deterministic lifecycle/replay boundaries.",
+      "reproduction": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run python - <<'PY' ... TradePlan(..., created_at=at(20), expires_at=at(10)) ... PY => past expiry accepted.",
+      "required_fix": "Reject expiry at or before creation and add boundary tests; apply the same invariant to all bounded authorization and execution contracts where relevant."
+    },
+    {
+      "priority": "P1",
+      "title": "Receipt consumption is not atomic with reservation consumption",
+      "evidence": "TradePlanSubmitter.consume_authorized_receipt first calls receipt_registry.consume, which irreversibly marks the receipt used, and only then calls ledger.consume. If ledger consumption returns None or raises, the method returns False after the receipt side effect, so a retry cannot recover and receipt/reservation state diverges. The method accepts both dependencies as Any and has no rollback or transaction boundary.",
+      "reproduction": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run python - <<'PY' ... fake receipt registry consume returns True; fake reservation has reservation_id; fake ledger.consume returns None ... PY => method returns False after receipt consume has already succeeded.",
+      "required_fix": "Use one atomic owner transaction or a compensating prepare/commit protocol that cannot mark a receipt consumed unless reservation consumption commits; add failure-injection and retry tests."
+    },
+    {
+      "priority": "P1",
+      "title": "Submission does not bind receipt quantity/action or recheck plan lifecycle",
+      "evidence": "TradePlanSubmitter.submit checks plan/risk/protection/reservation identifiers but never calls validate_plan and never compares receipt.action/receipt.quantity with the risk decision or plan. It can therefore create an ExecutionPlan for a DRAFT/expired or otherwise non-submittable plan, and can use a receipt carrying quantity 1 while emitting risk.approved_quantity 2 when the reservation permits 2.",
+      "reproduction": "Static path inspection of decision/submission.py: submit has no plan.status/plan.expires_at check and only compares receipt plan identity/hash; quantity check is risk.approved_quantity <= reservation.quantity. Add a contract test with mismatched receipt quantity or expired status and observe execution creation.",
+      "required_fix": "Invoke the complete deterministic plan validator in submit and require exact receipt action/quantity/scope/origin equality with risk, protection, reservation, and plan before creating ExecutionPlan."
+    },
+    {
+      "priority": "P1",
+      "title": "PlanApprovalRegistry replay compares the consumed hash to the original grant hash",
+      "evidence": "On a second consume call, PlanApprovalRegistry.consume enters its existing-record branch and checks approval.authorization_hash == granted_hash. The returned CONSUMED approval necessarily hashes different status/version fields from the original GRANTED approval, so an exact replay of the same consumed approval is rejected instead of returning the original basis.",
+      "reproduction": "Read decision/autonomy_contracts.py PlanApprovalRegistry.consume existing branch: `if approval.authorization_hash != granted_hash: return approval, None`; first call stores granted authorization_hash and returns a version-incremented CONSUMED approval. Replaying that returned object therefore fails this comparison.",
+      "required_fix": "Compare approval.granted_authorization_hash (or persist the immutable grant hash explicitly) in the replay branch and add an exact same-command replay test."
+    },
+    {
+      "priority": "P2",
+      "title": "Owner modules are compatibility aliases, not owner-defined contracts",
+      "evidence": "portfolio_risk/contracts.py, execution_simulation/contracts.py, and accounting_settlement/contracts.py only import classes from decision.trade_contracts. Runtime inspection reports RiskDecision.__module__, Order.__module__, and PositionLot.__module__ all as futures_agent_os.decision.trade_contracts. This leaves Decision as the canonical definition despite comments claiming owner context ownership; no test enforces owner import/definition boundaries.",
+      "reproduction": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run python - <<'PY' ... import futures_agent_os.portfolio_risk as pr, futures_agent_os.execution_simulation as ex, futures_agent_os.accounting_settlement as ac; print(pr.RiskDecision.__module__, ex.Order.__module__, ac.PositionLot.__module__) ... PY => all decision.trade_contracts.",
+      "required_fix": "Move definitions (or introduce owner-owned canonical contract modules) and make decision exports explicit compatibility shims with tests proving owner ownership and no reverse authority dependency."
+    }
+  ],
+  "validation": {
+    "targeted_tests": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest --import-mode=importlib tests/contract/test_v2_001_trade_contracts.py tests/contract/test_v2_007_protection.py -q => 10 passed",
+    "review_reproductions": "All five reproductions above completed in the dirty checkout; no code or docs changed.",
+    "full_suite": "Not rerun by this independent review; implementation Evidence reports importlib full suite passed.",
+    "git_diff_check": "Not applicable; only this review Evidence file was added."
+  },
+  "model_output_not_authoritative": true,
+  "finite_fix_list": [
+    "Define deterministic hydrate/replay semantics and remove or constrain uuid7/now defaults for persisted V2 objects.",
+    "Implement real cross-object target/version/hash binding and invalid graph tests.",
+    "Fix protection trigger version propagation and trigger-kind labeling.",
+    "Reject TradePlan expiry at or before creation.",
+    "Make receipt and reservation consumption one atomic operation with failure/retry coverage.",
+    "Resolve owner canonical-definition versus compatibility-reexport boundary and test it."
+  ],
+  "task_checkbox": "must_remain_unchecked",
+  "commit": "UNCOMMITTED_WORKTREE"
+}

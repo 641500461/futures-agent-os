@@ -1,0 +1,9 @@
+{
+  "task": "V2-005",
+  "status": "IN_PROGRESS",
+  "implementation": "L1/L2 fill semantics including market/limit/stop, slippage, limits, depth consumption, trigger separation and explicit no-liquidity outcomes.",
+  "tests": ["tests/contract/test_v2_005_fill_model.py and test_v2_009_l2_model.py: 9 passed"],
+  "open_acceptance": ["Conservative same-bar ambiguity policy and complete frozen StrategySpec replay are not independently proven."],
+  "model": "gpt-5.6-sol",
+  "reasoning_effort": "xhigh"
+}

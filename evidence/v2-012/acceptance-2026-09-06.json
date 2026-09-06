@@ -1,0 +1,7 @@
+{
+  "task": "V2-012",
+  "status": "PASS",
+  "implementation": {"executor": "Codex", "model": "gpt-5.6-sol", "reasoning_effort": "xhigh"},
+  "verification": {"command": "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v2_001_accept_20260906?host=/tmp UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/integration/test_v0_014_autonomy_postgresql.py -k manual_application_commits -q", "result": "1 passed"},
+  "acceptance": ["request/grant/reject/expire/consume", "single-use PLAN_APPROVAL Basis", "MANUAL_TEST shadow", "atomic report", "offline deterministic replay"]
+}

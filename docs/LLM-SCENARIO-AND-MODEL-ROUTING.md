@@ -272,4 +272,4 @@ MVP-R-003 Discovery 可以选择一个明确记录的产品模型完成最小 sm
 - ChatGPT/Codex 订阅运行的 usage、模型身份和保留 Evidence 是否满足正式 holdout 审计；
 - V3 风险相关 LLM workload 的独立验收人与 activation 流程。
 
-在这些事项确认前，本文是设计基线，不是模型启用授权，也不改变 `MVP-R-002` 的 `IN_PROGRESS` 状态或 `V1-011` Gate。
+在这些事项确认前，本文是设计基线，不是模型启用授权。开发统筹/worker/reviewer 属代码开发平面，不映射产品运行时 Main workload；产品运行时模型迁移必须建立新的 ModelProfile revision 并完成资格评测、预注册、shadow 与 activation，历史 Evidence 不回写。

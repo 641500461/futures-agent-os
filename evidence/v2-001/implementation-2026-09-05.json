@@ -1,0 +1,47 @@
+{
+  "task": "V2-001",
+  "status": "IN_PROGRESS",
+  "implementation": {
+    "executor": "Codex",
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "xhigh"
+  },
+  "scope": "Versioned V2 trade, authorization, protection, risk, execution and accounting contracts with immutable metadata, owner-facing exports, cross-object references and fail-closed illegal-state validation.",
+  "acceptance": {
+    "schema_version": true,
+    "version": true,
+    "typed_ids": true,
+    "timestamps": true,
+    "source_references": true,
+    "cross_object_references": true,
+    "illegal_state_tests": true
+  },
+  "tests": [
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest --import-mode=importlib tests/contract/test_v2_001_trade_contracts.py tests/contract/test_v2_002_risk_engine.py tests/contract/test_v2_005_fill_model.py tests/contract/test_v2_006_accounting.py tests/contract/test_v2_007_protection.py tests/contract/test_v2_009_l2_model.py tests/contract/test_v2_010_replay.py tests/contract/test_v2_011_fault_injection.py -q",
+      "result": "25 passed"
+    },
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest --import-mode=importlib -q",
+      "result": "all collected tests passed; 42 skipped"
+    },
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run mypy src/futures_agent_os/decision/trade_contracts.py src/futures_agent_os/decision/autonomy_contracts.py src/futures_agent_os/execution_simulation/protection.py",
+      "result": "Success: no issues found"
+    },
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run ruff check src/futures_agent_os/decision/trade_contracts.py src/futures_agent_os/decision/autonomy_contracts.py src/futures_agent_os/execution_simulation/protection.py src/futures_agent_os/portfolio_risk/contracts.py src/futures_agent_os/execution_simulation/contracts.py src/futures_agent_os/accounting_settlement/contracts.py tests/contract/test_v2_001_trade_contracts.py",
+      "result": "All checks passed"
+    }
+  ],
+  "review": {
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "status": "PENDING_INDEPENDENT_REVIEW"
+  },
+  "notes": [
+    "Definitions remain re-exported from decision for compatibility while owner-facing context modules are available.",
+    "Normal pytest collection is unavailable in this checkout because tests/contract/test_v2_002_risk_budget_ledger.py imports the tests package; importlib mode passes the full suite.",
+    "No commit or push performed."
+  ]
+}

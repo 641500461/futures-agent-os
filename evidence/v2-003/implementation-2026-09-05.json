@@ -1,0 +1,40 @@
+{
+  "task": "V2-003",
+  "status": "IN_PROGRESS",
+  "implementation": {
+    "model": "NOT_EXPOSED",
+    "reasoning_effort": "NOT_EXPOSED",
+    "executor": "Codex",
+    "changes": [
+      "RiskConstitution validates immutable limits, dimension-specific concentration ceilings, margin headroom and daily drawdown settings.",
+      "RiskEngine evaluates data quality, instrument/direction/portfolio concentration, daily drawdown, margin buffer, delivery horizon and kill switch with fail-closed behavior.",
+      "RiskDecision carries the Risk Constitution rule-set version and a stable rule code; compatibility aliases accept account margin and exposure fact names.",
+      "RiskRuleCode centralizes stable machine-readable outcomes."
+    ]
+  },
+  "acceptance_evidence": {
+    "commands": [
+      "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v2_002_risk_engine.py tests/contract/test_v2_003_risk_constitution.py tests/contract/test_v2_008_submit_trade_plan.py",
+      "UV_CACHE_DIR=/tmp/fao-uv-cache uv run mypy src/futures_agent_os",
+      "UV_CACHE_DIR=/tmp/fao-uv-cache uv run ruff format --check src/futures_agent_os/portfolio_risk/risk_constitution.py src/futures_agent_os/decision/trade_contracts.py tests/contract/test_v2_003_risk_constitution.py",
+      "UV_CACHE_DIR=/tmp/fao-uv-cache uv run ruff check src/futures_agent_os/portfolio_risk/risk_constitution.py src/futures_agent_os/decision/trade_contracts.py tests/contract/test_v2_003_risk_constitution.py"
+    ],
+    "results": {
+      "contract_tests": "14 passed",
+      "mypy": "123 source files, no issues",
+      "ruff": "format and lint passed"
+    },
+    "coverage": [
+      "Missing required facts fail closed with stable codes.",
+      "Dimension concentration and daily drawdown limits reject breaches.",
+      "Existing margin is included in buffered headroom.",
+      "Near-delivery and invalid delivery facts reject.",
+      "Stable code and Constitution version are present on every RiskEngine decision.",
+      "Property test covers numeric representations and code stability."
+    ]
+  },
+  "remaining": [
+    "Independent Sol/high review and full V2 Exit evidence are still required.",
+    "Persistent database transaction/recovery remains a later V2 task concern."
+  ]
+}

@@ -29,9 +29,35 @@ from .autonomy_contracts import (
     ReceiptRegistry,
     ReceiptIssuanceRegistry,
     SimulationAutonomyMandate,
+    V2_AUTHORIZATION_SCHEMA,
 )
+from .trade_contracts import (
+    ContractReference,
+    ContractReferenceGraph,
+    ExecutionPlan,
+    Fill,
+    Order,
+    OrderStatus,
+    ProtectionIntent,
+    ProtectionMandate,
+    RiskDecision,
+    RiskDecisionOutcome,
+    StopPolicy,
+    TradeAction,
+    TradeDirection,
+    TradePlan,
+    TradePlanStatus,
+    PositionLot,
+    LedgerEntry,
+    Settlement,
+    V2_CONTRACT_SCHEMA,
+)
+from .submission import SubmissionResult, TradePlanSubmitter
+from .manual_test import ManualApprovalCommandResult, ManualTestApprovalStore, ManualTestContext, require_manual_test
 
 __all__ = [
+    "ContractReference",
+    "ContractReferenceGraph",
     "AuthorizationBasis",
     "BasisIssuanceRegistry",
     "BasisStatus",
@@ -60,4 +86,49 @@ __all__ = [
     "ReceiptRegistry",
     "ReceiptIssuanceRegistry",
     "SimulationAutonomyMandate",
+    "V2_AUTHORIZATION_SCHEMA",
+    "ProtectionIntent",
+    "TradeAction",
+    "TradeDirection",
+    "TradePlan",
+    "TradePlanStatus",
+    "RiskDecision",
+    "RiskDecisionOutcome",
+    "ProtectionMandate",
+    "ExecutionPlan",
+    "StopPolicy",
+    "Order",
+    "OrderStatus",
+    "Fill",
+    "PositionLot",
+    "LedgerEntry",
+    "Settlement",
+    "V2_CONTRACT_SCHEMA",
+    "SubmissionResult",
+    "SubmitTradePlanResult",
+    "SubmitTradePlanService",
+    "submit_trade_plan",
+    "TradePlanSubmitter",
+    "ManualTestContext",
+    "ManualApprovalCommandResult",
+    "ManualTestApprovalStore",
+    "require_manual_test",
+    "ManualTestApplication",
+    "replay_manual_episode",
 ]
+
+
+def __getattr__(name: str):
+    if name in {"SubmitTradePlanResult", "SubmitTradePlanService", "submit_trade_plan"}:
+        from .submit_trade_plan import SubmitTradePlanResult, SubmitTradePlanService, submit_trade_plan
+
+        return {
+            "SubmitTradePlanResult": SubmitTradePlanResult,
+            "SubmitTradePlanService": SubmitTradePlanService,
+            "submit_trade_plan": submit_trade_plan,
+        }[name]
+    if name in {"ManualTestApplication", "replay_manual_episode"}:
+        from .manual_application import ManualTestApplication, replay_manual_episode
+
+        return ManualTestApplication if name == "ManualTestApplication" else replay_manual_episode
+    raise AttributeError(name)

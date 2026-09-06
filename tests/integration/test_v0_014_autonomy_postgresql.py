@@ -14,6 +14,7 @@ from sqlalchemy import create_engine, text
 from sqlalchemy.exc import DBAPIError
 
 from futures_agent_os.decision.postgres_repository import PostgresAutonomyRepository
+from futures_agent_os.shared_kernel import RecordedAt
 
 
 DATABASE_URL = os.environ.get("FAO_DATABASE_URL")
@@ -522,6 +523,11 @@ def test_runtime_manual_chain_is_single_effect_and_all_scope_fields_are_authorit
             )
             == receipt
         )
+        # Persist the issued receipt and held reservation before opening
+        # the transaction whose coupled consumption is being fault-tested.
+        transaction.commit()
+        connection.close()
+        connection, transaction = _runtime(engine)
         connection.execute(text("SET LOCAL ROLE NONE"))
         connection.execute(
             text("UPDATE fao.autonomy_health_permit SET permits=FALSE WHERE account_id=:account"), {"account": account}
@@ -534,9 +540,33 @@ def test_runtime_manual_chain_is_single_effect_and_all_scope_fields_are_authorit
         )
         connection.execute(text("SET LOCAL ROLE fao_runtime"))
         assert repo.consume_receipt(connection, receipt_id=receipt, nonce=nonce, now=_now())
-        assert not repo.consume_receipt(connection, receipt_id=receipt, nonce=nonce, now=_now())
-        assert repo.consume_risk_budget_reservation(
-            connection, reservation_id=reservation, receipt_id=receipt, now=_now()
+        # The two owner commands participate in the caller-owned transaction:
+        # a later reservation failure must roll back the preceding receipt
+        # consumption rather than leave the pair split.
+        assert not repo.consume_risk_budget_reservation(
+            connection, reservation_id=reservation, receipt_id=uuid4(), now=_now()
+        )
+        transaction.rollback()
+        with engine.connect() as check:
+            assert (
+                check.execute(
+                    text("SELECT receipt_status FROM fao.autonomy_gate_receipt WHERE receipt_id=:id"),
+                    {"id": receipt},
+                ).scalar_one()
+                == "ISSUED"
+            )
+            assert (
+                check.execute(
+                    text("SELECT reservation_status FROM fao.risk_budget_reservation WHERE reservation_id=:id"),
+                    {"id": reservation},
+                ).scalar_one()
+                == "HELD"
+            )
+        connection.close()
+        connection, transaction = _runtime(engine)
+        repo = PostgresAutonomyRepository()
+        assert repo.consume_receipt_and_reservation(
+            connection, receipt_id=receipt, reservation_id=reservation, nonce=nonce, now=_now()
         )
         assert connection.execute(
             text("SELECT risk_dimensions FROM fao.risk_budget_reservation WHERE reservation_id=:id"),
@@ -1157,3 +1187,555 @@ def test_trade_episode_projection_concurrent_replay_is_idempotent_and_conflicts_
             )
         )
     assert sorted(outcomes) == [False, True]
+
+
+def test_durable_execution_facts_are_atomic_and_idempotent() -> None:
+    engine = create_engine(DATABASE_URL)
+    order_id, ledger_id, correlation = uuid4(), uuid4(), uuid4()
+    repo = PostgresAutonomyRepository()
+    with engine.connect() as connection:
+        transaction = connection.begin()
+        assert repo.append_execution_facts(
+            connection,
+            order_id=order_id,
+            order_payload={"plan_id": str(correlation), "quantity": "1", "instrument": "I"},
+            ledger_id=ledger_id,
+            ledger_payload={"plan_id": str(correlation), "order_id": str(order_id), "quantity": "1"},
+            correlation_id=correlation,
+            now=_now(),
+        )
+        transaction.rollback()
+        assert (
+            connection.execute(
+                text("SELECT count(*) FROM fao.domain_event WHERE aggregate_id IN (:order,:ledger)"),
+                {"order": order_id, "ledger": ledger_id},
+            ).scalar_one()
+            == 0
+        )
+        connection.rollback()
+        transaction = connection.begin()
+        assert repo.append_execution_facts(
+            connection,
+            order_id=order_id,
+            order_payload={"plan_id": str(correlation), "quantity": "1", "instrument": "I"},
+            ledger_id=ledger_id,
+            ledger_payload={"plan_id": str(correlation), "order_id": str(order_id), "quantity": "1"},
+            correlation_id=correlation,
+            now=_now(),
+        )
+        assert repo.append_execution_facts(
+            connection,
+            order_id=order_id,
+            order_payload={"plan_id": str(correlation), "quantity": "1", "instrument": "I"},
+            ledger_id=ledger_id,
+            ledger_payload={"plan_id": str(correlation), "order_id": str(order_id), "quantity": "1"},
+            correlation_id=correlation,
+            now=_now(),
+        )
+        transaction.commit()
+        assert (
+            connection.execute(
+                text("SELECT count(*) FROM fao.domain_event WHERE aggregate_id IN (:order,:ledger)"),
+                {"order": order_id, "ledger": ledger_id},
+            ).scalar_one()
+            == 2
+        )
+
+
+def _durable_submit_fixture(engine: object) -> tuple[object, object, object, object, object, object, object]:
+    """Create one DB-backed AUTONOMOUS_SIMULATION plan and its authorities."""
+    from futures_agent_os.decision import (
+        ApprovalAction,
+        AutonomyMode,
+        AutonomyModeBinding,
+        BindingStatus,
+        MandateScope,
+        MandateStatus,
+        ProtectionIntent,
+        SimulationAutonomyMandate,
+        TradeAction,
+        TradeDirection,
+        TradePlan,
+    )
+    from futures_agent_os.portfolio_risk import RiskConstitution
+    from futures_agent_os.shared_kernel import EntityId, RecordedAt, canonical_sha256
+
+    now_dt = datetime.now(UTC)
+    now = RecordedAt.from_datetime(now_dt)
+    created = RecordedAt.from_datetime(now_dt - timedelta(minutes=1))
+    expires = RecordedAt.from_datetime(now_dt + timedelta(minutes=20))
+    account = EntityId.new("simulation_account")
+    plan = TradePlan(
+        EntityId.new("trade_plan"),
+        account,
+        "SHFE_AG_2601",
+        "strategy:test",
+        TradeAction.OPEN,
+        TradeDirection.LONG,
+        Decimal("2"),
+        Decimal("100"),
+        ProtectionIntent(Decimal("95"), Decimal("50"), created_at=created),
+        "support holds",
+        "support breaks",
+        (canonical_sha256({"evidence": "fixture"}),),
+        "snapshot:v2",
+        expires,
+        created_at=created,
+    )
+    scope = MandateScope(
+        account,
+        ("SHFE_AG_2601",),
+        ("strategy:test",),
+        ("DAY",),
+        frozenset({ApprovalAction.OPEN}),
+        Decimal("20"),
+        "risk://v2",
+        "notify://v2",
+        "escalate://v2",
+    )
+    mandate = SimulationAutonomyMandate(
+        EntityId.new("mandate"), 1, MandateStatus.ACTIVE, scope, expires, created, "user:owner"
+    )
+    binding = AutonomyModeBinding(
+        EntityId.new("mode_binding"),
+        1,
+        AutonomyMode.AUTONOMOUS_SIMULATION,
+        BindingStatus.ACTIVE,
+        account,
+        mandate.mandate_id,
+        1,
+        canonical_sha256({"run": "fixture"}),
+        expires,
+        created,
+        scope.sha256,
+        "scan://v2",
+        "universe://v2",
+        "qualified://v2",
+        "INITIAL_BINDING",
+        "user:owner",
+        "evidence://binding",
+    )
+    constitution = RiskConstitution(
+        "risk://v2",
+        1,
+        canonical_sha256({"constitution": "fixture"}),
+        Decimal("50"),
+        Decimal("1000"),
+        Decimal("20"),
+        Decimal("0.1"),
+    )
+    # SQL's typed scope uses the UUID account value.  The domain scope hash is
+    # still carried unchanged, so every cross-fact hash binding remains exact.
+    raw_scope = {
+        "account_id": str(account.value),
+        "instruments": ["SHFE_AG_2601"],
+        "strategies": ["strategy:test"],
+        "sessions": ["DAY"],
+        "actions": ["OPEN"],
+        "quantity_ceiling": "20",
+    }
+    with engine.begin() as connection:  # type: ignore[attr-defined]
+        connection.execute(
+            text("""INSERT INTO fao.simulation_autonomy_mandate
+                (mandate_id,version,status,simulation_account_id,environment,scope,scope_sha256,
+                 risk_policy_ref,notification_policy_ref,escalation_policy_ref,expires_at,recorded_by,authority_sha256,created_at)
+                VALUES (:mandate,1,'ACTIVE',:account,'test',CAST(:scope AS jsonb),:scope_hash,
+                        'risk://v2','notify://v2','escalate://v2',:expires,'user:owner',:authority,:created)"""),
+            {
+                "mandate": mandate.mandate_id.value,
+                "account": account.value,
+                "scope": json.dumps(raw_scope),
+                "scope_hash": scope.sha256,
+                "expires": expires.value,
+                "authority": mandate.authorization_hash,
+                "created": created.value,
+            },
+        )
+        connection.execute(
+            text("""INSERT INTO fao.autonomy_mode_binding
+                (binding_id,version,mode,binding_status,account_id,mandate_id,mandate_version,run_versions_sha256,
+                 binding_sha256,scope_snapshot,scope_sha256,qualified_artifact_ref,expires_at,recorded_at,
+                 scan_policy_ref,universe_policy_ref,transition_reason,transition_actor,evidence_ref)
+                VALUES (:binding,1,'AUTONOMOUS_SIMULATION','ACTIVE',:account,:mandate,1,:runs,:binding_hash,
+                        CAST(:scope AS jsonb),:scope_hash,'qualified://v2',:expires,:created,
+                        'scan://v2','universe://v2','INITIAL_BINDING','user:owner','evidence://binding')"""),
+            {
+                "binding": binding.binding_id.value,
+                "account": account.value,
+                "mandate": mandate.mandate_id.value,
+                "runs": binding.run_versions_hash,
+                "binding_hash": binding.binding_hash,
+                "scope": json.dumps(raw_scope),
+                "scope_hash": scope.sha256,
+                "expires": expires.value,
+                "created": created.value,
+            },
+        )
+        connection.execute(
+            text("""INSERT INTO fao.autonomy_health_permit
+                (account_id,environment_policy_ref,permits,valid_until_at)
+                VALUES (:account,'environment://simulation-only',TRUE,:expires)"""),
+            {"account": account.value, "expires": expires.value},
+        )
+        connection.execute(
+            text("""INSERT INTO fao.risk_budget_authority
+                (account_id,constitution_ref,constitution_version,constitution_sha256,ceiling)
+                VALUES (:account,:constitution,1,:constitution_hash,1000)"""),
+            {
+                "account": account.value,
+                "constitution": constitution.ref,
+                "constitution_hash": constitution.content_hash,
+            },
+        )
+    return plan, mandate, binding, constitution, now, expires, account
+
+
+@pytest.mark.parametrize("failure_stage", (None, "reservation", "receipt", "order", "ledger"))
+def test_manual_submit_is_atomic_and_recoverable(failure_stage: str | None) -> None:
+    """Exercise the real manual approval + submission transaction, not a callback."""
+    from futures_agent_os.decision import (
+        ApprovalAction,
+        ApprovalScope,
+        ExecutionOrigin,
+        PlanApproval,
+        PlanApprovalStatus,
+        SubmitTradePlanService,
+    )
+    from futures_agent_os.portfolio_risk import RiskBudgetLedger
+    from futures_agent_os.shared_kernel import EntityId, canonical_sha256
+
+    engine = create_engine(DATABASE_URL)
+    plan, _mandate, binding, constitution, now, expires, account = _durable_submit_fixture(engine)
+    approval = PlanApproval(
+        EntityId.new("plan_approval"),
+        1,
+        PlanApprovalStatus.REQUESTED,
+        plan.plan_id,
+        plan.version,
+        plan.plan_hash,
+        account,
+        ApprovalScope(
+            account,
+            (plan.instrument,),
+            (plan.strategy_ref,),
+            ("DAY",),
+            frozenset({ApprovalAction.OPEN}),
+            plan.quantity,
+            plan.created_at,
+            expires,
+        ),
+        EntityId.new("approval_token"),
+        "user:owner",
+        expires,
+        plan.created_at,
+    ).decide(PlanApprovalStatus.GRANTED, now, actor="user:owner")
+    scope_payload = {
+        "account_id": str(account.value),
+        "instruments": [plan.instrument],
+        "strategies": [plan.strategy_ref],
+        "sessions": ["DAY"],
+        "actions": ["OPEN"],
+        "quantity_ceiling": str(plan.quantity),
+        "window_start_at": plan.created_at.value.isoformat(),
+        "window_end_at": expires.value.isoformat(),
+    }
+    with engine.begin() as connection:
+        connection.execute(
+            text("""INSERT INTO fao.plan_approval
+            (approval_id,version,status,plan_id,plan_version,plan_sha256,approval_scope,
+             expires_at,requested_at,decided_at,decided_by,requested_by,approval_hash,
+             approval_token,scope_sha256,scope_account_id,allowed_actions,quantity_ceiling,
+             window_start_at,window_end_at)
+            VALUES (:id,2,'GRANTED',:plan,:version,:hash,CAST(:scope AS jsonb),
+                    :expiry,:created,:now,'user:owner','user:owner',:approval_hash,
+                    :token,:scope_hash,:account,'["OPEN"]'::jsonb,:quantity,:created,:expiry)"""),
+            {
+                "id": approval.approval_id.value,
+                "plan": plan.plan_id.value,
+                "version": plan.version,
+                "hash": plan.plan_hash,
+                "scope": json.dumps(scope_payload),
+                "expiry": expires.value,
+                "created": plan.created_at.value,
+                "now": now.value,
+                "approval_hash": approval.authorization_hash,
+                "token": approval.approval_token.value,
+                "scope_hash": approval.scope.scope_hash,
+                "account": account.value,
+                "quantity": plan.quantity,
+            },
+        )
+
+    class Repository(PostgresAutonomyRepository):
+        def reserve_risk_budget(self, connection, **kwargs):
+            return False if failure_stage == "reservation" else super().reserve_risk_budget(connection, **kwargs)
+
+        def issue_receipt(self, connection, **kwargs):
+            return None if failure_stage == "receipt" else super().issue_receipt(connection, **kwargs)
+
+        def append_execution_facts(self, connection, **kwargs):
+            if failure_stage == "order":
+                return False
+            if failure_stage == "ledger":
+                assert self.append_execution_fact(
+                    connection,
+                    aggregate_id=kwargs["order_id"],
+                    aggregate_type="Order",
+                    payload=kwargs["order_payload"],
+                    correlation_id=kwargs["correlation_id"],
+                    now=kwargs["now"],
+                )
+                return False
+            return super().append_execution_facts(connection, **kwargs)
+
+    def submit(connection, repository):
+        return SubmitTradePlanService(
+            constitution=constitution,
+            risk_ledger=RiskBudgetLedger(
+                constitution.max_single_loss, constitution.ref, constitution.version, constitution.content_hash
+            ),
+        )._submit_durable(
+            plan,
+            now=now,
+            execution_origin=ExecutionOrigin.MANUAL_TEST,
+            snapshot_hash=canonical_sha256({"snapshot": "manual-atomic"}),
+            snapshot_expires_at=expires,
+            run_versions_hash=binding.run_versions_hash,
+            session="DAY",
+            approval=approval,
+            approval_allowed=True,
+            durable_repository=repository,
+            durable_connection=connection,
+        )
+
+    # Use the configured local operator connection: it owns one transaction
+    # spanning supervisor approval consumption and runtime execution commands.
+    with engine.begin() as connection:
+        result = submit(connection, Repository())
+    with engine.connect() as connection:
+        status, consumer = connection.execute(
+            text("SELECT status,consumed_basis_id FROM fao.plan_approval WHERE approval_id=:id"),
+            {"id": approval.approval_id.value},
+        ).one()
+        counts = [
+            connection.execute(
+                text(f"SELECT count(*) FROM fao.{table} WHERE plan_id=:plan"), {"plan": plan.plan_id.value}
+            ).scalar_one()
+            for table in ("authorization_basis", "risk_budget_reservation", "autonomy_gate_receipt")
+        ]
+        event_count = connection.execute(
+            text("SELECT count(*) FROM fao.domain_event WHERE payload->>'plan_id'=:plan"), {"plan": str(plan.plan_id)}
+        ).scalar_one()
+    if failure_stage is not None:
+        assert result.outcome == "REJECTED"
+        assert status == "GRANTED" and consumer is None
+        assert counts == [0, 0, 0] and event_count == 0
+        # A rejected attempt must not burn authority, even if the caller committed.
+        with engine.begin() as connection:
+            result = submit(connection, PostgresAutonomyRepository())
+    assert result.outcome == "SUBMITTED", result.reason
+    assert result.order is not None and result.ledger is not None
+    if failure_stage is None:
+        assert status == "CONSUMED" and consumer == result.basis.basis_id.value
+        assert counts == [1, 1, 1] and event_count == 2
+    with engine.begin() as connection:
+        replay = submit(connection, PostgresAutonomyRepository())
+    assert replay.reason == "ORDER_ALREADY_CREATED"
+    assert replay.order == result.order and replay.ledger == result.ledger
+
+
+def test_submit_trade_plan_persists_full_chain_and_recovers_after_restart() -> None:
+    engine = create_engine(DATABASE_URL)
+    plan, mandate, binding, constitution, now, expires, _account = _durable_submit_fixture(engine)
+    from futures_agent_os.decision import ExecutionOrigin, SubmitTradePlanService
+    from futures_agent_os.portfolio_risk import RiskBudgetLedger, ReservationStatus
+    from futures_agent_os.shared_kernel import canonical_sha256
+
+    def new_service() -> SubmitTradePlanService:
+        return SubmitTradePlanService(
+            constitution=constitution,
+            risk_ledger=RiskBudgetLedger(
+                constitution.max_single_loss, constitution.ref, constitution.version, constitution.content_hash
+            ),
+        )
+
+    repository = PostgresAutonomyRepository()
+    connection, transaction = _runtime(engine)
+    try:
+        result = new_service()._submit_durable(
+            plan,
+            now=now,
+            execution_origin=ExecutionOrigin.AUTONOMOUS_AGENT,
+            snapshot_hash=canonical_sha256({"snapshot": "fixture"}),
+            snapshot_expires_at=expires,
+            run_versions_hash=binding.run_versions_hash,
+            session="DAY",
+            mandate=mandate,
+            binding=binding,
+            durable_repository=repository,
+            durable_connection=connection,
+        )
+        assert result.outcome == "SUBMITTED"
+        assert result.order is not None and result.ledger is not None
+        assert result.reservation is not None and result.reservation.status is ReservationStatus.CONSUMED
+        order_id, ledger_id = result.order.order_id.value, result.ledger.entry_id.value
+        transaction.commit()
+    finally:
+        connection.close()
+
+    with engine.connect() as connection:
+        assert (
+            connection.execute(
+                text("""SELECT count(*) FROM fao.authorization_basis b
+                JOIN fao.risk_budget_reservation r ON r.basis_id=b.basis_id
+                JOIN fao.autonomy_gate_receipt x ON x.basis_id=b.basis_id
+                WHERE b.plan_id=:plan AND r.reservation_status='CONSUMED' AND x.receipt_status='CONSUMED'"""),
+                {"plan": plan.plan_id.value},
+            ).scalar_one()
+            == 1
+        )
+        assert (
+            connection.execute(
+                text("""SELECT count(*) FROM fao.domain_event
+                WHERE aggregate_type IN ('Order','LedgerEntry') AND aggregate_id IN (:order,:ledger)"""),
+                {"order": order_id, "ledger": ledger_id},
+            ).scalar_one()
+            == 2
+        )
+
+    # A new service and connection represent a process restart.  The durable
+    # projection is returned before current-time validation and creates no new
+    # business effect.
+    connection, transaction = _runtime(engine)
+    try:
+        replay = new_service()._submit_durable(
+            plan,
+            now=RecordedAt.from_datetime(now.value + timedelta(minutes=1)),
+            execution_origin=ExecutionOrigin.AUTONOMOUS_AGENT,
+            snapshot_hash=canonical_sha256({"snapshot": "different-after-restart"}),
+            snapshot_expires_at=expires,
+            run_versions_hash=binding.run_versions_hash,
+            session="DAY",
+            mandate=mandate,
+            binding=binding,
+            durable_repository=repository,
+            durable_connection=connection,
+        )
+        assert replay.outcome == "SUBMITTED" and replay.reason == "ORDER_ALREADY_CREATED"
+        assert replay.order is not None and replay.order.order_id.value == order_id
+        assert replay.ledger is not None and replay.ledger.entry_id.value == ledger_id
+        transaction.rollback()
+    finally:
+        connection.close()
+    with engine.connect() as connection:
+        assert (
+            connection.execute(
+                text(
+                    "SELECT count(*) FROM fao.domain_event WHERE aggregate_type IN ('Order','LedgerEntry') AND payload->>'plan_id'=:plan"
+                ),
+                {"plan": str(plan.plan_id)},
+            ).scalar_one()
+            == 2
+        )
+
+
+@pytest.mark.parametrize("failure_stage", ("reservation", "receipt", "order", "ledger"))
+def test_submit_trade_plan_rolls_back_every_durable_stage(failure_stage: str) -> None:
+    engine = create_engine(DATABASE_URL)
+    plan, mandate, binding, constitution, now, expires, _account = _durable_submit_fixture(engine)
+    from futures_agent_os.decision import ExecutionOrigin, SubmitTradePlanService
+    from futures_agent_os.portfolio_risk import RiskBudgetLedger
+    from futures_agent_os.shared_kernel import canonical_sha256
+
+    class FailingRepository(PostgresAutonomyRepository):
+        def reserve_risk_budget(self, connection, **kwargs):
+            if failure_stage == "reservation":
+                return False
+            return super().reserve_risk_budget(connection, **kwargs)
+
+        def issue_receipt(self, connection, **kwargs):
+            if failure_stage == "receipt":
+                return None
+            return super().issue_receipt(connection, **kwargs)
+
+        def append_execution_facts(self, connection, **kwargs):
+            if failure_stage == "order":
+                return False
+            if failure_stage == "ledger":
+                assert self.append_execution_fact(
+                    connection,
+                    aggregate_id=kwargs["order_id"],
+                    aggregate_type="Order",
+                    payload=kwargs["order_payload"],
+                    correlation_id=kwargs["correlation_id"],
+                    now=kwargs["now"],
+                )
+                return False
+            return super().append_execution_facts(connection, **kwargs)
+
+    connection, transaction = _runtime(engine)
+    try:
+        result = SubmitTradePlanService(
+            constitution=constitution,
+            risk_ledger=RiskBudgetLedger(
+                constitution.max_single_loss, constitution.ref, constitution.version, constitution.content_hash
+            ),
+        )._submit_durable(
+            plan,
+            now=now,
+            execution_origin=ExecutionOrigin.AUTONOMOUS_AGENT,
+            snapshot_hash=canonical_sha256({"snapshot": "failure"}),
+            snapshot_expires_at=expires,
+            run_versions_hash=binding.run_versions_hash,
+            session="DAY",
+            mandate=mandate,
+            binding=binding,
+            durable_repository=FailingRepository(),
+            durable_connection=connection,
+        )
+        assert result.outcome == "REJECTED" and result.reason == "DURABLE_SUBMISSION_PERSISTENCE_REJECTED"
+        # The caller can safely commit/continue: the repository savepoint
+        # removed every partial authorization and execution fact.
+        transaction.commit()
+    finally:
+        connection.close()
+    with engine.connect() as connection:
+        for table in ("authorization_basis", "risk_budget_reservation", "autonomy_gate_receipt"):
+            assert (
+                connection.execute(
+                    text(f"SELECT count(*) FROM fao.{table} WHERE plan_id=:plan"), {"plan": plan.plan_id.value}
+                ).scalar_one()
+                == 0
+            )
+        assert (
+            connection.execute(
+                text("SELECT count(*) FROM fao.domain_event WHERE payload->>'plan_id'=:plan"),
+                {"plan": str(plan.plan_id)},
+            ).scalar_one()
+            == 0
+        )
+
+
+def test_manual_application_commits_shadow_episode_and_replays_without_llm() -> None:
+    """The public MANUAL_TEST application uses the durable golden chain."""
+    from futures_agent_os.decision import PlanApprovalStatus
+    from futures_agent_os.decision.manual_application import ManualTestApplication
+    from futures_agent_os.execution_simulation import L1Bar
+
+    engine = create_engine(DATABASE_URL)
+    plan, _mandate, _binding, constitution, now, _expires, _account = _durable_submit_fixture(engine)
+    app = ManualTestApplication(engine, constitution)
+    approval = app.request(
+        plan,
+        open_bar=L1Bar(Decimal("100"), Decimal("100"), Decimal("100"), Decimal("100"), Decimal("2")),
+        exit_bar=L1Bar(Decimal("94"), Decimal("94"), Decimal("94"), Decimal("94"), Decimal("2")),
+        initial_cash=Decimal("1000"),
+        session="DAY",
+        actor="user:owner",
+        now=now,
+    )
+    approval = app.decide(approval.approval_id, PlanApprovalStatus.GRANTED, actor="user:owner", now=now)
+    report = app.run(approval.approval_id, now=now)
+    assert report["status"] == "SHADOW_COMPLETED"
+    assert app.run(approval.approval_id, now=now) == report
+    assert app.report(approval.approval_id) == report

@@ -1,0 +1,16 @@
+{
+  "schema_version": "v2-001-postgres-transaction.v1",
+  "task": "V2-001",
+  "status": "IN_PROGRESS",
+  "database": "fao_v2_001_live_20260906",
+  "migration": "alembic upgrade head",
+  "implementation_executor": "Codex",
+  "implementation_model": "gpt-5.6-sol",
+  "implementation_reasoning_effort": "xhigh",
+  "tests": {
+    "command": "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v2_001_live_20260906?host=/tmp uv run pytest tests/integration/test_v0_014_autonomy_postgresql.py -q -rs",
+    "result": "19 passed; combined repository consumption entry exercised"
+  },
+  "scope": "Existing V0-014 SQL owner functions and repository paths for approval, reservation, receipt and replay behavior. Added PostgresAutonomyRepository.consume_receipt_and_reservation as a caller-owned composition boundary.",
+  "acceptance": "V2-001 remains incomplete; this proves the existing PostgreSQL primitives execute after migration, not the full V2 cross-module golden chain."
+}

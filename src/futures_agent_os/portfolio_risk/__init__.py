@@ -7,6 +7,11 @@ from .reservation_contracts import (
     RiskBudgetLedger,
     RiskBudgetReservation,
 )
+from .risk_constitution import RiskConstitution, RiskEngine, RiskRuleCode
+
+# Public owner exports for V2 risk contracts.  Definitions remain re-exported
+# from ``decision`` for compatibility with the original V2-001 API.
+from .contracts import ProtectionMandate, RiskDecision, RiskDecisionOutcome
 
 __all__ = [
     "ReservationAction",
@@ -14,4 +19,10 @@ __all__ = [
     "ReservationStatus",
     "RiskBudgetLedger",
     "RiskBudgetReservation",
+    "RiskConstitution",
+    "RiskEngine",
+    "RiskRuleCode",
+    "RiskDecision",
+    "RiskDecisionOutcome",
+    "ProtectionMandate",
 ]

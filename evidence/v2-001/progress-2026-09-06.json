@@ -1,0 +1,14 @@
+{
+  "schema_version": "v2-001-progress.v1",
+  "task": "V2-001",
+  "status": "IN_PROGRESS",
+  "change": "TradePlan now rejects expires_at at or before created_at; hydrate replay hash stability is covered by contract test. ContractReferenceGraph now retains and resolves the registered fact object after version/hash verification; tampered references fail closed. Added contract coverage that owner-facing canonical types resolve from their bounded-context modules. Added require_fact(entity_id, version, content_hash) API with namespace and mismatch rejection coverage. Exported ContractReference and ContractReferenceGraph from the public decision surface.",
+  "implementation_executor": "Codex",
+  "implementation_model": "gpt-5.6-sol",
+  "implementation_reasoning_effort": "xhigh",
+  "tests": {
+    "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v2_001_trade_contracts.py -q",
+    "result": "9 passed; ruff clean"
+  },
+  "acceptance": "Not proven; remaining reference binding, atomic consumption, and owner canonical definition blockers remain."
+}

@@ -1,0 +1,27 @@
+{
+  "task": "V2-009",
+  "status": "SUPERSEDED",
+  "implementation": {
+    "executor": "Codex",
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "xhigh",
+    "files": [
+      "src/futures_agent_os/execution_simulation/engine.py",
+      "src/futures_agent_os/execution_simulation/fill_model.py",
+      "src/futures_agent_os/execution_simulation/l2_model.py",
+      "tests/contract/test_v2_009_engine.py",
+      "tests/contract/test_v2_009_l2_model.py"
+    ]
+  },
+  "verified": {
+    "commands": [
+      "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v2_009_engine.py tests/contract/test_v2_009_l2_model.py"
+    ],
+    "result": "4 passed"
+  },
+  "scope_notes": [
+    "L1 and L2 deterministic fill primitives and a shared simulation engine are verified for the covered fixtures.",
+    "Shared backtest/accounting interfaces, frozen StrategySpec fixture replay, and the full V1 replay matrix remain open."
+  ],
+  "review": {"model": "gpt-5.6-sol", "reasoning_effort": "high", "status": "PENDING"}
+}

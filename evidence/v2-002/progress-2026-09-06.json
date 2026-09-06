@@ -1,0 +1,14 @@
+{
+  "schema_version": "v2-002-progress.v1",
+  "task": "V2-002",
+  "status": "IN_PROGRESS",
+  "change": "Added retryability coverage for coupled reservation consumption: failed commit leaves reservation HELD and a later successful commit consumes it.",
+  "implementation_executor": "Codex",
+  "implementation_model": "gpt-5.6-sol",
+  "implementation_reasoning_effort": "xhigh",
+  "tests": {
+    "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v2_002_risk_budget_ledger.py -q",
+    "result": "5 passed"
+  },
+  "acceptance": "Not proven; durable database transaction and full worst-case-loss property coverage remain outstanding."
+}

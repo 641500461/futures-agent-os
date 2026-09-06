@@ -1,0 +1,9 @@
+{
+  "task": "V2-004",
+  "status": "IN_PROGRESS",
+  "implementation": "Order state machine, idempotent commands, strict event sequencing, cancel/fill race handling, and file-backed command recovery.",
+  "tests": ["tests/contract/test_v2_004_order_processor.py: 5 passed"],
+  "open_acceptance": ["Production durable inbox/outbox transaction is not proven."],
+  "model": "gpt-5.6-sol",
+  "reasoning_effort": "xhigh"
+}

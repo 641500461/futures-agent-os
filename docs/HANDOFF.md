@@ -1,11 +1,41 @@
 # 跨对话交接
 
+## 2026-09-06 V2 收口状态（当前权威）
+
+V2-001～V2-012 已在 `docs/ROADMAP.md` 全部标记 `COMPLETE`。本轮新增：`ManualTestApplication` 的 MANUAL_TEST PostgreSQL 单事务入口（授权消费→风险→Receipt→Order→成交→保护→结算→报告），V1 PIT ReplayEpisodeCandidate→L2 桥接，linked trade-episode 审计与逐账户重放，以及文件持久化 writer lock/reload 和子进程崩溃恢复。可复现验证：`UV_CACHE_DIR=/tmp/fao-uv-cache make check`（578 contract、9 property、2 schema、1 unit，ruff/mypy/secret scan/health 全绿）；隔离 PostgreSQL `fao_v2_001_accept_20260906` 的 `tests/integration/test_v0_014_autonomy_postgresql.py` 31 项全通过。实现模型为 `gpt-5.6-sol/xhigh`；统筹整合为当前 Codex 会话。聚合 Evidence：[`evidence/v2-aggregate-acceptance-2026-09-06.json`](../evidence/v2-aggregate-acceptance-2026-09-06.json)。
+
+V2-012 当前实现：shadow 报告摘要与 COMPLETED 状态原子提交；报告可离线重放并逐一校验成交、保护、退出、结算 ID 与现金。该历史工作点已被本节顶部的 V2 COMPLETE 状态取代。
+
+2026-09-06 补充：`submit_trade_plan` 已接入真实 PostgreSQL 单事务黄金链；公开 API 不暴露数据库连接或 repository，内部适配器由应用层持有。该历史工作点已被本节顶部的 V2 COMPLETE 状态取代。
+
+2026-09-06 补充：V2-009 现包含从 V1 MVP-R PIT ReplayEpisodeCandidate 到 V2 L2 order/fill/account 的真实桥接；V2-010 现包含从 ManualShadowReport 自动生成 linked audit episode 并重启 replay 的生产形状适配器。旧的“未证明”描述均为历史记录。
+
+## V2 历史实现限制（已被 2026-09-06 COMPLETE 状态取代）
+
+V2-001 已完成：schema/version/ID/时间/来源、引用图和 hydrate 实现通过独立复核；owner-facing bounded-context canonical surfaces 已建立并有模块归属测试。
+
+（历史）V2-002～V2-012 的基础切片阶段曾存在未完成项；这些限制已由顶部的完整 Acceptance 和最终门禁取代。
+
+最近已完成的完整门禁：`UV_CACHE_DIR=/tmp/fao-uv-cache make check`，519 contract、9 property、2 schema、1 unit 通过，ruff/mypy/secret scan/health 通过。此后风险规则与持久化工作包正在修改文件，该结果只代表上一个验证点。工作包实际模型为 gpt-5.6-sol/xhigh；未完成独立版本 Exit 复核。
+
+上述“当前待收敛”结论属于旧状态，在本次 V2 收口后不再适用。
+
+本次状态校准（历史）：当时 V2-008～V2-012 尚未完成；随后已完成并在顶部记录权威状态。
+
+2026-09-06 补充（历史）：MANUAL_TEST 授权持久化重放已逐字段校验消费参数；后续 V2 收口已覆盖完整 Acceptance。
+
 文档版本：`3.0-proposed`<br>
-最后更新：2026-09-04
+最后更新：2026-09-06
 当前阶段：V1 自主研究与机会雷达
 最近完成：`V1-010` 可重放研究工具、基础验证与 Catalog 1.5 Critic 垂直链
 当前开发任务：`V1-013` 已完成独立验收。MVP 验证阶段已关闭，结论为 `MVP_ACCEPTED`；正式 MVP-R eval v1/v2 的失败结论保持原样，但不再阻塞 Roadmap。
-建议下一步：完成 `V1-013` 独立验收后进入后续 Roadmap 规划；不要启动 formal eval v3、v2 holdout/shadow，也不要解锁任何交易能力。v1/v2 历史失败均不得修补、覆盖或重跑为成功。
+建议下一步：V2 已完成，继续工作应进入 V3 或经用户授权的后续任务；研究/模拟边界仍保持不变。v1/v2 历史失败均不得修补、覆盖或重跑为成功。
+
+（历史）2026-09-06 早期仅 V2-001 完成；随后 V2-002～V2-012 已全部完成，权威状态见本文顶部。
+
+（历史）2026-09-06 早期 aggregate audit 曾记录 V2-008～V2-012 未证明；该记录已被最终 aggregate acceptance 取代。
+
+开发模型路由（2026-09-05）：复杂任务由 GPT-6 Astra 统筹，明确的常规实现默认由 GPT-5.6 Sol 执行；机械任务可由 Luna 执行。GPT-6 仅在需求/Acceptance 歧义、跨模块冲突、一次返工仍未解决或关键验收反复失败时接管。产品运行时 ModelProfile 不因该开发路由自动改变。
 
 ## V1-012 当前进展（2026-09-04）
 

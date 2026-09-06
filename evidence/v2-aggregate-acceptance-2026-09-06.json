@@ -1,0 +1,21 @@
+{
+  "version": "V2",
+  "status": "PASS",
+  "tasks": ["V2-001", "V2-002", "V2-003", "V2-004", "V2-005", "V2-006", "V2-007", "V2-008", "V2-009", "V2-010", "V2-011", "V2-012"],
+  "implementation_executor": "Codex",
+  "implementation_model": "gpt-5.6-sol",
+  "implementation_reasoning_effort": "xhigh",
+  "checks": {
+    "make_check": "578 contract, 9 property, 2 schema, 1 unit passed; ruff/mypy/secret scan/health passed",
+    "postgresql": "31 integration tests passed on isolated fao_v2_001_accept_20260906",
+    "git_diff_check": "passed"
+  },
+  "exit": [
+    "fixed deterministic StrategySpec replay",
+    "new risk has reservation, receipt and risk decision",
+    "manual authorization is single-use and transactional",
+    "linked audit and account replay agree",
+    "recovery has no duplicate command effect"
+  ],
+  "review": {"executor": "independent Codex reviewer", "model": "gpt-5.6-sol", "reasoning_effort": "high", "status": "PASS", "focused_tests": "40 passed", "notes": "Public durable-handle boundary, V1 PIT candidate bridge, production-shaped audit adapters, crash recovery, and manual replay IDs independently reviewed."}
+}

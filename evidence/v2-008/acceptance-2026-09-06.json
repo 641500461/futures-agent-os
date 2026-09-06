@@ -1,0 +1,13 @@
+{
+  "task": "V2-008",
+  "status": "PASS",
+  "implementation": {"executor": "Codex", "model": "gpt-5.6-sol", "reasoning_effort": "xhigh"},
+  "verification": {
+    "commands": [
+      "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v2_008_submit_trade_plan.py -q",
+      "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v2_001_accept_20260906?host=/tmp UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/integration/test_v0_014_autonomy_postgresql.py -q"
+    ],
+    "result": "571 contract tests and 31 PostgreSQL integration tests pass"
+  },
+  "acceptance": ["fail-closed authorization", "atomic reservation/receipt/order/ledger", "retry recovery", "MANUAL_TEST application endpoint"]
+}

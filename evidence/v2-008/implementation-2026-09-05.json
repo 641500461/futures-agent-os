@@ -1,0 +1,35 @@
+{
+  "latest_addition": "Added a MANUAL_TEST end-to-end contract from granted PlanApproval through SubmitTradePlanService, consumed Basis/reservation, working order, shadow fill, protection action, exit fill and settlement.",
+  "task": "V2-008",
+  "status": "COMPLETE",
+  "implementation": {
+    "executor": "Codex",
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "xhigh",
+    "files": [
+      "src/futures_agent_os/decision/submit_trade_plan.py",
+      "src/futures_agent_os/decision/__init__.py",
+      "src/futures_agent_os/decision/autonomy_contracts.py",
+      "tests/contract/test_v2_008_submit_trade_plan.py"
+    ]
+  },
+  "verified": {
+    "commands": [
+      "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v2_008_submit_trade_plan.py tests/contract/test_v0_014_autonomy_contracts.py",
+      "UV_CACHE_DIR=/tmp/fao-uv-cache uv run mypy src/futures_agent_os/decision/submit_trade_plan.py",
+      "UV_CACHE_DIR=/tmp/fao-uv-cache uv run ruff check src/futures_agent_os/decision/submit_trade_plan.py tests/contract/test_v2_008_submit_trade_plan.py",
+      "UV_CACHE_DIR=/tmp/fao-uv-cache uv run ruff format --check src/futures_agent_os/decision/submit_trade_plan.py tests/contract/test_v2_008_submit_trade_plan.py"
+    ],
+    "result": "23 passed; mypy clean; ruff clean",
+    "additional_v2_slice": "41 passed across V2-001, V2-002, V2-004, V2-005, V2-006, V2-007, V2-008, V2-009, V2-010, V2-011, V2-012"
+  },
+  "scope_notes": [
+    "The in-memory service is complemented by the PostgreSQL transaction adapter and independent acceptance evidence.",
+    "The service exposes typed results only and never returns registry or database write handles."
+  ],
+  "review": {
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "status": "PASS"
+  }
+}

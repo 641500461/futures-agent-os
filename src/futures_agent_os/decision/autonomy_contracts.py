@@ -13,10 +13,13 @@ from enum import StrEnum
 from threading import RLock
 from typing import TYPE_CHECKING
 
-from futures_agent_os.shared_kernel import EntityId, RecordedAt, canonical_sha256
+from futures_agent_os.shared_kernel import EntityId, RecordedAt, SchemaVersion, canonical_sha256
 
 if TYPE_CHECKING:
     from futures_agent_os.portfolio_risk import RiskBudgetReservation
+
+
+V2_AUTHORIZATION_SCHEMA = SchemaVersion(1, 0)
 
 
 def _sha(value: str) -> str:
@@ -325,9 +328,19 @@ class SimulationAutonomyMandate:
     recorded_at: RecordedAt
     recorded_by: str
     revocation_reason: str | None = None
+    schema_version: SchemaVersion = V2_AUTHORIZATION_SCHEMA
+    source_ref: str = "source:v2"
 
     def __post_init__(self) -> None:
         _positive_version(self.version)
+        if not isinstance(self.schema_version, SchemaVersion):
+            raise TypeError("mandate schema_version must be a SchemaVersion")
+        if (
+            not isinstance(self.source_ref, str)
+            or not self.source_ref.strip()
+            or any(c.isspace() for c in self.source_ref)
+        ):
+            raise ValueError("mandate source_ref must be canonical")
         if not isinstance(self.mandate_id, EntityId) or not isinstance(self.scope, MandateScope):
             raise TypeError("mandates require ids and a mandate scope")
         if (
@@ -354,6 +367,8 @@ class SimulationAutonomyMandate:
                 "scope": self.scope.sha256,
                 "expiry": self.expires_at.to_dict()["recorded_at"],
                 "status": self.status.value,
+                "schema_version": str(self.schema_version),
+                "source_ref": self.source_ref,
             }
         )
 
@@ -418,9 +433,19 @@ class AutonomyModeBinding:
     transition_actor: str
     evidence_ref: str
     previous_mode: AutonomyMode | None = None
+    schema_version: SchemaVersion = V2_AUTHORIZATION_SCHEMA
+    source_ref: str = "source:v2"
 
     def __post_init__(self) -> None:
         _positive_version(self.version)
+        if not isinstance(self.schema_version, SchemaVersion):
+            raise TypeError("mode binding schema_version must be a SchemaVersion")
+        if (
+            not isinstance(self.source_ref, str)
+            or not self.source_ref.strip()
+            or any(c.isspace() for c in self.source_ref)
+        ):
+            raise ValueError("mode binding source_ref must be canonical")
         _sha(self.run_versions_hash)
         _sha(self.scope_snapshot_hash)
         if (
@@ -516,6 +541,8 @@ class AutonomyModeBinding:
                 "evidence": self.evidence_ref,
                 "previous_mode": self.previous_mode.value if self.previous_mode else None,
                 "expiry": self.expires_at.to_dict()["recorded_at"],
+                "schema_version": str(self.schema_version),
+                "source_ref": self.source_ref,
             }
         )
 
@@ -770,9 +797,19 @@ class PlanApproval:
     consumed_at: RecordedAt | None = None
     decided_at: RecordedAt | None = None
     decided_by: str | None = None
+    schema_version: SchemaVersion = V2_AUTHORIZATION_SCHEMA
+    source_ref: str = "source:v2"
 
     def __post_init__(self) -> None:
         _positive_version(self.version)
+        if not isinstance(self.schema_version, SchemaVersion):
+            raise TypeError("approval schema_version must be a SchemaVersion")
+        if (
+            not isinstance(self.source_ref, str)
+            or not self.source_ref.strip()
+            or any(c.isspace() for c in self.source_ref)
+        ):
+            raise ValueError("approval source_ref must be canonical")
         _positive_version(self.plan_version)
         _sha(self.plan_hash)
         if not isinstance(self.status, PlanApprovalStatus) or not all(
@@ -827,6 +864,8 @@ class PlanApproval:
                 "decided_by": self.decided_by,
                 "expiry": self.expires_at.to_dict()["recorded_at"],
                 "status": self.status.value,
+                "schema_version": str(self.schema_version),
+                "source_ref": self.source_ref,
             }
         )
 
@@ -889,9 +928,19 @@ class AuthorizationBasis:
     issued_by: str
     actor_audit_ref: str
     status: BasisStatus = BasisStatus.ACTIVE
+    schema_version: SchemaVersion = V2_AUTHORIZATION_SCHEMA
+    source_ref: str = "source:v2"
 
     def __post_init__(self) -> None:
         _positive_version(self.plan_version)
+        if not isinstance(self.schema_version, SchemaVersion):
+            raise TypeError("authorization basis schema_version must be a SchemaVersion")
+        if (
+            not isinstance(self.source_ref, str)
+            or not self.source_ref.strip()
+            or any(c.isspace() for c in self.source_ref)
+        ):
+            raise ValueError("authorization basis source_ref must be canonical")
         _positive_version(self.source_version)
         _sha(self.plan_hash)
         _sha(self.source_hash)
@@ -963,6 +1012,8 @@ class AuthorizationBasis:
                 else None,
                 "expiry": self.expires_at.to_dict()["recorded_at"],
                 "status": self.status.value,
+                "schema_version": str(self.schema_version),
+                "source_ref": self.source_ref,
             }
         )
 
@@ -1018,8 +1069,11 @@ class BasisIssuanceRegistry:
             existing = self._issued.get(key)
             if existing is not None:
                 return existing[1] if existing[0] == fingerprint else None
+            # A basis is an idempotent business fact.  Deriving its identity
+            # from the immutable authorization fingerprint lets a fresh
+            # process retry the same plan without creating a second chain.
             basis = AuthorizationBasis(
-                EntityId.new("authorization_basis"),
+                EntityId.deterministic("authorization_basis", fingerprint),
                 BasisKind.MANDATE,
                 request.plan_id,
                 request.plan_version,
@@ -1082,7 +1136,7 @@ class PlanApprovalRegistry:
             if previous is not None:
                 granted_hash, consumed, basis, command = previous
                 if (
-                    approval.authorization_hash != granted_hash
+                    approval.granted_authorization_hash != granted_hash
                     or (
                         plan_id,
                         plan_version,
@@ -1460,7 +1514,7 @@ class AutonomyGate:
             basis.basis_id,
             fingerprint,
             lambda: AutonomyGateReceipt(
-                EntityId.new("autonomy_gate_receipt"),
+                EntityId.deterministic("autonomy_gate_receipt", fingerprint),
                 request.plan_id,
                 request.plan_version,
                 request.plan_hash,
@@ -1482,7 +1536,7 @@ class AutonomyGate:
                 reservation.reservation_hash,
                 expiry,
                 now,
-                EntityId.new("receipt_nonce"),
+                EntityId.deterministic("receipt_nonce", f"{fingerprint}:nonce"),
                 issuance_registry.registry_id,
                 mode_binding_id,
                 mode_binding_version,
@@ -1527,9 +1581,19 @@ class AutonomyGateReceipt:
     mode_binding_hash: str | None = None
     manual_actor_ref: str | None = None
     environment_policy_ref: str = ""
+    schema_version: SchemaVersion = V2_AUTHORIZATION_SCHEMA
+    source_ref: str = "source:v2"
 
     def __post_init__(self) -> None:
         _positive_version(self.plan_version)
+        if not isinstance(self.schema_version, SchemaVersion):
+            raise TypeError("receipt schema_version must be a SchemaVersion")
+        if (
+            not isinstance(self.source_ref, str)
+            or not self.source_ref.strip()
+            or any(c.isspace() for c in self.source_ref)
+        ):
+            raise ValueError("receipt source_ref must be canonical")
         _positive_version(self.source_version)
         for digest in (
             self.plan_hash,
@@ -1609,6 +1673,8 @@ class AutonomyGateReceipt:
                 "expiry": self.expires_at.to_dict()["recorded_at"],
                 "nonce": str(self.nonce),
                 "mode": self.mode_binding_hash,
+                "schema_version": str(self.schema_version),
+                "source_ref": self.source_ref,
             }
         )
 

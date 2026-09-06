@@ -1,0 +1,10 @@
+{
+  "schema_version": "v2-002-independent-review.v1",
+  "task": "V2-002",
+  "status": "COMPLETE",
+  "reviewer_model": "gpt-5.6-sol",
+  "reasoning_effort": "high",
+  "tests": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest --import-mode=importlib tests/contract/test_v2_002_risk_budget_ledger.py tests/contract/test_v2_002_risk_engine.py -q => 13 passed",
+  "full_gate": "make check => 560 contract, 9 property, 2 schema, 1 unit passed",
+  "verified": ["atomic concurrent ceiling", "monotonic shrink", "consume/release/expire/reconcile lifecycle", "snapshot restore", "worst-loss scenarios: long, short, partial take-profit, add-on and gap"]
+}

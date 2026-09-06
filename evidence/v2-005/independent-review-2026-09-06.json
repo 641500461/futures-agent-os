@@ -1,0 +1,9 @@
+{
+  "schema_version": "v2-005-independent-review.v1",
+  "task": "V2-005",
+  "status": "COMPLETE",
+  "reviewer_model": "gpt-5.6-sol",
+  "reasoning_effort": "high",
+  "tests": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest --import-mode=importlib tests/contract/test_v2_005_fill_model.py tests/contract/test_v2_009_l2_model.py -q => 10 passed",
+  "verified": ["L1 market/limit/stop", "trigger versus fill separation", "slippage", "gap execution", "no liquidity and price limits", "partial fills", "L2 ordered depth consumption", "explicit STOP_FIRST same-bar bracket policy"]
+}

@@ -1,0 +1,34 @@
+{
+  "schema_version": "v2-012.report-recovery.v1",
+  "status": "SUPERSEDED",
+  "executor": "Codex",
+  "implementation_model": "NOT_EXPOSED",
+  "reasoning_effort": "NOT_EXPOSED",
+  "reviewer": null,
+  "commit": "UNCOMMITTED_WORKTREE",
+  "scope": "Commit a shadow summary and completion in one approval-state replacement; recover report export without simulating another trade.",
+  "tests": [
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest --import-mode=importlib tests/contract/test_v2_012_manual_test.py -q",
+      "result": "10 passed",
+      "coverage": [
+        "normal CLI request/grant/consume/shadow/report output",
+        "injected export OSError after report commit",
+        "fresh store recovers committed report",
+        "report command exports without calling the episode runner",
+        "repeated shadow rejects after export failure",
+        "completion rejects report Plan binding mismatch"
+      ]
+    },
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+      "result": "569 contract, 9 property, 2 schema, 1 unit passed; format, lint, mypy, secret scan, health passed"
+    }
+  ],
+  "remaining": [
+    "Deterministic L1 episode replay now reconstructs and compares IDs/cash; complete event-log reconstruction remains open.",
+    "CLI shadow is not yet integrated with the PostgreSQL submit_trade_plan authorization/risk chain.",
+    "A crash during a CLAIMED simulation remains unresolved.",
+    "Independent V2 Exit review is not complete."
+  ]
+}

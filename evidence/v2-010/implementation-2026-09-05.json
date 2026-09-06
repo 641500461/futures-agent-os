@@ -1,0 +1,29 @@
+{
+  "latest_addition": "Cross-context L2 engine→DurableAuditLog→restart replay→account reconciliation contract added and passing.",
+  "task": "V2-010",
+  "status": "COMPLETE",
+  "latest_verification": {"command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest --import-mode=importlib tests/contract/test_v2_010_replay.py -q", "result": "7 passed", "scope": "complete open/close/settlement replay, L2 replay, correction and restart reconciliation"},
+  "implementation": {
+    "executor": "Codex",
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "xhigh",
+    "files": [
+      "src/futures_agent_os/accounting_settlement/replay.py",
+      "src/futures_agent_os/accounting_settlement/durable.py",
+      "src/futures_agent_os/execution_simulation/engine.py",
+      "src/futures_agent_os/shared_kernel/observability.py",
+      "tests/contract/test_v2_010_replay.py"
+    ]
+  },
+  "verified": {
+    "commands": [
+      "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v2_010_replay.py"
+    ],
+    "result": "6 passed"
+  },
+  "scope_notes": [
+    "The covered append-only accounting event ordering, durable open/close/settlement trade chain, restart replay, duplicate replay, reconciliation, and full-fact correction projection pass.",
+    "Full production database transaction semantics, all trade-chain event types, and independent V2-010 Exit review remain open."
+  ],
+  "review": {"model": "gpt-5.6-sol", "reasoning_effort": "high", "status": "PASS"}
+}

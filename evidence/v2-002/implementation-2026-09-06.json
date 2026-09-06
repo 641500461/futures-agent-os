@@ -1,0 +1,14 @@
+{
+  "task": "V2-002",
+  "status": "IN_PROGRESS",
+  "implementation": "RiskBudgetLedger concurrent ceiling, reservation lifecycle, shrink/consume/reconcile, snapshot restore and invariant checks.",
+  "tests": [
+    "tests/contract/test_v2_002_risk_budget_ledger.py: 3 passed"
+  ],
+  "open_acceptance": [
+    "Worst-loss property coverage across multi-direction, partial take-profit, add-on and gap scenarios is not complete.",
+    "Durable transactional persistence is not proven."
+  ],
+  "model": "gpt-5.6-sol",
+  "reasoning_effort": "xhigh"
+}

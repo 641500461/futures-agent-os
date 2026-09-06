@@ -1,0 +1,9 @@
+{
+  "schema_version": "v2-007-independent-review.v1",
+  "task": "V2-007",
+  "status": "COMPLETE",
+  "reviewer_model": "gpt-5.6-sol",
+  "reasoning_effort": "high",
+  "tests": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest --import-mode=importlib tests/contract/test_v2_007_protection.py -q => 9 passed",
+  "verified": ["six deterministic triggers", "explicit current position version", "explicit replayable ThesisInvalidationSpec predicate", "monotonic reduction validation", "REJECTED/STALE produce no action", "idempotency conflict rejection", "durable action registry restart recovery", "unprotected OPEN detection"]
+}

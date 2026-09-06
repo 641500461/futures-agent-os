@@ -1,0 +1,32 @@
+{
+  "schema_version": "v2-008-durable-golden-chain.v1",
+  "task": "V2-008",
+  "status": "COMPLETE",
+  "implementation_executor": "Codex",
+  "implementation_model": "gpt-5.6-sol",
+  "implementation_reasoning_effort": "xhigh",
+  "change": "submit_trade_plan now prepares deterministic Basis, RiskBudgetReservation, Receipt, Order and LedgerEntry candidates and, when explicitly given a PostgresAutonomyRepository plus caller-owned connection, persists and consumes the complete chain through one savepoint/transaction boundary. Durable attempts use ephemeral candidate registries and never mutate the service's in-memory ledger. A completed chain is returned by deterministic recovery after a new connection/process, and duplicate execution facts are idempotent.",
+  "database": "fao_v2_001_accept_20260906",
+  "tests": {
+    "postgres_integration_command": "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v2_001_accept_20260906?host=/tmp UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/integration/test_v0_014_autonomy_postgresql.py -q",
+    "postgres_integration_result": "25 passed",
+    "full_integration_command": "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v2_001_accept_20260906?host=/tmp UV_CACHE_DIR=/tmp/fao-uv-cache make test-integration",
+    "full_integration_result": "48 passed",
+    "quality_gate_command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+    "quality_gate_result": "553 contract, 9 property, 2 schema, 1 unit passed; ruff, mypy, secret scan and health passed",
+    "diff_check": "git diff --check passed"
+  },
+  "verified_behaviors": [
+    "successful durable submit stores Basis, consumed RiskBudgetReservation, consumed Receipt, Order domain event and LedgerEntry domain event",
+    "new service/connection recovers the original Order and LedgerEntry after commit",
+    "duplicate submit returns ORDER_ALREADY_CREATED and creates no second business effect",
+    "reservation, receipt, order and ledger failure injection rolls back all preceding PostgreSQL writes",
+    "durable candidate failure leaves the service's in-memory RiskBudgetLedger empty"
+  ],
+  "acceptance": "The durable golden-chain slice is reproducibly verified and included in the final V2-008 acceptance.",
+  "review": {
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "status": "PENDING_INDEPENDENT_REVIEW"
+  }
+}
