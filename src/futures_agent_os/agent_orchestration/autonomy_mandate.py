@@ -1,0 +1,28 @@
+from dataclasses import dataclass
+from datetime import datetime, timezone
+from enum import StrEnum
+
+
+class MandateStatus(StrEnum):
+    DRAFT = "DRAFT"
+    APPROVED = "APPROVED"
+    ACTIVE = "ACTIVE"
+    SUSPENDED = "SUSPENDED"
+    REVOKED = "REVOKED"
+
+
+@dataclass(frozen=True)
+class SimulationAutonomyMandate:
+    mandate_id: str
+    account_id: str
+    scope: str
+    expires_at: datetime
+    status: MandateStatus = MandateStatus.DRAFT
+
+    def __post_init__(self):
+        if not self.mandate_id or not self.account_id or not self.scope or self.expires_at.tzinfo is None:
+            raise ValueError("invalid mandate")
+
+    @property
+    def effective(self) -> bool:
+        return self.status is MandateStatus.ACTIVE and self.expires_at > datetime.now(timezone.utc)

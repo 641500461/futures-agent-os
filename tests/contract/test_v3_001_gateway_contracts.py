@@ -175,3 +175,14 @@ from futures_agent_os.agent_orchestration.v3_parallel import ParallelFanout
 
 def test_parallel_fanout_returns_named_results():
     assert ParallelFanout().run({"risk": lambda: "r", "critic": lambda: "c"}) == {"risk": "r", "critic": "c"}
+
+
+from datetime import timedelta, timezone, datetime
+from futures_agent_os.agent_orchestration.autonomy_mandate import SimulationAutonomyMandate, MandateStatus
+
+
+def test_mandate_effective_requires_active_and_unexpired():
+    m = SimulationAutonomyMandate(
+        "m", "a", "scope", datetime.now(timezone.utc) + timedelta(hours=1), MandateStatus.ACTIVE
+    )
+    assert m.effective
