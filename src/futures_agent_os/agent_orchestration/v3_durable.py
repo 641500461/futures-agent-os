@@ -100,3 +100,12 @@ def _interrupt(self, run_id: str) -> DurableState:
 
 
 DurableOrchestrator.interrupt = _interrupt
+
+
+def _trigger(self, run_id: str, plan_hash: str, snapshot_hash: str) -> DurableState:
+    if run_id in self._store:
+        return self._store[run_id]
+    return self.start(run_id, plan_hash, snapshot_hash)
+
+
+DurableOrchestrator.trigger = _trigger

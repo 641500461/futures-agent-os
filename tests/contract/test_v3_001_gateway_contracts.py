@@ -119,3 +119,10 @@ def test_channel_registry_is_replaceable():
     assert r.get("feishu") is a
     with pytest.raises(ValueError):
         r.register(a)
+
+
+def test_trigger_is_idempotent():
+    o = DurableOrchestrator()
+    a = o.trigger("r", "p", "s")
+    b = o.trigger("r", "p", "s")
+    assert a == b
