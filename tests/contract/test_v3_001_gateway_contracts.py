@@ -126,3 +126,11 @@ def test_trigger_is_idempotent():
     a = o.trigger("r", "p", "s")
     b = o.trigger("r", "p", "s")
     assert a == b
+
+
+from futures_agent_os.agent_orchestration.strategy_agent import StrategyAgent, StrategyCandidate
+
+
+def test_strategy_agent_outputs_candidate_without_order():
+    c = StrategyAgent().propose(thesis="t", invalidation="i", evidence=("e",), target_risk="r", exit_intent="x")
+    assert isinstance(c, StrategyCandidate) and not hasattr(c, "order")
