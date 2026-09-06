@@ -6,6 +6,7 @@ from dataclasses import dataclass, replace
 from decimal import Decimal
 from enum import StrEnum
 from threading import RLock
+from typing import Callable
 
 from futures_agent_os.shared_kernel import EntityId, RecordedAt, canonical_sha256
 
@@ -294,6 +295,35 @@ class RiskBudgetLedger:
             self._reservations[reservation_id] = result
             return result
 
+    def consume_with_commit(
+        self,
+        reservation_id: EntityId,
+        now: RecordedAt,
+        commit: Callable[[], bool],
+    ) -> RiskBudgetReservation | None:
+        """Consume a reservation only after the coupled side effect prepares.
+
+        The callback runs while this ledger's compare-and-swap lock is held. A
+        failed callback leaves both the reservation and the external receipt
+        untouched, giving the final gate a retryable transaction boundary.
+        """
+        if not callable(commit):
+            raise TypeError("commit must be callable")
+        with self._lock:
+            reservation = self._reservations.get(reservation_id)
+            if reservation is None or not reservation.active_at(now):
+                return None
+            if not commit():
+                return None
+            result = replace(
+                reservation,
+                status=ReservationStatus.CONSUMED,
+                version=reservation.version + 1,
+                state_version=reservation.state_version + 1,
+            )
+            self._reservations[reservation_id] = result
+            return result
+
     def reconcile(self, reservation_id: EntityId) -> RiskBudgetReservation | None:
         with self._lock:
             reservation = self._reservations.get(reservation_id)
@@ -324,9 +354,82 @@ class RiskBudgetLedger:
         with self._lock:
             return tuple(self._reservations.values())
 
+    @property
+    def total_ceiling(self) -> Decimal:
+        """Immutable risk ceiling captured from the active Constitution."""
+        return self._total_ceiling
+
+    def held_amount(self, now: RecordedAt) -> Decimal:
+        """Return the currently active worst-case loss under the ledger lock."""
+        if not isinstance(now, RecordedAt):
+            raise TypeError("held amount requires a RecordedAt")
+        with self._lock:
+            self.expire(now)
+            return sum((item.worst_case_loss for item in self._reservations.values() if item.active_at(now)), Decimal())
+
+    def assert_invariants(self, now: RecordedAt) -> None:
+        """Fail closed if a restored or concurrently updated ledger oversells risk."""
+        held = self.held_amount(now)
+        if held > self._total_ceiling:
+            raise ValueError("risk reservation ceiling exceeded")
+        with self._lock:
+            for reservation in self._reservations.values():
+                if reservation.risk_constitution_ref != self._constitution_ref:
+                    raise ValueError("reservation constitution reference diverged")
+                if reservation.risk_constitution_version != self._constitution_version:
+                    raise ValueError("reservation constitution version diverged")
+                if reservation.risk_constitution_hash != self._constitution_hash:
+                    raise ValueError("reservation constitution hash diverged")
+                if reservation.worst_case_loss > reservation.risk_constitution_ceiling:
+                    raise ValueError("reservation relaxes immutable risk ceiling")
+
     def reservation(self, reservation_id: EntityId) -> RiskBudgetReservation | None:
         """Return the authoritative current row used by the final autonomy gate."""
         if not isinstance(reservation_id, EntityId):
             raise TypeError("reservation lookup requires a typed reservation id")
         with self._lock:
             return self._reservations.get(reservation_id)
+
+    def snapshot(self) -> tuple[RiskBudgetReservation, ...]:
+        with self._lock:
+            return tuple(self._reservations.values())
+
+    @classmethod
+    def restore(
+        cls,
+        reservations: tuple[RiskBudgetReservation, ...],
+        *,
+        total_ceiling: Decimal,
+        constitution_ref: str,
+        constitution_version: int,
+        constitution_hash: str,
+    ) -> RiskBudgetLedger:
+        ledger = cls(total_ceiling, constitution_ref, constitution_version, constitution_hash)
+        for reservation in reservations:
+            if not isinstance(reservation, RiskBudgetReservation):
+                raise ValueError("invalid risk reservation snapshot")
+            if (
+                reservation.risk_constitution_ref != constitution_ref
+                or reservation.risk_constitution_version != constitution_version
+                or reservation.risk_constitution_hash != constitution_hash
+            ):
+                raise ValueError("reservation authority mismatch")
+            key = ledger._reservation_key(reservation)
+            if key in ledger._reservation_keys or reservation.reservation_id in ledger._reservations:
+                raise ValueError("conflicting risk reservation snapshot")
+            ledger._reservations[reservation.reservation_id] = reservation
+            ledger._reservation_keys[key] = reservation.reservation_id
+        # Restore itself is a transaction boundary: reject snapshots that
+        # already violate the immutable aggregate ceiling before exposing the
+        # new ledger instance to callers.
+        held = sum(
+            (
+                reservation.worst_case_loss
+                for reservation in ledger._reservations.values()
+                if reservation.status is ReservationStatus.HELD
+            ),
+            Decimal(),
+        )
+        if held > total_ceiling:
+            raise ValueError("risk reservation snapshot exceeds immutable ceiling")
+        return ledger

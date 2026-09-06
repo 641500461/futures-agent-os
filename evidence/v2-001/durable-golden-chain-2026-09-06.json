@@ -1,0 +1,28 @@
+{
+  "schema_version": "v2-001-durable-golden-chain.v1",
+  "task": "V2-001",
+  "status": "IN_PROGRESS",
+  "implementation_executor": "Codex",
+  "implementation_model": "gpt-5.6-sol",
+  "implementation_reasoning_effort": "xhigh",
+  "database": "fao_v2_001_accept_20260906",
+  "scope": "PostgreSQL persistence and recovery evidence for the V2 Basis → RiskBudgetReservation → Receipt → Order → Ledger chain. Authorization and execution facts remain append-only and are joined by plan, basis and reservation identities.",
+  "tests": {
+    "command": "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v2_001_accept_20260906?host=/tmp UV_CACHE_DIR=/tmp/fao-uv-cache make test-integration",
+    "result": "48 passed",
+    "quality_gate": "UV_CACHE_DIR=/tmp/fao-uv-cache make check — 553 contract, 9 property, 2 schema, 1 unit passed; ruff, mypy, secret scan and health passed",
+    "diff_check": "git diff --check passed"
+  },
+  "verified_behaviors": [
+    "authorization, reservation, receipt, order and ledger facts commit together",
+    "a rejected stage rolls back every earlier fact in the caller transaction",
+    "restarting with a fresh connection returns the committed order/ledger projection",
+    "repeating the same plan is idempotent"
+  ],
+  "acceptance": "The durable cross-context transaction slice is verified; V2-001 remains IN_PROGRESS because its broader contract ownership and independent Exit review are still open.",
+  "review": {
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "status": "PENDING_INDEPENDENT_REVIEW"
+  }
+}

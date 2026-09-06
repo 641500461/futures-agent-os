@@ -1,0 +1,20 @@
+{
+  "schema_version": "v2-aggregate-audit.v1",
+  "audited_at": "2026-09-06T16:00:00+08:00",
+  "result": "PASS",
+  "verified": {
+    "v2-001": "COMPLETE",
+    "v2-002": "COMPLETE",
+    "v2-003": "COMPLETE",
+    "v2-004": "COMPLETE",
+    "v2-005": "COMPLETE",
+    "v2-006": "COMPLETE",
+    "v2-007": "COMPLETE"
+  },
+  "unproven": {},
+  "verification": {
+    "command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+    "result": "578 contract, 9 property, 2 schema, 1 unit passed; ruff, mypy, secret scan and health passed; PostgreSQL integration 31 passed; V1 PIT→L2 bridge, linked audit replay, manual shadow ID replay and crash recovery verified"
+  },
+  "conclusion": "V2-001 through V2-012 Acceptance is proven by reproducible contract, integration, replay and recovery evidence."
+}

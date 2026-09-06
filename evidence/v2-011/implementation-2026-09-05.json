@@ -1,0 +1,27 @@
+{
+  "task": "V2-011",
+  "status": "COMPLETE",
+  "latest_verification": {"command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest --import-mode=importlib tests/contract/test_v2_011_fault_injection.py -q", "result": "5 passed", "scope": "cross-module order processor + audit log crash/restart replay without duplicate effects"},
+  "database_verification": {"command": "FAO_DATABASE_URL='postgresql+psycopg://qiu@/fao_v2_001_accept_20260906?host=/tmp' UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/integration/test_v0_014_autonomy_postgresql.py -k 'rolls_back_every_durable_stage or manual_submit' -q", "result": "9 passed", "scope": "reservation/receipt/order/ledger failure savepoints plus manual durable submit and retry"},
+  "implementation": {
+    "executor": "Codex",
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "xhigh",
+    "files": [
+      "src/futures_agent_os/execution_simulation/fault_injection.py",
+      "src/futures_agent_os/execution_simulation/order_processor.py",
+      "tests/contract/test_v2_011_fault_injection.py"
+    ]
+  },
+  "verified": {
+    "commands": [
+      "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v2_011_fault_injection.py"
+    ],
+    "result": "4 passed"
+  },
+  "scope_notes": [
+    "Duplicate command, out-of-order event, no-liquidity, durable process crash/database restart, corrupt durable state, clock skew, missing rule, event gap, and submitted-command replay are covered by the local reference tests.",
+    "Cross-process database transaction semantics and independent V2-011 Exit review remain open."
+  ],
+  "review": {"model": "gpt-5.6-sol", "reasoning_effort": "high", "status": "PASS"}
+}

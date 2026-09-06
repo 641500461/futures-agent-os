@@ -1,0 +1,32 @@
+{
+  "latest_addition": "Manual shadow end-to-end contract now exercises deterministic fill, protective stop validation/action, exit fill, settlement and cash conservation in one no-LLM path.",
+  "runner_addition": "Added run_manual_shadow_episode API returning a deterministic report for open fill, protection validation/action, exit fill, settlement and replay cash.",
+  "cli_addition": "manual-test shadow now requires a consumed PlanApproval and executes the deterministic SHADOW episode, emitting fill/protection/exit/settlement IDs and final cash.",
+  "verification_addition": "make check passes with 564 contract tests after CLI shadow integration.",
+  "correctness_addition": "Manual shadow runner now uses a real protective STOP fill, correct opposite-side exit direction, explicit account/position binding, and returns PROTECTED_OPEN/EXIT_PENDING/EXIT_PARTIAL instead of fabricating a full exit when liquidity is absent.",
+  "security_fix": "CLI shadow now rechecks consumed Approval scope and persists a single-use shadow claim, rejecting repeated shadow execution for the same Approval.",
+  "task": "V2-012",
+  "status": "COMPLETE",
+  "implementation": {
+    "executor": "Codex",
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "xhigh",
+    "files": [
+      "src/futures_agent_os/decision/manual_test.py",
+      "src/futures_agent_os/cli.py",
+      "src/futures_agent_os/decision/autonomy_contracts.py",
+      "tests/contract/test_v2_012_manual_test.py"
+    ]
+  },
+  "verified": {
+    "commands": [
+      "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v2_012_manual_test.py"
+    ],
+    "result": "5 passed"
+  },
+  "scope_notes": [
+    "MANUAL_TEST simulation-only context, durable request/grant/reject/expire/consume state, concurrent single-winner consume, fresh-process CLI request/grant/consume flow, and second-basis rejection are covered by targeted tests.",
+    "ManualTestApplication submits the consumed Basis through a durable database transaction into a complete SHADOW order/fill/protection/settlement replay report; independent V2-012 Exit review passed."
+  ],
+  "review": {"model": "gpt-5.6-sol", "reasoning_effort": "high", "status": "PASS"}
+}

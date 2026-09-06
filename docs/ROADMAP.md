@@ -1,7 +1,7 @@
 # 绿地版本路线图与可勾选任务
 
 版本：`3.0-proposed`<br>
-最后更新：2026-09-04
+最后更新：2026-09-06
 任务状态唯一来源：本文件
 
 ## 状态约定
@@ -203,51 +203,56 @@ Exit：`MVP-R-005` 单 Agent 研究决策简报通过，且最小 MVP Closure Ac
 
 目标：不依赖 LLM、飞书或 Agent 在线，系统也能安全地校验计划、裁决风险、模拟成交、记账、结算、保护和恢复。
 
-- [ ] `V2-001` 定义 `TradePlan`、`ProtectionIntent`、`RiskReductionRequest`、`RiskReductionValidation`、`ProtectiveRiskAction`、`AuthorizationBasis`、`SimulationAutonomyMandate`、可选 `PlanApproval`、`RiskDecision`、`ProtectionMandate`、`ExecutionPlan`、`StopPolicy`、`Order`、`Fill`、`PositionLot`、`LedgerEntry` 和 `Settlement` 契约。  
-  Status: IN_PROGRESS；已完成首批不可变 `TradePlan`/`ProtectionIntent` 契约，后续补齐风险、执行、成交和账本对象。<br>
+- [x] `V2-001` 定义 `TradePlan`、`ProtectionIntent`、`RiskReductionRequest`、`RiskReductionValidation`、`ProtectiveRiskAction`、`AuthorizationBasis`、`SimulationAutonomyMandate`、可选 `PlanApproval`、`RiskDecision`、`ProtectionMandate`、`ExecutionPlan`、`StopPolicy`、`Order`、`Fill`、`PositionLot`、`LedgerEntry` 和 `Settlement` 契约。
+  Status: COMPLETE；版本化契约、确定性 hydrate/replay、跨上下文引用绑定、owner-facing canonical surfaces、非法状态 fail-closed 校验及 PostgreSQL 黄金链持久化/重启重放均通过独立复核。<br>
   Depends: V0；复用 V1 市场/规则快照。  
   Acceptance: 所有对象具有 schema/version/ID/时间/来源；跨对象引用和非法状态有契约测试。  
-  Evidence: 待补。
-- [ ] `V2-002` 实现仓位计算、风险预算、原子 `RiskBudgetReservation` 和 `immutable_risk_ceiling`；风险修订只能单调收紧。  
+  Evidence: [`evidence/v2-001/implementation-2026-09-05.json`](../evidence/v2-001/implementation-2026-09-05.json)、[`evidence/v2-001/durable-golden-chain-2026-09-06.json`](../evidence/v2-001/durable-golden-chain-2026-09-06.json)、[`evidence/v2-001/independent-review-2026-09-06.json`](../evidence/v2-001/independent-review-2026-09-06.json)。
+- [x] `V2-002` 实现仓位计算、风险预算、原子 `RiskBudgetReservation` 和 `immutable_risk_ceiling`；风险修订只能单调收紧。
+  Status: COMPLETE；风险预算并发、生命周期、快照恢复及多空/部分止盈/加仓/跳空最坏损失场景均通过复核。<br>
   Acceptance: 多空、部分止盈、加仓、并发修订和跳空场景的最坏损失属性测试通过；两个并发计划合计超限时至多允许安全组合预留，且预留可幂等缩小、消费、释放、超时与对账。  
-  Evidence: 待补。
-- [ ] `V2-003` 实现 Risk Constitution：数据质量、单笔风险、保证金、品种/方向/组合集中度、日回撤、临近交割和 Kill Switch。  
+  Evidence: [`evidence/v2-002/implementation-2026-09-06.json`](../evidence/v2-002/implementation-2026-09-06.json)、[`evidence/v2-002/independent-review-2026-09-06.json`](../evidence/v2-002/independent-review-2026-09-06.json)。
+- [x] `V2-003` 实现 Risk Constitution：数据质量、单笔风险、保证金、品种/方向/组合集中度、日回撤、临近交割和 Kill Switch。
+  Status: COMPLETE；多维规则、fail-closed 和稳定 code/version 已通过独立复核。<br>
   Acceptance: 风险不可算时 fail closed；每条检查返回规则版本和稳定 code。  
-  Evidence: 待补。
-- [ ] `V2-004` 实现订单状态机和幂等应用命令，覆盖接受、拒绝、工作、部分成交、成交、撤单、过期和 cancel/fill race。  
+  Evidence: [`evidence/v2-003/implementation-2026-09-05.json`](../evidence/v2-003/implementation-2026-09-05.json)、[`evidence/v2-003/independent-review-2026-09-06.json`](../evidence/v2-003/independent-review-2026-09-06.json)。
+- [x] `V2-004` 实现订单状态机和幂等应用命令，覆盖接受、拒绝、工作、部分成交、成交、撤单、过期和 cancel/fill race。
+  Status: COMPLETE；状态转换、幂等、事件序列、竞态和可恢复命令结果均通过独立复核。<br>
   Acceptance: 非法状态转换被拒绝；任何 Fill 总量不超过 Order；重复命令不重复产生业务效果。  
-  Evidence: 待补。
-- [ ] `V2-005` 实现 L1 Bar/Quote 和 L2 Event FillModel：市价、限价、止损触发、滑点、无对手价、涨跌停和部分成交。  
-  Status: IN_PROGRESS；已完成 L1 Bar 与 market/limit/stop 基础 FillModel，继续补齐 L2 事件语义。<br>
+  Evidence: [`evidence/v2-004/implementation-2026-09-06.json`](../evidence/v2-004/implementation-2026-09-06.json)、[`evidence/v2-004/independent-review-2026-09-06.json`](../evidence/v2-004/independent-review-2026-09-06.json)。
+- [x] `V2-005` 实现 L1 Bar/Quote 和 L2 Event FillModel：市价、限价、止损触发、滑点、无对手价、涨跌停和部分成交。
+  Status: COMPLETE；L1/L2 FillModel、触发/成交分离、滑点、深度消耗与保守 STOP_FIRST 同 Bar 规则通过独立复核。<br>
   Acceptance: 触发不等于成交；同 Bar 止盈止损歧义采用声明的保守规则。  
-  Evidence: 待补。
-- [ ] `V2-006` 实现账户、持仓批次和统一账本：开仓、平仓、平今、手续费、保证金、冻结、逐日盯市、PnL 和每日结算。  
-  Status: IN_PROGRESS；已覆盖开仓/部分平仓、手续费、保证金冻结释放、逐日盯市和幂等成交，平今与完整账本守恒仍待补齐。<br>
+  Evidence: [`evidence/v2-005/implementation-2026-09-06.json`](../evidence/v2-005/implementation-2026-09-06.json)、[`evidence/v2-005/independent-review-2026-09-06.json`](../evidence/v2-005/independent-review-2026-09-06.json)。
+- [x] `V2-006` 实现账户、持仓批次和统一账本：开仓、平仓、平今、手续费、保证金、冻结、逐日盯市、PnL 和每日结算。
+  Status: COMPLETE；开平仓、平今、手续费、保证金、盯市结算、幂等与资金守恒通过独立复核。<br>
   Acceptance: 资金与账本不变量通过；Position 只能由 Fill/Settlement 改变。  
-  Evidence: 待补。
-- [ ] `V2-007` 实现 Position Protection：初始止损、Strategy Spec 显式且可重放的确定性 Thesis 失效谓词、追踪止损、时间止损、组合止损、Kill Switch，以及 RiskReductionRequest/ProtectionTrigger 到 RiskReductionValidation/ProtectiveRiskAction 的 T4-SAFE 链。  
-  Status: IN_PROGRESS；已实现基础 RiskReductionRequest、单调降险校验和 ProtectiveRiskAction，尚未覆盖六类触发器、持久幂等与崩溃恢复。<br>
+  Evidence: [`evidence/v2-006/implementation-2026-09-06.json`](../evidence/v2-006/implementation-2026-09-06.json)、[`evidence/v2-006/independent-review-2026-09-06.json`](../evidence/v2-006/independent-review-2026-09-06.json)。
+- [x] `V2-007` 实现 Position Protection：初始止损、Strategy Spec 显式且可重放的确定性 Thesis 失效谓词、追踪止损、时间止损、组合止损、Kill Switch，以及 RiskReductionRequest/ProtectionTrigger 到 RiskReductionValidation/ProtectiveRiskAction 的 T4-SAFE 链。
+  Status: COMPLETE；六类确定性触发器、Position version 绑定、幂等/单调降险、拒绝零 Action 和文件恢复通过独立复核。<br>
+  实现记录：[`evidence/v2-007/implementation-2026-09-06.json`](../evidence/v2-007/implementation-2026-09-06.json)（8 项定向测试）。
   Acceptance: 六层保护在无 Agent/模型/交互服务时仍运行；V2 P2 不依赖自由文本或语义推理；每个降险请求绑定 Position expected version 和幂等键，REJECTED/STALE 零 Action，VALIDATED Action 只能单调降险且可跨崩溃恢复；无保护 OPEN Position 为最高级故障。  
-  Evidence: 待补。
-- [ ] `V2-008` 实现 `submit_trade_plan` 最小两阶段安全链：计划硬校验 → Authorization Preflight/AuthorizationBasis → 仓位计算 → 原子 RiskBudgetReservation → Final Receipt Gate → 风险裁决/ProtectionMandate → ExecutionPlan/StopPolicy → Order。  
+  Evidence: [`evidence/v2-007/independent-review-2026-09-06.json`](../evidence/v2-007/independent-review-2026-09-06.json)。
+- [x] `V2-008` 实现 `submit_trade_plan` 最小两阶段安全链：计划硬校验 → Authorization Preflight/AuthorizationBasis → 仓位计算 → 原子 RiskBudgetReservation → Final Receipt Gate → 风险裁决/ProtectionMandate → ExecutionPlan/StopPolicy → Order。
+  Status: COMPLETE；PostgreSQL 单事务 Basis→Reservation→Receipt→Order→Ledger 链、MANUAL_TEST 应用服务、重复调用、保存点回滚和新连接恢复均通过真实数据库验证。<br>
   Acceptance: MANUAL_TEST 的 PlanApproval/AuthorizationBasis 缺失、失效、过期或范围不匹配时 fail closed；每次增加风险都同时要求有效 Receipt 与 RiskDecision；Receipt 绑定 Plan/AuthorizationBasis/源授权 hash、execution_origin、快照/预留、过期且只消费一次；等待授权时不占 reservation；API 不向调用方暴露 matcher、数据库或账本写句柄。  
-  Evidence: 待补。
-- [ ] `V2-009` 实现回测与模拟共享的规则、订单、FillModel、账本和结算接口，并支持冻结 StrategySpec fixture 的 L2 事件驱动验证。  
-  Status: IN_PROGRESS；已加入 L2 有序事件与可用深度消耗模型，尚未接入共享回测/账本接口。<br>
+  Evidence: [`evidence/v2-008/implementation-2026-09-05.json`](../evidence/v2-008/implementation-2026-09-05.json)、[`evidence/v2-008/durable-golden-chain-2026-09-06.json`](../evidence/v2-008/durable-golden-chain-2026-09-06.json)。
+- [x] `V2-009` 实现回测与模拟共享的规则、订单、FillModel、账本和结算接口，并支持冻结 StrategySpec fixture 的 L2 事件驱动验证。
+  Status: COMPLETE；共享 L1/L2 引擎、订单/成交/账户重放及 base/counterfactual/stress 三变体矩阵均通过冻结 fixture 与真实 V1 MVP-R PIT 候选桥接验证。<br>
   Acceptance: 相同事件和 FillModel 产生相同订单/账本结果；V1 的基础 walk-forward/stress/counterfactual 可在 L2 语义下重跑以证明引擎能力；V3 Strategy Agent 创建 StrategyCandidate 后可复用同一引擎形成资格证据。  
-  Evidence: 待补。
-- [ ] `V2-010` 实现追加式审计、当前态投影、历史重放、日终对账和更正事件。  
-  Status: IN_PROGRESS；已完成顺序事件日志与基础重放，尚未接入完整对账/更正事件。<br>
+  Evidence: [`evidence/v2-009/implementation-2026-09-06.json`](../evidence/v2-009/implementation-2026-09-06.json)。
+- [x] `V2-010` 实现追加式审计、当前态投影、历史重放、日终对账和更正事件。
+  Status: COMPLETE；追加式哈希链支持跨进程写者锁、授权→风险→执行→保护→成交→结算 linked episode、逐 episode 重放、对账和更正事件。<br>
   Acceptance: 任一模拟交易可重建完整链路，重放结果与当前投影和账本校验一致。  
-  Evidence: 待补。
-- [ ] `V2-011` 建立故障注入：进程崩溃、重复命令、乱序/断档行情、数据库重启、时钟偏移、规则缺失和无流动性。  
-  Status: IN_PROGRESS；已覆盖重复命令、乱序事件和无流动性，其他故障场景待补。<br>
+  Evidence: [`evidence/v2-010/implementation-2026-09-05.json`](../evidence/v2-010/implementation-2026-09-05.json)。
+- [x] `V2-011` 建立故障注入：进程崩溃、重复命令、乱序/断档行情、数据库重启、时钟偏移、规则缺失和无流动性。
+  Status: COMPLETE；持久订单命令与审计写入使用 OS writer lock + reload，恢复/重复命令、乱序/断档、时钟、规则和无流动性均通过契约与数据库保存点验证。<br>
   Acceptance: 已提交命令 RPO=0，恢复后无重复业务副作用。  
-  Evidence: 待补。
-- [ ] `V2-012` 实现授权操作者的短期 `MANUAL_TEST PlanApproval` request/grant/reject/expire/consume 状态机，并提供人工 CLI/API 验收、应急模拟入口与确定性回放报告。  
-  Status: IN_PROGRESS；已加入 MANUAL_TEST simulation-only context 边界，完整 Approval 状态机、Receipt 消费与回放入口待接入。<br>
+  Evidence: [`evidence/v2-011/implementation-2026-09-05.json`](../evidence/v2-011/implementation-2026-09-05.json)。
+- [x] `V2-012` 实现授权操作者的短期 `MANUAL_TEST PlanApproval` request/grant/reject/expire/consume 状态机，并提供人工 CLI/API 验收、应急模拟入口与确定性回放报告。
+  Status: COMPLETE；ManualTestApplication 将 PlanApproval 消费、RiskDecision、Receipt、Order、成交、保护、结算和确定性报告纳入同一 PostgreSQL 事务；重复 run 返回已提交结果，报告可离线重放。<br>
   Acceptance: GRANTED PlanApproval 仅能在原子创建唯一 PLAN_APPROVAL AuthorizationBasis 时转为 CONSUMED，记录 consumer_basis_id/consumed_at；数据库唯一约束、并发与重放测试证明同一 Approval 不能生成第二个 Basis/成功交易。用户可在无 LLM 环境以 `execution_origin=MANUAL_TEST`、被该 Basis 消费一次的 PlanApproval 完成一笔 SHADOW 校验后的计划、成交、保护退出和结算；本入口标记为测试/应急 fallback，不需伪装 AUTONOMOUS_SIMULATION，也不是 V3 日常操作模式。  
-  Evidence: 待补。
+  Evidence: [`evidence/v2-012/implementation-2026-09-05.json`](../evidence/v2-012/implementation-2026-09-05.json)。
 
 Exit：确定性黄金链路可在固定数据集上完全重放；任何新增风险都具有有效 RiskBudgetReservation、AutonomyGateReceipt 与 RiskDecision；无重复交易、无无保护持仓、无不可解释账本差异。
 

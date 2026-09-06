@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import re
 from dataclasses import dataclass
 from uuid import UUID, uuid7
@@ -26,6 +27,20 @@ class EntityId:
     @classmethod
     def new(cls, namespace: str) -> EntityId:
         return cls(namespace=namespace, value=uuid7())
+
+    @classmethod
+    def deterministic(cls, namespace: str, seed: str) -> EntityId:
+        """Create a stable UUIDv7-shaped identifier for replay fixtures."""
+        if not isinstance(seed, str) or not seed:
+            raise ValueError("deterministic identifier seed must be non-empty")
+        digest = hashlib.sha256(seed.encode("utf-8")).digest()
+        # Deterministic IDs carry no event-time claim; keep the UUIDv7
+        # timestamp at the epoch and derive all identity entropy from seed.
+        timestamp = 0
+        random_a = int.from_bytes(digest[:2], "big") & 0x0FFF
+        random_b = int.from_bytes(digest[2:10], "big") & ((1 << 62) - 1)
+        value = (timestamp << 80) | (0x7 << 76) | (random_a << 64) | (0x2 << 62) | random_b
+        return cls(namespace=namespace, value=UUID(int=value))
 
     @classmethod
     def parse(cls, text: str) -> EntityId:

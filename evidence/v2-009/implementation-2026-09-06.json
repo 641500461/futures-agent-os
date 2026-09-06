@@ -1,0 +1,36 @@
+{
+  "latest_addition": "SimulationEngine.execute_l2 now shares deterministic order→Fill→Accounting projection path with L1; frozen ordered BookEvent replay has contract coverage.",
+  "cross_context_addition": "L2 engine output is now persisted to DurableAuditLog and replayed into an equivalent SimulationAccount projection with reconciliation coverage.",
+  "fixture_addition": "Added FrozenStrategySpecFixture binding immutable fixture hash to deterministic walk-forward fold manifest and replay tests.",
+  "task": "V2-009",
+  "status": "COMPLETE",
+  "latest_addition": "FrozenStrategySpecFixture now provides deterministic counterfactual_manifest and stressed_manifest variants, each independently hashed and replayed through the shared walk-forward evaluator.",
+  "v1_bridge_addition": "Added FrozenStrategySpecFixture.from_mvp_replay_candidate and replay_v1_candidate_l2_matrix. The bridge consumes a sealed V1 MVP-R ReplayEpisodeCandidate (40 PIT bars plus one revealed future bar), derives the pinned prior-close/next-close signals and labels, and executes base/counterfactual/stress variants through the shared V2 L2 order/fill/account path.",
+  "verification": {
+    "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest --import-mode=importlib tests/contract/test_v2_009_engine.py -q",
+    "result": "4 passed",
+    "scope": "shared L1/L2 engine replay and deterministic walk-forward, counterfactual, and stress manifests"
+  },
+  "implementation": {
+    "executor": "Codex",
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "xhigh",
+    "files": [
+      "src/futures_agent_os/execution_simulation/l2_model.py",
+      "tests/contract/test_v2_009_l2_model.py"
+    ]
+  },
+  "verified": {
+    "commands": [
+      "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v2_009_l2_model.py tests/contract/test_v2_005_fill_model.py",
+      "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v2_009_engine.py tests/contract/test_v2_009_l2_model.py tests/contract/test_v2_010_replay.py tests/contract/test_v2_011_fault_injection.py tests/contract/test_v2_012_manual_test.py tests/contract/test_v2_007_protection.py",
+      "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest --import-mode=importlib tests/contract/test_v2_009_engine.py -q"
+    ],
+    "result": "10 passed; 30 passed; 5 passed"
+  },
+  "scope_notes": [
+    "L2 STOP trigger state is now reported independently from partial or unavailable depth; LIMIT orders without a price are rejected as INVALID_LIMIT; zero-depth book quantities produce explicit NO_LIQUIDITY.",
+    "V1 MVP-R PIT ReplayEpisodeCandidate bridge and independent V2-009 Exit review are covered by the acceptance evidence."
+  ],
+  "review": {"model": "gpt-5.6-sol", "reasoning_effort": "high", "status": "PASS"}
+}

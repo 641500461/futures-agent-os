@@ -1,0 +1,28 @@
+{
+  "task": "V2-007",
+  "status": "IN_PROGRESS",
+  "implementation": {
+    "executor": "Codex",
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "xhigh",
+    "files": [
+      "src/futures_agent_os/execution_simulation/protection.py",
+      "tests/contract/test_v2_007_protection.py"
+    ]
+  },
+  "verified": {
+    "commands": [
+      "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v2_007_protection.py"
+    ],
+    "result": "8 passed"
+  },
+  "scope_notes": [
+    "Six deterministic protection triggers, current Position version binding, monotonic reduction, idempotency conflict rejection, and durable action restart/corruption behavior are covered.",
+    "Complete Position aggregate integration, database transaction/crash recovery, and independent V2-007 Exit review remain open."
+  ],
+  "review": {
+    "model": "gpt-5.6-sol",
+    "reasoning_effort": "high",
+    "status": "PENDING"
+  }
+}

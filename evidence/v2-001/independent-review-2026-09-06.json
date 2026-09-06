@@ -1,0 +1,40 @@
+{
+  "schema_version": "v2-001-independent-review.v2",
+  "task": "V2-001",
+  "reviewed_at": "2026-09-06",
+  "reviewer_executor": "Codex",
+  "reviewer_model": "gpt-5.6-sol",
+  "reasoning_effort": "high",
+  "implementation_executor": "Codex",
+  "implementation_model": "gpt-5.6-sol",
+  "implementation_reasoning_effort": "xhigh",
+  "independent_review_result": "PASS",
+  "acceptance_result": "V2-001_ACCEPTED",
+  "review_scope": [
+    "versioned V2 trade, authorization, protection, risk, execution and accounting contracts",
+    "canonical schema/version/typed identity/timestamp/source metadata",
+    "TradePlan and ProtectionIntent persisted hydrate/replay hash stability",
+    "closed-world ContractReferenceGraph version/hash/namespace binding",
+    "fail-closed lifecycle, expiry, quantity/action and cross-object submission checks",
+    "owner-facing bounded-context canonical contract surfaces",
+    "PostgreSQL durable Basis→Reservation→Receipt→Order→Ledger replay slice"
+  ],
+  "verification": {
+    "targeted_command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest --import-mode=importlib tests/contract/test_v2_001_trade_contracts.py tests/contract/test_v2_007_protection.py tests/contract/test_v2_008_submit_trade_plan.py -q",
+    "targeted_result": "24 passed",
+    "full_gate_command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+    "full_gate_result": "553 contract, 9 property, 2 schema, 1 unit passed; ruff, mypy, secret scan and health passed",
+    "diff_check": "git diff --check passed"
+  },
+  "resolved_findings": [
+    "persisted plan/protection identity and timestamps are explicit in hydrate paths",
+    "references require registered target version and content hash with namespace checks",
+    "protection triggers preserve kind and current position version",
+    "TradePlan expiry and submission receipt/risk/reservation bindings fail closed",
+    "receipt and reservation consumption uses the ledger coupled commit boundary",
+    "PlanApproval replay uses immutable granted authorization hash",
+    "owner modules expose canonical bounded-context subclasses"
+  ],
+  "model_output_not_authoritative": true,
+  "remaining_scope": "V2-002 through V2-012 remain separate roadmap tasks; this review does not mark the V2 aggregate Exit complete."
+}
