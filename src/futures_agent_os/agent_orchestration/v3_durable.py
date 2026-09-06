@@ -2,7 +2,6 @@
 
 from dataclasses import dataclass
 from enum import StrEnum
-from typing import Mapping, Any
 
 
 class Checkpoint(StrEnum):

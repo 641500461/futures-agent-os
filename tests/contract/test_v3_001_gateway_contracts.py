@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 import pytest
+# ruff: noqa: E402
 from futures_agent_os.channel_gateway.contracts import InboundEvent, IdempotentInbox
 
 
@@ -82,7 +83,7 @@ def test_gateway_composes_idempotent_boundaries():
     assert g.notify(a, n) and not g.notify(a, n)
 
 
-from futures_agent_os.agent_orchestration.v3_durable import *
+from futures_agent_os.agent_orchestration.v3_durable import Checkpoint, DurableState, DurableOrchestrator, advance
 
 
 def test_v3_durable_checkpoint_recovers_only_matching_inputs():
