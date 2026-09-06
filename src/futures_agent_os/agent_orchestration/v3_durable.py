@@ -90,8 +90,8 @@ def _advance(self, run_id: str, target: Checkpoint) -> DurableState:
     return self.save(advance(self._store[run_id], target))
 
 
-DurableOrchestrator.start = _start
-DurableOrchestrator.advance = _advance
+DurableOrchestrator.start = _start  # type: ignore[attr-defined]
+DurableOrchestrator.advance = _advance  # type: ignore[attr-defined]
 
 
 def _interrupt(self, run_id: str) -> DurableState:
@@ -99,7 +99,7 @@ def _interrupt(self, run_id: str) -> DurableState:
     return self.save(s)
 
 
-DurableOrchestrator.interrupt = _interrupt
+DurableOrchestrator.interrupt = _interrupt  # type: ignore[attr-defined]
 
 
 def _trigger(self, run_id: str, plan_hash: str, snapshot_hash: str) -> DurableState:
@@ -108,4 +108,4 @@ def _trigger(self, run_id: str, plan_hash: str, snapshot_hash: str) -> DurableSt
     return self.start(run_id, plan_hash, snapshot_hash)
 
 
-DurableOrchestrator.trigger = _trigger
+DurableOrchestrator.trigger = _trigger  # type: ignore[attr-defined]
