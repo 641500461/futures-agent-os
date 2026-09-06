@@ -87,3 +87,11 @@ class NotificationDispatcher:
         adapter.send(notification)
         self._sent.add(notification.idempotency_key)
         return True
+
+
+_ALLOWED_CONTROL_ACTIONS = frozenset({"pause", "resume", "revoke", "kill_switch"})
+
+
+def validate_control(callback: ControlCallback) -> None:
+    if callback.action not in _ALLOWED_CONTROL_ACTIONS:
+        raise ValueError("unsupported control action")
