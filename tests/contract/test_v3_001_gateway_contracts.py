@@ -160,3 +160,11 @@ def test_execution_advisor_only_recommends_registered_algorithms():
     assert isinstance(ExecutionAdvisor().recommend(algorithm="MARKET", rationale="cost"), ExecutionRecommendation)
     with pytest.raises(ValueError):
         ExecutionAdvisor().recommend(algorithm="TWAP", rationale="x")
+
+
+from futures_agent_os.agent_orchestration.pre_trade_critic import PreTradeCritic, PreTradeCritique
+
+
+def test_pre_trade_critic_is_distinct_structured_role():
+    c = PreTradeCritic().review(concerns=("cost",), verdict="DEFER")
+    assert isinstance(c, PreTradeCritique)
