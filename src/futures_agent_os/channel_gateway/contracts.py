@@ -95,3 +95,25 @@ _ALLOWED_CONTROL_ACTIONS = frozenset({"pause", "resume", "revoke", "kill_switch"
 def validate_control(callback: ControlCallback) -> None:
     if callback.action not in _ALLOWED_CONTROL_ACTIONS:
         raise ValueError("unsupported control action")
+
+
+class InboxStore(Protocol):
+    def put_if_absent(self, event: InboundEvent) -> bool: ...
+    def get(self, key: str) -> InboundEvent | None: ...
+
+
+class MemoryInboxStore:
+    def __init__(self) -> None:
+        self._items: dict[str, InboundEvent] = {}
+
+    def put_if_absent(self, event: InboundEvent) -> bool:
+        old = self._items.get(event.dedup_key)
+        if old is not None:
+            if old != event:
+                raise ValueError("conflicting replay for channel event")
+            return False
+        self._items[event.dedup_key] = event
+        return True
+
+    def get(self, key: str) -> InboundEvent | None:
+        return self._items.get(key)

@@ -1,22 +1,23 @@
 from .contracts import (
     ChannelAdapter,
     ControlCallback,
-    IdempotentInbox,
     IdempotentControls,
     NotificationDispatcher,
     InboundEvent,
     OutboundNotification,
+    InboxStore,
+    MemoryInboxStore,
 )
 
 
 class ChannelGateway:
     def __init__(self) -> None:
-        self.inbox = IdempotentInbox()
+        self.inbox: InboxStore = MemoryInboxStore()
         self.controls = IdempotentControls()
         self.notifications = NotificationDispatcher()
 
     def ingest(self, event: InboundEvent) -> bool:
-        return self.inbox.ingest(event)
+        return self.inbox.put_if_absent(event)
 
     def poll(self, adapter: ChannelAdapter) -> tuple[InboundEvent, ...]:
         accepted = []
