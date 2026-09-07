@@ -17,7 +17,7 @@
     "reviewer_reasoning_effort": "NOT_APPLICABLE",
     "note": "No independent reviewer is claimed for this Roadmap task. Completion is based on reproducible Acceptance evidence; the V3 version Exit review remains separate."
   },
-  "commit": "WORKTREE_PENDING_COORDINATOR_INTEGRATION",
+  "commit": "ac552f4374b32d3a8d8a65a07312d18046f39aea",
   "acceptance": {
     "channel_neutral_core": "PASS: contracts and PostgresGatewayStore contain no Feishu SDK types; Feishu is registered through ChannelAdapter and unsupported capabilities fail explicitly.",
     "identity_and_namespace": "PASS: channel/external actor/conversation mapping is application-owned; inbox and notification idempotency keys include channel namespace.",
