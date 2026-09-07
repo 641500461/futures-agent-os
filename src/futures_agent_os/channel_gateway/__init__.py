@@ -9,8 +9,18 @@ from .contracts import (
     NotificationDispatcher,
     OutboundNotification,
 )
-from .feishu import FeishuAdapter
+from .feishu import FeishuAdapter, FeishuLongConnectionAdapter
 from .gateway import ChannelGateway
+from .durable import (
+    ControlHandler,
+    GatewayTask,
+    IdentityMapping,
+    IngestResult,
+    OutboxRecord,
+    OutboxWorker,
+    PostgresNotificationSink,
+    PostgresGatewayStore,
+)
 
 __all__ = [
     "ChannelAdapter",
@@ -21,7 +31,16 @@ __all__ = [
     "NotificationDispatcher",
     "OutboundNotification",
     "FeishuAdapter",
+    "FeishuLongConnectionAdapter",
     "ChannelGateway",
     "ChannelRegistry",
+    "ControlHandler",
+    "GatewayTask",
+    "IdentityMapping",
+    "IngestResult",
+    "OutboxRecord",
+    "OutboxWorker",
+    "PostgresNotificationSink",
+    "PostgresGatewayStore",
 ]
 from .registry import ChannelRegistry

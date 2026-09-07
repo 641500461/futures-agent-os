@@ -21,12 +21,19 @@ from futures_agent_os.accounting_settlement import SimulationAccount
 from futures_agent_os.decision import Order, OrderStatus, StopPolicy, TradeDirection
 from futures_agent_os.execution_simulation import L1Bar, run_manual_shadow_episode
 from futures_agent_os.shared_kernel import EntityId, RecordedAt, canonical_sha256
+from futures_agent_os.channel_gateway.config import GatewayConfig
+from futures_agent_os.channel_gateway.runtime import GatewayRuntime
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="futures-agent-os")
     subcommands = parser.add_subparsers(dest="command", required=True)
     subcommands.add_parser("health", help="print the local health contract")
+    gateway = subcommands.add_parser("gateway", help="run the channel gateway")
+    gateway_subcommands = gateway.add_subparsers(dest="gateway_action", required=True)
+    gateway_run = gateway_subcommands.add_parser("run", help="run the Feishu long-connection gateway")
+    gateway_run.add_argument("--config", help="JSON or TOML gateway config; defaults to environment")
+    gateway_run.add_argument("--dry-run", action="store_true", help="validate config and print a redacted summary")
     manual = subcommands.add_parser("manual-test", help="simulation-only manual PlanApproval lifecycle")
     manual.add_argument("action", choices=("request", "grant", "reject", "expire", "consume", "shadow", "report"))
     manual.add_argument("--state", required=True, help="durable local state file")
@@ -306,6 +313,14 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "health":
         print(json.dumps(get_health_status().as_dict(), ensure_ascii=False, sort_keys=True))
+        return 0
+    if args.command == "gateway":
+        config = GatewayConfig.from_file(args.config) if args.config else GatewayConfig.from_env()
+        if args.dry_run:
+            config.validate()
+            print(json.dumps(config.public_summary(), ensure_ascii=False, sort_keys=True))
+            return 0
+        GatewayRuntime(config).run()
         return 0
     if args.command == "manual-test":
         return _manual_command(args)

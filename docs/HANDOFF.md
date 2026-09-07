@@ -1,5 +1,13 @@
 # 跨对话交接
 
+## V3 当前开发状态（2026-09-08）
+
+`V3-001` 已在分支 `codex/v3` 完成 Acceptance；`V3-002` 及之后任务未启动，本轮没有扩展其未集成原型。渠道无关契约/应用映射、PostgreSQL 去重 inbox + 唯一 task、异步 outbox 的 lease/retry/dead-letter/逐次投递记录、预签发一次性监督回调，以及飞书官方 SDK 长连接与 CLI 运行入口均已落地。
+
+监督 callback 只能消费服务端预签发的 PENDING challenge；收到的渠道 payload 不得创建授权记录。消费在 owner command 同一事务内校验 channel/callback ID、操作者、动作、对象 ID/version/hash、payload、expiry 和 secret token，并由行锁保证并发单次生效。Gateway 只写 transport/queue 状态并调用注入的 owner command boundary，不写 Mandate、风险、订单、成交或账本真值。
+
+用户将原 `gpt-5.6-sol/xhigh` 计划调整为 `gpt-5.6-sol/medium`；最终执行身份 `/root/v3_001_sol_medium`。验证：`UV_CACHE_DIR=/tmp/fao-uv-cache make check` 全绿（599 contract、9 property、2 schema、1 unit）；隔离 PostgreSQL `fao_v3_001_final2_20260908_sol_medium` 的全 integration 60 项与 V3-001 定向 6 项通过；100 次持久入箱 p95=1.107ms、max=12.253ms。没有可用真实飞书凭据，因此官方 SDK 构造、payload translation 和运行入口已验证，外部飞书连接/送达保留为部署验证项，不影响本地 Acceptance。Evidence：[`evidence/v3-001/implementation-2026-09-08.json`](../evidence/v3-001/implementation-2026-09-08.json)。
+
 ## 2026-09-06 V2 收口状态（当前权威）
 
 V2-001～V2-012 已在 `docs/ROADMAP.md` 全部标记 `COMPLETE`。本轮新增：`ManualTestApplication` 的 MANUAL_TEST PostgreSQL 单事务入口（授权消费→风险→Receipt→Order→成交→保护→结算→报告），V1 PIT ReplayEpisodeCandidate→L2 桥接，linked trade-episode 审计与逐账户重放，以及文件持久化 writer lock/reload 和子进程崩溃恢复。可复现验证：`UV_CACHE_DIR=/tmp/fao-uv-cache make check`（578 contract、9 property、2 schema、1 unit，ruff/mypy/secret scan/health 全绿）；隔离 PostgreSQL `fao_v2_001_accept_20260906` 的 `tests/integration/test_v0_014_autonomy_postgresql.py` 31 项全通过。实现模型为 `gpt-5.6-sol/xhigh`；统筹整合为当前 Codex 会话。聚合 Evidence：[`evidence/v2-aggregate-acceptance-2026-09-06.json`](../evidence/v2-aggregate-acceptance-2026-09-06.json)。

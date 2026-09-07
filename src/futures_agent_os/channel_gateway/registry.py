@@ -15,3 +15,9 @@ class ChannelRegistry:
             return self._items[channel]
         except KeyError as exc:
             raise ValueError("channel unavailable") from exc
+
+    def require_capability(self, channel: str, capability: str) -> ChannelAdapter:
+        adapter = self.get(channel)
+        if capability not in adapter.capabilities():
+            raise NotImplementedError(f"channel {channel} does not support {capability}")
+        return adapter

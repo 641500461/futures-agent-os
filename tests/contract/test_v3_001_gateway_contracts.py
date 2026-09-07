@@ -72,6 +72,56 @@ def test_feishu_is_protocol_translation_adapter():
     assert c.action == "pause" and "kill_switch" in a.capabilities()
 
 
+def test_feishu_control_translation_preserves_version_hash_and_expiry():
+    expiry = datetime.now(timezone.utc) + timedelta(minutes=5)
+    digest = "a" * 64
+    callback = FeishuAdapter().parse_callback(
+        {
+            "callback_id": "control-1",
+            "actor_id": "operator-1",
+            "action": "pause",
+            "target_id": "mandate-1",
+            "target_version": 7,
+            "target_sha256": digest,
+            "expires_at": expiry.isoformat(),
+            "token": "secret",
+        }
+    )
+    assert callback.target_version == 7
+    assert callback.target_sha256 == digest
+    assert callback.expires_at == expiry
+
+
+def test_adapter_capability_rejection_is_explicit():
+    class ReadOnlyAdapter(Adapter):
+        channel = "readonly"
+
+        def capabilities(self):
+            return frozenset({"explain"})
+
+    with pytest.raises(NotImplementedError):
+        NotificationDispatcher().dispatch(
+            ReadOnlyAdapter(), OutboundNotification("readonly", "c", "INFO", "text", "key")
+        )
+
+
+def test_feishu_sdk_callback_invokes_durable_sink_before_return():
+    adapter = FeishuAdapter()
+    persisted = []
+    adapter.bind_sinks(event_sink=persisted.append)
+    adapter._on_sdk_message(
+        {
+            "header": {"event_id": "sdk-event"},
+            "event": {
+                "sender": {"sender_id": {"open_id": "operator"}},
+                "message": {"message_id": "message", "chat_id": "chat", "create_time": "1000"},
+            },
+        }
+    )
+    assert [item.event_id for item in persisted] == ["sdk-event"]
+    assert adapter.receive() == []
+
+
 from futures_agent_os.channel_gateway.gateway import ChannelGateway
 
 
@@ -177,7 +227,7 @@ def test_parallel_fanout_returns_named_results():
     assert ParallelFanout().run({"risk": lambda: "r", "critic": lambda: "c"}) == {"risk": "r", "critic": "c"}
 
 
-from datetime import timedelta, timezone, datetime
+from datetime import timedelta
 from futures_agent_os.agent_orchestration.autonomy_mandate import SimulationAutonomyMandate, MandateStatus
 
 
