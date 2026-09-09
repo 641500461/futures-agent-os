@@ -1,0 +1,42 @@
+{
+  "version": "V4",
+  "review": "independent_exit",
+  "date": "2026-09-10",
+  "reviewer_model": "gpt-6-astra",
+  "reviewer_reasoning_effort": "medium",
+  "implementation_commit": "0d6a154",
+  "scope": "V4-001..V4-013 roadmap acceptance and V4 Exit",
+  "acceptance": {
+    "all_tasks_complete": true,
+    "evidence_present_for_each_task": true,
+    "complete_hypothesis_validation_path": true,
+    "review_lesson_or_candidate_artifact": true,
+    "promotion_bypass_absent": true,
+    "research_and_simulation_only": true,
+    "agent_not_authority": true
+  },
+  "validation": {
+    "command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+    "result": "PASS",
+    "contract": 828,
+    "property": 9,
+    "schema": 2,
+    "unit": 1,
+    "quality": ["ruff", "mypy", "secret scan", "health"]
+  },
+  "evidence_chain": [
+    "V4-003 runner deterministically produces historical, robustness, OOS/walk-forward and forward/scenario artifacts and rejects incomplete packages",
+    "V4-006 produces source-bound Review evidence",
+    "V4-007 and V4-008 provide LessonCandidate and independently validated/expiring Lesson lifecycle",
+    "V4-009 requires all four evidence classes and separates human approval from independent activation",
+    "V4-012 creates only idempotent, pausable research triggers",
+    "V4-013 produces proposal-only GovernanceProposal after complete evidence"
+  ],
+  "verdict": "PASS",
+  "notes": [
+    "No blocking gap found in the V4 Exit acceptance matrix.",
+    "No agent, trigger or governance proposal can promote, activate, rollback or modify risk policy.",
+    "The current host did not provide a separate Sol reviewer execution context; this review was performed in the coordinating GPT-6 Astra context and recorded honestly.",
+    "Real-money trading remains out of scope."
+  ]
+}

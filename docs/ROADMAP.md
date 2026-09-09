@@ -382,7 +382,7 @@ Exit：PASS（独立审查 Evidence：`evidence/v3-exit/independent-review-2026-
   Acceptance: Governance Agent 无晋升、启用、回滚或风险政策修改权限；最终决定属于治理服务和用户。  
   Evidence: [`evidence/v4-012-013/implementation-2026-09-10.json`](../evidence/v4-012-013/implementation-2026-09-10.json)。
 
-Exit：至少一个 Hypothesis 完成历史、稳健性、样本外和前向验证，并产生可审计的 Review、Lesson 或 StrategyCandidate；任何晋升均无绕过。
+Exit：PASS（独立审查 Evidence：`evidence/v4-exit/independent-review-2026-09-10.json`）。V4-003 的确定性验证 runner 可重放完整验证 artifact；V4-006/007/008 形成 Review→LessonCandidate→ValidatedLesson 证据链；V4-009 强制历史、稳健性、样本外和前向四类证据，并将人工批准与独立激活分离；任何晋升均无绕过。研究触发器与 Governance Agent 仍只有研究/提案权限。
 
 ## V5：高保真、组合扩展与离线增强
 
