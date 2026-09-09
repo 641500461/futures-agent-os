@@ -368,9 +368,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v3-exit/independent-review-2026-
   Status: COMPLETE（2026-09-10；四阶段证据门禁、人工批准和独立激活已实现）。  
   Acceptance: 跳过任一强制证据阶段的晋升请求被拒绝；只有获得 autonomous-simulation qualification 且在目标范围激活的 Strategy Version 才可被 Mandate 引用；批准、注册和启用是独立审计事件，不是逐笔 PlanApproval。  
   Evidence: [`evidence/v4-009/implementation-2026-09-10.json`](../evidence/v4-009/implementation-2026-09-10.json)。
-- [ ] `V4-010` 扩展 V3 基础 Agent/Prompt/Model/Toolset Registry：候选、规模化离线评测、批准、启用、回滚、废弃和兼容矩阵。  
+- [x] `V4-010` 扩展 V3 基础 Agent/Prompt/Model/Toolset Registry：候选、规模化离线评测、批准、启用、回滚、废弃和兼容矩阵。  
+  Status: COMPLETE（2026-09-10；版本组合、资格和独立激活门禁已实现）。  
   Acceptance: 任一运行可解析完整版本组合；不兼容、未激活或未取得 autonomous-simulation qualification 的版本不能进入 Mandate 下的自治运行。  
-  Evidence: 待补。
+  Evidence: [`evidence/v4-010/implementation-2026-09-10.json`](../evidence/v4-010/implementation-2026-09-10.json)。
 - [ ] `V4-011` 接入宏观、新闻、库存、期限结构、拥挤度和历史相似案例的 point-in-time Evidence；明确授权与不可信内容边界。  
   Acceptance: 每条证据有来源、许可、发布时间/有效时点和质量；非结构化内容只作为研究数据进入 Agent 提案，不直接成为确定性业务指令或权限。当前范围不要求独立对抗性 Prompt Injection 测试。
   Evidence: 待补。

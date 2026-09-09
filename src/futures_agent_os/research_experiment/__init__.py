@@ -752,6 +752,8 @@ __all__ = [
     "StrategyActivation",
     "StrategyPromotionRegistry",
     "StrategyPromotionRequest",
+    "RuntimeVersionRegistry",
+    "RuntimeVersionSet",
 ]
 
 from .v4_004 import (
@@ -767,3 +769,4 @@ from .v4_004 import (
 
 from .v4_005 import BatchRun, BatchStatus, ScaledExperimentManager, ScaledExperimentPlan
 from .strategy_promotion import PromotionStage, StrategyActivation, StrategyPromotionRegistry, StrategyPromotionRequest
+from .runtime_version_registry import RuntimeVersionRegistry, RuntimeVersionSet
