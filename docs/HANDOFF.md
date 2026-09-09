@@ -1,8 +1,44 @@
 # 跨对话交接
 
-## V3 当前开发状态（2026-09-08）
+## V3 当前开发状态（2026-09-09）
 
-`V3-001` 已在分支 `codex/v3` 完成 Acceptance；`V3-002` 及之后任务未启动，本轮没有扩展其未集成原型。渠道无关契约/应用映射、PostgreSQL 去重 inbox + 唯一 task、异步 outbox 的 lease/retry/dead-letter/逐次投递记录、预签发一次性监督回调，以及飞书官方 SDK 长连接与 CLI 运行入口均已落地。
+当前权威状态：V3 Exit 已通过；V4 可启动，但 `V3-003` 至 `V3-015` 已分别完成 Acceptance 并具备对应 Evidence。独立 reviewer 是完整 V3 Exit 的硬要求，现进入该审查阶段；它不回写或替代各任务的实现证据。当前宿主不暴露精确 model/effort telemetry，Evidence 按要求记录为 `NOT_EXPOSED`；本轮用户指定开发路由为 `gpt-6-astra/medium`。
+
+下述“已落地”及测试计数保留为历史运行记录，不代表 V3 已验收。
+
+V3-003 本轮修正：新增反例先复现 15 项失败，最终 Strategy/Gateway 定向 52 项通过。缺失保护不再隐式产生 NO_TRADE；伪造 ProtectionIntent、非有限暴露、无效最大损失、非 DRAFT 候选、NO_TRADE/DEFER 带风险、空草案证据和非法方向均被拒绝。bounded task adapter 要求同一时点的不可变 artifact，输出证据绑定输入 artifact ID 或内容哈希，未来来源 fail closed；StrategyAgentResult 自身复验精确 proposal 类型、PIT、expiry 与 lineage，阻断绕过 package 的直接构造；StrategyDelegationOwner 以提案和完整 lineage 的规范化内容哈希接入 durable delegation。隔离 PostgreSQL 跨重启黄金链通过且 checkpoint 仅保存引用；全量 `make check` 通过（660 contract、9 property、2 schema、1 unit）。Evidence：[`validation-correction-2026-09-08.json`](../evidence/v3-003/validation-correction-2026-09-08.json)。
+
+V3-004 本轮修正：Portfolio Agent 不再接受空账户、空预算、空相关性或任意 Decimal。新增 typed TargetExposure（LONG/SHORT/FLAT + 0–1 风险预算比例）和 ACCEPT/DOWNWEIGHT/HEDGE/REPLACE/REJECT；bounded task 必须绑定同一 PIT 的 TradePlanDraft、Critique、PortfolioSnapshot、StrategyBudget、CorrelationAssessment 和现有暴露，并在正反证据中逐一引用全部输入。Agent 无 quantity、RiskDecision、reservation、Order、Position 或 ledger 字段，Catalog 也拒绝 `position_sizing` 工具；最终手数与许可仍归确定性 Position Sizing/Risk Constitution。定向 18 项及全量 `make check` 通过（678 contract、9 property、2 schema、1 unit）。Evidence：[`implementation-2026-09-08.json`](../evidence/v3-004/implementation-2026-09-08.json)。
+
+V3-005 本轮修正：Risk Analyst task 绑定同一 PIT 的 TradePlanDraft、PortfolioProposal、MarketStateAssessment、RiskPreflight 与 StressTestResult，Assessment 强制主要风险、typed 尾部情景、缓解建议、未知项、正反证据、warnings、confidence 和 expiry，并逐一引用全部输入。Advisory 枚举不包含 APPROVE/PERMIT，REJECT/PROTECT_ONLY/HALT 预检只能 DEFER 或建议拒绝，且 package 阻断预检结果改写。Tool Registry 中 `risk_check` 仍是只读非权威预览，正式 RiskDecision 归 Portfolio & Risk owner。定向 17 项及全量 `make check` 通过（695 contract、9 property、2 schema、1 unit）。Evidence：[`implementation-2026-09-08.json`](../evidence/v3-005/implementation-2026-09-08.json)。
+
+V3-006 本轮修正：Execution Advisor 直接复用 V2 `FillOrderType` 的 MARKET/LIMIT/STOP，task 绑定 Plan、PortfolioProposal、RiskAssessment/Preflight、治理激活快照、流动性、成本和每个激活算法的 L1/L2 仿真结果。只读 owner verifier 在 recommend/package 两个边界重新解析当前激活集合并复验仿真；调用方自报激活或未认证结果均 fail closed。Recommendation 仅含算法偏好、紧急度、取消条件、完整比较与证据，无 Order/quantity/max loss/RiskDecision；TWAP/VWAP/Iceberg/分批无法进入 V2 enum。定向 26 项及全量 `make check` 通过（721 contract、9 property、2 schema、1 unit）。Evidence：[`implementation-2026-09-08.json`](../evidence/v3-006/implementation-2026-09-08.json)。
+
+V3-007 本轮修正：新增 V3 Catalog 1.6 plan-facing Critic，Catalog 1.5 的 V1 research Critic 保持冻结语义；V3 使用独立 `PRE_TRADE_CRITIQUE` artifact。Critique 必须恰好包含 Thesis、Counter Evidence、Data Leakage、Cost Coverage、Regime Fit、Risk/Reward、Historical Failure 七类 finding；非 PASS 必须带补证要求，任一 concern/blocker/unknown 禁止 PASS，REJECT 结果 `can_advance=false`。输出只引用 proposal，不可重写 Plan，也无 RiskDecision/Order/episode/outcome/Reflection 字段；与 Post-trade Reviewer 的角色、状态和 schema 有直接反例证明。定向 16 项及全量 `make check` 通过（737 contract、9 property、2 schema、1 unit）。Evidence：[`implementation-2026-09-08.json`](../evidence/v3-007/implementation-2026-09-08.json)。
+
+V3-008 本轮修正：以 typed CollaborationPlan DAG 替代无结构 callable fan-out。Regime/Portfolio 与 Risk/Critic/Execution 形成两个明确依赖波次，确定性 Orchestrator 限制并发并按计划顺序 fan-in；每项任务绑定同一 PIT 输入、输出类型、工具 allowlist、token/tool/time/compute 上限，图深度即 loop/round 上限。task worker 只获得 task、CancellationToken 和预算 meter，没有 recipient/message/peer/chat 面；超时、预算耗尽或失败使依赖任务 fail closed。冲突完整展示各方 claim、scope、evidence、as_of、confidence、unknowns，按确定性 authority rule 分类且无多数投票；有冲突或未完整完成时 PM 不得生成 TradePlanDraft。定向 11 项及全量 `make check` 通过（748 contract、9 property、2 schema、1 unit）。Evidence：[`implementation-2026-09-08.json`](../evidence/v3-008/implementation-2026-09-08.json)。
+
+V3-009 本轮修正：授权真值统一回到 Decision bounded context，移除 Agent Orchestration 的弱化 Mandate/Mode 重复模型。Mandate scope 精确绑定账户、品种/策略/Session、动作/数量、Risk Constitution、通知与 typed escalation mode；默认 `SKIP_AND_NOTIFY`，调用方布尔值不能自行开启例外，只有 `REQUEST_ONE_OFF` + 当前 ACTIVE AUTONOMOUS_SIMULATION/qualification/health 才能由 Agent 创建 REQUESTED PlanApproval，grant 仍只属于人类。HALTED 恢复必须经过人工根因、对账、治理批准门；用户 pause 同时版本化 Mandate/Mode、stale Basis/Receipt、释放 reservation，健康/版本暂停只改变 Mode。新增 migration `0010_v3_009` 和最小权限 PostgreSQL owner commands；隔离库完成 upgrade、`0010→0009→0010`、3 项 V3-009、11 项迁移组合及 31 项既有自治集成验证。全量 `make check` 通过（767 contract、9 property、2 schema、1 unit）。Evidence：[`implementation-2026-09-08.json`](../evidence/v3-009/implementation-2026-09-08.json)。
+
+V3-015 已完成：Decision 持有 canonical RiskReductionRequest/ProtectionTrigger，五域 WatchCoordinator 默认接入确定性保护 owner，Agent Thesis 只作为 Position Watch 的可降级层；Execution T4-SAFE 验证与 ProtectiveRiskAction 链接已通过契约证据。PostgreSQL durable watch queue 已支持稳定事件 key、bounded lease/fencing、过期 reclaim、补跑和 RETRY；重要通知按严重级别 deadline 监测，超时以唯一 supervision escalation 收口；结构化 Outbox payload 在 worker 中保留。完整 `make check` 通过（788 contract、9 property、2 schema、1 unit），隔离 PostgreSQL V3-015 4 项及 gateway+watch 9 项通过。Evidence：[`evidence/v3-015/implementation-2026-09-09.json`](../evidence/v3-015/implementation-2026-09-09.json)。
+
+V3-014 已开始实现：AutonomyGoldenCycle 新增 run_full，显式串起十阶段 owner-mediated 模拟周期，并支持逐阶段 journal_append；预算、缺失证据、非法执行结果或 Journal 写入失败均 fail closed，契约与完整门禁已通过。任务已 COMPLETE。
+
+V3-013 已开始实现：QualificationRegistry 的 AgentVersion 增加独立 baseline_ref，qualification 拒绝空/非有限指标与门槛，Activation 只允许 user:* governance actor，并记录不可变 register/qualify/activate 生命周期证据；契约与完整门禁已通过。任务已 COMPLETE。
+
+V3-012 已开始实现：PostTradeReviewer 的 review 与 review_episode 均强制 Decision/Execution/Accounting 三类源事件，新增 review_trade_episode 对 exact TradeEpisode/SourceEvent 集合校验，禁止无源事件的直接构造；独立 TradeReview/Reflection 契约测试已通过。任务已 COMPLETE。
+
+V3-011 已开始实现：SupervisionCard 增加交易生命周期必需的十类确定性事实引用、action 引用校验、TRADE 分级不得携带操作请求、跨渠道 content digest 和 reference-only Feishu card payload；OutboundNotification、durable outbox 与 Feishu adapter 已支持结构化 interactive card 投递，契约与完整 make check 已通过。任务已 COMPLETE；真实凭据下的外部送达属于部署验证，不影响本地 Acceptance。
+
+V3-010 已完成验收收口。提交服务按 `Preflight → Basis → sizing → reservation → Final Gate` 排序；越权且允许升级的 Agent 计划在等待人工 PlanApproval 时不产生 reservation，已批准的 `REQUEST_ONE_OFF` Basis 可进入自治 Final Gate，安全降量不超过 Basis ceiling。Receipt 签发后会在提交边界重新签发并精确复验当前 RiskDecision，漂移则使 Receipt/Basis 失效并释放 reservation。独立复核把 Roadmap Acceptance 拆成显式矩阵并逐项绑定既有 contract、工具权限和隔离 PostgreSQL 测试；没有发现需要继续扩展 V3-010 功能的缺口。最终 `make check` 全绿（776 contract、9 property、2 schema、1 unit），隔离 PostgreSQL 自治链 36 项与迁移往返 8 项通过。Evidence：[`implementation-2026-09-08.json`](../evidence/v3-010/implementation-2026-09-08.json)。完整 V3 Exit 仍需等待 V3-011 至 V3-015 完成，并由未主导该版本实现的独立执行身份审查。
+
+`V3-001` 至 `V3-015` 的专家契约、持久化链和运行边界均在工作区；V3 Exit 未通过仅表示独立版本审查尚未完成。V3-002 PostgreSQL durable workflow 的重启、fencing 和迁移往返证据，以及 V3-014/015 的周期/盯盘黄金链证据分别保留在对应任务 Evidence 中。真实交易仍禁止。
+
+每个阶段调用稳定幂等键的注入式 owner command；若 owner effect 已提交而 worker 在 checkpoint 前丢失，新进程会用相同键重试。恢复前必须逐项复验已取得的 Snapshot、TradePlan、AuthorizationBasis、AutonomyGateReceipt 与 RiskDecision，任一失效即在调用下一 owner command 前 fail closed。10 个可中断阶段均以新 SQLAlchemy Engine 验证跨重启恢复且无重复 owner effect；五类关键真值的 stale 反例均为零后续命令。范围内黄金路径无 WAITING_USER 状态。V3-004 及后续专家 Agent 尚未启用，真实交易仍禁止。
+
+验证：`UV_CACHE_DIR=/tmp/fao-uv-cache make check` 全绿（622 contract、9 property、2 schema、1 unit）；隔离 PostgreSQL `fao_v3_002_root_20260908_04` 的全 integration 72 项通过，其中 V3-002 定向 12 项；迁移在另一空库完成 upgrade→downgrade→upgrade 往返。Evidence：[`evidence/v3-002/implementation-2026-09-08.json`](../evidence/v3-002/implementation-2026-09-08.json)。实现模型与 reasoning effort 未由当前宿主暴露，均如实记录 `NOT_EXPOSED`；V3 版本 Exit 的独立复核仍待后续任务全部完成。
+
+V3-001 的渠道无关契约/应用映射、PostgreSQL 去重 inbox + 唯一 task、异步 outbox 的 lease/retry/dead-letter/逐次投递记录、预签发一次性监督回调，以及飞书官方 SDK 长连接与 CLI 运行入口均已落地。
 
 监督 callback 只能消费服务端预签发的 PENDING challenge；收到的渠道 payload 不得创建授权记录。消费在 owner command 同一事务内校验 channel/callback ID、操作者、动作、对象 ID/version/hash、payload、expiry 和 secret token，并由行锁保证并发单次生效。Gateway 只写 transport/queue 状态并调用注入的 owner command boundary，不写 Mandate、风险、订单、成交或账本真值。
 

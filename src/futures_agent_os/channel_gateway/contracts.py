@@ -41,6 +41,7 @@ class OutboundNotification:
     severity: str
     text: str
     idempotency_key: str
+    payload: Mapping[str, Any] | None = None
 
     def __post_init__(self) -> None:
         if not self.channel.strip() or not self.conversation_id.strip() or not self.idempotency_key.strip():
@@ -49,6 +50,8 @@ class OutboundNotification:
         if normalized not in _SEVERITIES:
             raise ValueError(f"unsupported notification severity: {self.severity}")
         object.__setattr__(self, "severity", normalized)
+        if self.payload is not None and not isinstance(self.payload, Mapping):
+            raise ValueError("notification payload must be a mapping")
 
     @property
     def delivery_key(self) -> str:

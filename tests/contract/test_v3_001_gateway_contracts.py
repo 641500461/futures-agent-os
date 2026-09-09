@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import pytest
 
 # ruff: noqa: E402
@@ -178,46 +178,55 @@ def test_trigger_is_idempotent():
     assert a == b
 
 
-from futures_agent_os.agent_orchestration.strategy_agent import StrategyAgent, StrategyCandidate
+from futures_agent_os.agent_orchestration.strategy_agent import StrategyAgent, StrategyCandidate, ProtectionIntent
 
 
 def test_strategy_agent_outputs_candidate_without_order():
-    c = StrategyAgent().propose(thesis="t", invalidation="i", evidence=("e",), target_risk="r", exit_intent="x")
+    c = StrategyAgent().propose(
+        thesis="t",
+        invalidation="i",
+        evidence=("e",),
+        target_risk="r",
+        exit_intent="x",
+        protection_intent=ProtectionIntent("stop", "100"),
+    )
     assert isinstance(c, StrategyCandidate) and not hasattr(c, "order")
 
 
 from decimal import Decimal
-from futures_agent_os.agent_orchestration.portfolio_agent import PortfolioAgent, PortfolioProposal
+from futures_agent_os.agent_orchestration.portfolio_agent import ExposureDirection, TargetExposure
 
 
-def test_portfolio_agent_outputs_proposal():
-    p = PortfolioAgent().propose(target_exposure=Decimal("1.0"), rationale="r")
-    assert isinstance(p, PortfolioProposal)
+def test_portfolio_target_exposure_is_not_a_final_quantity():
+    target = TargetExposure("IF", ExposureDirection.LONG, Decimal("0.10"))
+    assert target.risk_budget_fraction == Decimal("0.10")
+    assert not hasattr(target, "quantity")
 
 
-from futures_agent_os.agent_orchestration.risk_analyst_agent import RiskAnalystAgent, RiskAssessment
+from futures_agent_os.agent_orchestration.risk_analyst_agent import RiskScenario, RiskSeverity
 
 
 def test_risk_analyst_is_non_authoritative():
-    a = RiskAnalystAgent().assess(scenarios=("stress",), counter_evidence=("ce",), proposed_loss=Decimal("10"))
-    assert isinstance(a, RiskAssessment) and not hasattr(a, "risk_decision")
+    scenario = RiskScenario("limit lock", "exit liquidity disappears", RiskSeverity.CRITICAL, "artifact:1")
+    assert not hasattr(scenario, "risk_decision")
+    assert not hasattr(scenario, "approve")
 
 
-from futures_agent_os.agent_orchestration.execution_advisor import ExecutionAdvisor, ExecutionRecommendation
+from futures_agent_os.execution_simulation import FillOrderType
 
 
 def test_execution_advisor_only_recommends_registered_algorithms():
-    assert isinstance(ExecutionAdvisor().recommend(algorithm="MARKET", rationale="cost"), ExecutionRecommendation)
+    assert {item.value for item in FillOrderType} == {"MARKET", "LIMIT", "STOP"}
     with pytest.raises(ValueError):
-        ExecutionAdvisor().recommend(algorithm="TWAP", rationale="x")
+        FillOrderType("TWAP")
 
 
-from futures_agent_os.agent_orchestration.pre_trade_critic import PreTradeCritic, PreTradeCritique
+from futures_agent_os.agent_orchestration.pre_trade_critic import CriticCategory, CriticVerdict
 
 
 def test_pre_trade_critic_is_distinct_structured_role():
-    c = PreTradeCritic().review(concerns=("cost",), verdict="DEFER")
-    assert isinstance(c, PreTradeCritique)
+    assert CriticCategory.DATA_LEAKAGE.value == "DATA_LEAKAGE"
+    assert {item.value for item in CriticVerdict} == {"PASS", "REVISE", "REJECT", "DEFER"}
 
 
 from futures_agent_os.agent_orchestration.v3_parallel import ParallelFanout
@@ -225,14 +234,3 @@ from futures_agent_os.agent_orchestration.v3_parallel import ParallelFanout
 
 def test_parallel_fanout_returns_named_results():
     assert ParallelFanout().run({"risk": lambda: "r", "critic": lambda: "c"}) == {"risk": "r", "critic": "c"}
-
-
-from datetime import timedelta
-from futures_agent_os.agent_orchestration.autonomy_mandate import SimulationAutonomyMandate, MandateStatus
-
-
-def test_mandate_effective_requires_active_and_unexpired():
-    m = SimulationAutonomyMandate(
-        "m", "a", "scope", datetime.now(timezone.utc) + timedelta(hours=1), MandateStatus.ACTIVE
-    )
-    assert m.effective

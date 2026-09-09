@@ -56,12 +56,25 @@ class ArtifactKind(StrEnum):
     EXPERIMENT_REQUEST = "experiment_request"
     EVIDENCE_SYNTHESIS = "evidence_synthesis"
     RESEARCH_DIAGNOSTIC = "research_diagnostic"
+    LEAKAGE_ASSESSMENT = "leakage_assessment"
+    RISK_REWARD_ANALYSIS = "risk_reward_analysis"
+    HISTORICAL_FAILURES = "historical_failures"
     STRATEGY_CANDIDATE = "strategy_candidate"
     TRADE_PLAN_DRAFT = "trade_plan_draft"
     CRITIQUE = "critique"
+    PORTFOLIO_SNAPSHOT = "portfolio_snapshot"
+    CORRELATION_ASSESSMENT = "correlation_assessment"
+    STRATEGY_BUDGET = "strategy_budget"
     PORTFOLIO_PROPOSAL = "portfolio_proposal"
+    RISK_PREFLIGHT = "risk_preflight"
+    STRESS_TEST_RESULT = "stress_test_result"
     RISK_ASSESSMENT = "risk_assessment"
+    EXECUTION_ALGORITHM_ACTIVATION = "execution_algorithm_activation"
+    EXECUTION_SIMULATION_RESULT = "execution_simulation_result"
+    LIQUIDITY_PROFILE = "liquidity_profile"
+    COST_ANALYSIS = "cost_analysis"
     EXECUTION_RECOMMENDATION = "execution_recommendation"
+    PRE_TRADE_CRITIQUE = "pre_trade_critique"
     TRADE_REVIEW = "trade_review"
     REFLECTION = "reflection"
     EXPERIMENT_PLAN = "experiment_plan"
@@ -125,6 +138,21 @@ class ArtifactRef:
             "experiment_request",
             "research_synthesis",
             "critique",
+            "portfolio_snapshot",
+            "correlation_assessment",
+            "strategy_budget",
+            "portfolio_proposal",
+            "risk_preflight",
+            "stress_test_result",
+            "risk_assessment",
+            "execution_algorithm_activation",
+            "execution_simulation_result",
+            "liquidity_profile",
+            "cost_analysis",
+            "leakage_assessment",
+            "risk_reward_analysis",
+            "historical_failures",
+            "pre_trade_critique",
             "signal_result",
             "critique_diagnostic",
             "research_tool_result",

@@ -51,6 +51,8 @@ def test_empty_database_upgrade_downgrade_upgrade_preserves_schema_isolation() -
             ("fao", "autonomy_gate_receipt"),
             ("fao", "decision_journal_entry"),
             ("agent_checkpoint", "checkpoint"),
+            ("agent_checkpoint", "v3_autonomy_workflow_run"),
+            ("agent_checkpoint", "v3_autonomy_workflow_history"),
         ):
             assert _exists(connection, schema, table)
         assert (
@@ -69,6 +71,7 @@ def test_empty_database_upgrade_downgrade_upgrade_preserves_schema_isolation() -
         )
     _alembic("downgrade", "0005_v1_008")
     with engine.connect() as connection:
+        assert not _exists(connection, "agent_checkpoint", "v3_autonomy_workflow_run")
         assert connection.execute(
             text(
                 "SELECT has_function_privilege('fao_workflow_worker', "

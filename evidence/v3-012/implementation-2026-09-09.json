@@ -1,0 +1,18 @@
+{
+  "task": "V3-012",
+  "status": "COMPLETE",
+  "date": "2026-09-09",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "changes": [
+    "PostTradeReviewer.review and review_episode require Decision, Execution, and Accounting source events",
+    "TradeReview and Reflection remain independent immutable artifacts",
+    "review_trade_episode hydrates Review from an exact TradeEpisode and matching SourceEvent set"
+  ],
+  "tests": [
+    "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v3_remaining_contracts.py -q: 7 passed",
+    "UV_CACHE_DIR=/tmp/fao-uv-cache make check: static checks and contract suite passed",
+    "UV_CACHE_DIR=/tmp/fao-uv-cache make check: 777 contract, 9 property, 2 schema, 1 unit; lint, mypy, secret scan and health passed"
+  ],
+  "remaining": []
+}

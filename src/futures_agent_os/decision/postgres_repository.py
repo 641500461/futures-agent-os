@@ -94,6 +94,94 @@ class PostgresAutonomyRepository:
         ).scalar_one()
         return ConsumeResult(result, result is not None)
 
+    def request_agent_plan_approval(
+        self,
+        connection: Connection,
+        *,
+        approval_id: UUID,
+        plan_id: UUID,
+        plan_version: int,
+        plan_sha256: str,
+        account_id: UUID,
+        instrument_id: str,
+        strategy_id: str,
+        session_id: str,
+        action: str,
+        quantity: Decimal,
+        approval_token: UUID,
+        scope_sha256: str,
+        approval_sha256: str,
+        expires_at: datetime,
+        mandate_id: UUID,
+        mandate_version: int,
+        binding_id: UUID,
+        binding_version: int,
+        environment_policy_ref: str,
+        requested_by: str,
+        now: datetime,
+    ) -> bool:
+        return bool(
+            connection.execute(
+                text("""SELECT fao.request_agent_plan_approval(
+                    :approval,:plan,:plan_version,:plan_hash,:account,:instrument,:strategy,:session,:action,
+                    :quantity,:token,:scope_hash,:approval_hash,:expires,:mandate,:mandate_version,
+                    :binding,:binding_version,:environment,:requested_by,:now)"""),
+                {
+                    "approval": approval_id,
+                    "plan": plan_id,
+                    "plan_version": plan_version,
+                    "plan_hash": plan_sha256,
+                    "account": account_id,
+                    "instrument": instrument_id,
+                    "strategy": strategy_id,
+                    "session": session_id,
+                    "action": action,
+                    "quantity": quantity,
+                    "token": approval_token,
+                    "scope_hash": scope_sha256,
+                    "approval_hash": approval_sha256,
+                    "expires": expires_at,
+                    "mandate": mandate_id,
+                    "mandate_version": mandate_version,
+                    "binding": binding_id,
+                    "binding_version": binding_version,
+                    "environment": environment_policy_ref,
+                    "requested_by": requested_by,
+                    "now": now,
+                },
+            ).scalar_one()
+        )
+
+    def grant_plan_approval(
+        self,
+        connection: Connection,
+        *,
+        approval_id: UUID,
+        approval_version: int,
+        plan_id: UUID,
+        plan_version: int,
+        plan_sha256: str,
+        actor: str,
+        now: datetime,
+    ) -> bool:
+        """Human-only grant transition for a requested one-off approval."""
+        return bool(
+            connection.execute(
+                text(
+                    "SELECT fao.grant_plan_approval(:approval,:approval_version,:plan,:plan_version,:plan_hash,:actor,:now)"
+                ),
+                {
+                    "approval": approval_id,
+                    "approval_version": approval_version,
+                    "plan": plan_id,
+                    "plan_version": plan_version,
+                    "plan_hash": plan_sha256,
+                    "actor": actor,
+                    "now": now,
+                },
+            ).scalar_one()
+        )
+
     def issue_mandate_basis(
         self,
         connection: Connection,
@@ -708,6 +796,36 @@ class PostgresAutonomyRepository:
                     "actor": actor,
                     "evidence": evidence_ref,
                     "new_mandate_hash": new_mandate_sha256,
+                    "new_binding_hash": new_binding_sha256,
+                },
+            ).scalar_one()
+        )
+
+    def pause_autonomy_mode(
+        self,
+        connection: Connection,
+        *,
+        binding_id: UUID,
+        binding_version: int,
+        account_id: UUID,
+        now: datetime,
+        actor: str,
+        reason: str,
+        evidence_ref: str,
+        new_binding_sha256: str,
+    ) -> bool:
+        return bool(
+            connection.execute(
+                text("""SELECT fao.pause_autonomy_mode(
+                    :binding,:binding_version,:account,:now,:actor,:reason,:evidence,:new_binding_hash)"""),
+                {
+                    "binding": binding_id,
+                    "binding_version": binding_version,
+                    "account": account_id,
+                    "now": now,
+                    "actor": actor,
+                    "reason": reason,
+                    "evidence": evidence_ref,
                     "new_binding_hash": new_binding_sha256,
                 },
             ).scalar_one()

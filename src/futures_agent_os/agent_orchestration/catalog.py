@@ -70,6 +70,7 @@ class AgentDefinition:
 # need their own later artifact contracts; they are not claimed by this task.
 # Tasks under earlier catalog contracts are deliberately not silently reinterpreted.
 CATALOG_VERSION = SchemaVersion(1, 5)
+V3_CATALOG_VERSION = SchemaVersion(1, 6)
 _ALL_TRIGGERS = tuple(TriggerSource)
 _READ_BUDGET = AgentBudget(4, 16, 12_000, 120)
 _RESEARCH_BUDGET = AgentBudget(6, 24, 18_000, 300, 2)
@@ -183,7 +184,13 @@ AGENT_CATALOG: tuple[AgentDefinition, ...] = (
         "V3",
         "propose portfolio-level exposure adjustments",
         "does not create or close positions",
-        (ArtifactKind.TRADE_PLAN_DRAFT, ArtifactKind.CRITIQUE),
+        (
+            ArtifactKind.TRADE_PLAN_DRAFT,
+            ArtifactKind.PRE_TRADE_CRITIQUE,
+            ArtifactKind.PORTFOLIO_SNAPSHOT,
+            ArtifactKind.CORRELATION_ASSESSMENT,
+            ArtifactKind.STRATEGY_BUDGET,
+        ),
         (ArtifactKind.PORTFOLIO_PROPOSAL,),
         ("portfolio_state", "exposure_analysis", "correlation_analysis", "stress_test"),
         FailureDisposition.FAIL_CLOSED,
@@ -194,7 +201,13 @@ AGENT_CATALOG: tuple[AgentDefinition, ...] = (
         "V3",
         "explain tail, event, and model risks",
         "does not issue RiskDecision or release a kill switch",
-        (ArtifactKind.TRADE_PLAN_DRAFT, ArtifactKind.PORTFOLIO_PROPOSAL, ArtifactKind.MARKET_STATE_ASSESSMENT),
+        (
+            ArtifactKind.TRADE_PLAN_DRAFT,
+            ArtifactKind.PORTFOLIO_PROPOSAL,
+            ArtifactKind.MARKET_STATE_ASSESSMENT,
+            ArtifactKind.RISK_PREFLIGHT,
+            ArtifactKind.STRESS_TEST_RESULT,
+        ),
         (ArtifactKind.RISK_ASSESSMENT,),
         ("risk_check", "stress_test", "scenario_replay", "contract_info"),
         FailureDisposition.FAIL_CLOSED,
@@ -205,7 +218,16 @@ AGENT_CATALOG: tuple[AgentDefinition, ...] = (
         "V3",
         "recommend a registered execution preference",
         "does not create orders or change a risk ceiling",
-        (ArtifactKind.TRADE_PLAN_DRAFT, ArtifactKind.RISK_ASSESSMENT),
+        (
+            ArtifactKind.TRADE_PLAN_DRAFT,
+            ArtifactKind.PORTFOLIO_PROPOSAL,
+            ArtifactKind.RISK_ASSESSMENT,
+            ArtifactKind.RISK_PREFLIGHT,
+            ArtifactKind.EXECUTION_ALGORITHM_ACTIVATION,
+            ArtifactKind.EXECUTION_SIMULATION_RESULT,
+            ArtifactKind.LIQUIDITY_PROFILE,
+            ArtifactKind.COST_ANALYSIS,
+        ),
         (ArtifactKind.EXECUTION_RECOMMENDATION,),
         ("execution_simulator", "cost_analysis", "liquidity_profile"),
         FailureDisposition.FALLBACK_READ_ONLY,
@@ -277,6 +299,34 @@ AGENT_CATALOG: tuple[AgentDefinition, ...] = (
 
 _BY_ROLE = {definition.role_id.value: definition for definition in AGENT_CATALOG}
 
+# V3 introduces a plan-facing Critic without reinterpreting the V1 Catalog 1.5
+# research Critic or any historical 1.2-1.4 envelope.
+_CATALOG_1_6 = {
+    definition.role_id.value: replace(definition, version=V3_CATALOG_VERSION) for definition in AGENT_CATALOG
+}
+_CATALOG_1_6[AgentRoleId.PRE_TRADE_CRITIC.value] = replace(
+    _CATALOG_1_6[AgentRoleId.PRE_TRADE_CRITIC.value],
+    enabled_from="V3",
+    responsibilities=("independently seek counter-evidence before a strategy proposal may proceed",),
+    non_responsibilities=(
+        "does not rewrite a proposal, issue RiskDecision, review trade outcomes, or create Reflection",
+    ),
+    input_kinds=(
+        ArtifactKind.STRATEGY_CANDIDATE,
+        ArtifactKind.TRADE_PLAN_DRAFT,
+        ArtifactKind.EVIDENCE_SYNTHESIS,
+        ArtifactKind.MARKET_STATE_ASSESSMENT,
+        ArtifactKind.COST_ANALYSIS,
+        ArtifactKind.LEAKAGE_ASSESSMENT,
+        ArtifactKind.RISK_REWARD_ANALYSIS,
+        ArtifactKind.HISTORICAL_FAILURES,
+    ),
+    output_kinds=(ArtifactKind.PRE_TRADE_CRITIQUE,),
+    declared_tools=("historical_query", "cost_analysis", "stress_test", "parameter_stability"),
+    failure_disposition=FailureDisposition.FAIL_CLOSED,
+    metrics=("high_risk_defect_recall", "false_veto_rate", "leakage_detection", "counter_evidence_coverage"),
+)
+
 # Freeze the V1-009 catalog exactly. Its Critic remains the fixed GAP/DEFER
 # adapter and its Research role retains the pre-V1-010 prospective tool names.
 _CATALOG_1_4 = {
@@ -337,6 +387,7 @@ _CATALOGS = {
     SchemaVersion(1, 3): _CATALOG_1_3,
     SchemaVersion(1, 4): _CATALOG_1_4,
     CATALOG_VERSION: _BY_ROLE,
+    V3_CATALOG_VERSION: _CATALOG_1_6,
 }
 
 

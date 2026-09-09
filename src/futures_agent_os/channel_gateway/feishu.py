@@ -239,11 +239,13 @@ class FeishuAdapter:
             CreateMessageRequestBody,
         )
 
+        msg_type = "interactive" if notification.payload is not None else "text"
+        content = notification.payload if notification.payload is not None else {"text": notification.text}
         body = (
             CreateMessageRequestBody.builder()
             .receive_id(notification.conversation_id)
-            .msg_type("text")
-            .content(json.dumps({"text": notification.text}, ensure_ascii=False))
+            .msg_type(msg_type)
+            .content(json.dumps(content, ensure_ascii=False))
             .uuid(hashlib.sha256(notification.delivery_key.encode("utf-8")).hexdigest())
             .build()
         )

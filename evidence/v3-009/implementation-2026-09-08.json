@@ -1,0 +1,75 @@
+{
+  "task": "V3-009",
+  "status": "COMPLETE",
+  "date": "2026-09-08",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "reviewer_model": "NOT_APPLICABLE_TASK_LEVEL_SELF_VERIFICATION",
+  "reviewer_reasoning_effort": "NOT_APPLICABLE_TASK_LEVEL_SELF_VERIFICATION",
+  "commit": "uncommitted worktree; no commit created",
+  "routing": {
+    "policy_target": "gpt-5.6-sol/xhigh",
+    "reason": "autonomy authorization lifecycle, atomic invalidation, concurrency and recovery are state-critical",
+    "actual": "current coordinator; exact model and reasoning effort not exposed"
+  },
+  "scope": [
+    "Decision-owned typed SimulationAutonomyMandate and AutonomyModeBinding; removed the weaker Agent Orchestration duplicate",
+    "exact account, instrument, strategy, session, action, quantity, Risk Constitution, notification and escalation scope hashing",
+    "typed SKIP_AND_NOTIFY and REQUEST_ONE_OFF escalation modes with safe default",
+    "nine-state Mandate lifecycle with expiry and human revocation rules",
+    "explicit two-step human HALTED recovery gate with root-cause, reconciliation and governance approval evidence",
+    "EffectiveAutonomy composition over Mandate, Mode Binding, qualification and health",
+    "human-only composite pause/resume with Basis/Receipt invalidation and reservation release",
+    "Mode-only HEALTH_DEGRADED and POLICY_OR_VERSION_QUARANTINE pause without rewriting Mandate",
+    "binding expiry/supersession invalidation of unconsumed authorization artifacts",
+    "Agent-requested one-off PlanApproval that requires current ACTIVE AUTONOMOUS_SIMULATION and Mandate REQUEST_ONE_OFF policy; only a human can grant",
+    "PostgreSQL owner commands and safe migration 0010_v3_009"
+  ],
+  "acceptance": {
+    "mandate_scope_exactly_validated": "PASS",
+    "non_draft_nonterminal_expiry": "PASS",
+    "approved_active_suspended_halted_recovering_revocation": "PASS",
+    "binding_expiry_supersession_disables_effective_autonomy": "PASS",
+    "binding_retirement_stales_basis_and_receipt_and_releases_reservation": "PASS",
+    "user_pause_is_atomic_and_human_only": "PASS",
+    "user_resume_is_human_only_and_rechecks_qualification_and_health": "PASS",
+    "health_and_version_pause_do_not_rewrite_mandate": "PASS",
+    "halted_recovery_is_human_gated": "PASS",
+    "agent_plan_approval_exception_requires_autonomous_mode": "PASS",
+    "agent_cannot_grant_plan_approval": "PASS",
+    "agent_worker_has_no_owner_command_permission": "PASS"
+  },
+  "tests": [
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v3_009_autonomy_mandate.py",
+      "result": "PASS: 21 passed"
+    },
+    {
+      "command": "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_009_20260908 UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/integration/test_v3_009_autonomy_postgresql.py",
+      "result": "PASS: 4 passed"
+    },
+    {
+      "command": "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_009_20260908 UV_CACHE_DIR=/tmp/fao-uv-cache uv run alembic downgrade 0009_v3_002 && FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_009_20260908 UV_CACHE_DIR=/tmp/fao-uv-cache uv run alembic upgrade head",
+      "result": "PASS: 0010_v3_009 -> 0009_v3_002 -> 0010_v3_009"
+    },
+    {
+      "command": "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_009_20260908 UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/integration/test_v3_009_autonomy_postgresql.py tests/integration/test_postgresql_migration_round_trip.py",
+      "result": "PASS: 11 passed"
+    },
+    {
+      "command": "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_009_20260908 UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/integration/test_v0_014_autonomy_postgresql.py",
+      "result": "PASS: 31 passed"
+    },
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+      "result": "PASS: uv lock, ruff format/check, mypy 146 source files, secret scan, 2 schema, 1 unit, 9 property, 767 contract, health"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "authority_note": "Mandate, Mode Binding, EffectiveAutonomy and PlanApproval remain Decision bounded-context truth. Agent Orchestration may request an exception but cannot activate/expand a Mandate, resume a pause, grant an approval, write authorization facts or replace Risk Constitution.",
+  "known_boundary": "V3-010 still owns full two-stage Gate/Receipt integration and its end-to-end submission adversarial matrix.",
+  "remaining": ["V3-010 through V3-015 Acceptance", "independent V3 Exit review"]
+}

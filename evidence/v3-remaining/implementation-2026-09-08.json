@@ -1,0 +1,23 @@
+{
+  "tasks": ["V3-010", "V3-011", "V3-012", "V3-013", "V3-014", "V3-015"],
+  "status": "ACCEPTANCE_UNPROVEN",
+  "correction": "Completion withdrawn: constructor tests and V3-002 reference-only workflow tests do not prove V3-010 through V3-015 Acceptance. New gate/watch wrappers are not integrated with deterministic owners. V3-004 through V3-009 were completed separately by their task Evidence.",
+  "implementation_model": "NOT_EXPOSED",
+  "reasoning_effort": "NOT_EXPOSED",
+  "scope": {
+    "expert_outputs": [],
+    "bounded_coordination": ["CycleBudget", "BoundedAutonomyCycle"],
+    "authorization": ["GateOutcome"],
+    "governance": ["AgentVersion", "QualificationRegistry"],
+    "supervision": ["SupervisionCard", "DeterministicWatch", "RiskReductionRequest"],
+    "review": ["TradeReview", "Reflection"]
+  },
+  "tests": {
+    "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v3_remaining_contracts.py tests/contract/test_v3_001_gateway_contracts.py",
+    "result": "PASS: 26 passed",
+    "durable_integration_command": "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_exit_20260908 UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/integration/test_v3_002_autonomy_workflow_postgresql.py tests/integration/test_postgresql_migration_round_trip.py",
+    "durable_integration_result": "PASS: 19 passed"
+  },
+  "authority": "All expert outputs remain proposals; deterministic Risk Constitution, Execution, Position Protection and Ledger owners remain authoritative.",
+  "known_boundary": "The PostgreSQL durable V3-002 workflow remains the durable owner boundary; these V3 specialist contracts are injected at its stage commands."
+}

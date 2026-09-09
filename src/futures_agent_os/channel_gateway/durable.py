@@ -13,12 +13,16 @@ import json
 import secrets
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
-from typing import Any, Callable, Mapping, Protocol
+from types import MappingProxyType
+from typing import TYPE_CHECKING, Any, Callable, Mapping, Protocol
 from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
 from sqlalchemy import Connection, Engine, text
 
 from .contracts import ControlCallback, InboundEvent, OutboundNotification, validate_control
+
+if TYPE_CHECKING:
+    from futures_agent_os.agent_orchestration.v3_runtime import WatchEvent
 
 
 def _canonical(value: object) -> str:
@@ -79,6 +83,32 @@ class OutboxRecord:
     attempts: int
     max_attempts: int
     lease_owner: str | None = None
+    payload: Mapping[str, Any] | None = None
+
+
+@dataclass(frozen=True, slots=True)
+class NotificationSLOPolicy:
+    """Target delivery windows for important notifications."""
+
+    deadlines_seconds: Mapping[str, int] = None  # type: ignore[assignment]
+
+    def __post_init__(self) -> None:
+        defaults = {"INFO": 300, "TRADE": 60, "ACTION_REQUIRED": 60, "RISK": 30, "CRITICAL": 15}
+        configured = defaults if self.deadlines_seconds is None else dict(self.deadlines_seconds)
+        if set(configured) != set(defaults) or any(
+            isinstance(value, bool) or not isinstance(value, int) or value <= 0 for value in configured.values()
+        ):
+            raise ValueError("SLO policy must define positive deadlines for every notification severity")
+        object.__setattr__(self, "deadlines_seconds", MappingProxyType(configured))
+
+    def deadline_at(self, severity: str, created_at: datetime) -> datetime:
+        normalized = severity.upper()
+        if normalized not in self.deadlines_seconds:
+            raise ValueError("unsupported notification severity")
+        return _utc(created_at) + timedelta(seconds=self.deadlines_seconds[normalized])
+
+    def overdue(self, severity: str, created_at: datetime, *, now: datetime) -> bool:
+        return _utc(now) >= self.deadline_at(severity, created_at)
 
 
 class ControlHandler(Protocol):
@@ -338,6 +368,7 @@ class PostgresGatewayStore:
             "severity": notification.severity,
             "text": notification.text,
             "idempotency_key": notification.idempotency_key,
+            "payload": dict(notification.payload) if notification.payload is not None else None,
         }
 
         def insert(conn: Connection) -> bool:
@@ -379,19 +410,30 @@ class PostgresGatewayStore:
         with self.engine.begin() as owned:
             return insert(owned)
 
-    def claim_tasks(self, worker_id: str, *, limit: int = 10, lease_seconds: int = 30) -> tuple[GatewayTask, ...]:
+    def claim_tasks(
+        self,
+        worker_id: str,
+        *,
+        limit: int = 10,
+        lease_seconds: int = 30,
+        assigned_role_prefix: str | None = None,
+    ) -> tuple[GatewayTask, ...]:
         if not worker_id.strip() or limit < 1 or lease_seconds < 1:
             raise ValueError("worker_id, limit, and lease_seconds must be positive")
         now = datetime.now(UTC)
         expiry = now + timedelta(seconds=lease_seconds)
+        if assigned_role_prefix is not None and not assigned_role_prefix.strip():
+            raise ValueError("assigned_role_prefix must be non-empty when provided")
+        role_clause = "AND t.assigned_role_id LIKE :role_prefix" if assigned_role_prefix is not None else ""
         with self.engine.begin() as connection:
             rows = (
                 connection.execute(
                     text(
-                        """WITH candidates AS (
+                        f"""WITH candidates AS (
                       SELECT t.task_id FROM fao.agent_task t
                       LEFT JOIN fao.task_lease l ON l.task_id=t.task_id
-                      WHERE t.task_state IN ('QUEUED','RETRY')
+                    WHERE t.task_state IN ('QUEUED','RETRY') AND t.requested_at <= :now
+                        {role_clause}
                         AND (l.task_id IS NULL OR l.lease_expires_at <= :now)
                       ORDER BY t.requested_at FOR UPDATE OF t SKIP LOCKED LIMIT :limit
                     ), changed AS (
@@ -401,7 +443,11 @@ class PostgresGatewayStore:
                     SELECT c.task_id,c.envelope,COALESCE(l.fencing_token,0)+1 AS fencing_token
                     FROM changed c LEFT JOIN fao.task_lease l ON l.task_id=c.task_id"""
                     ),
-                    {"now": now, "limit": limit},
+                    {
+                        "now": now,
+                        "limit": limit,
+                        **({"role_prefix": f"{assigned_role_prefix}%"} if assigned_role_prefix is not None else {}),
+                    },
                 )
                 .mappings()
                 .all()
@@ -421,6 +467,97 @@ class PostgresGatewayStore:
                 result.append(GatewayTask(row["task_id"], row["envelope"], token, worker_id))
             return tuple(result)
 
+    def enqueue_watch_event(self, event: object, *, deadline_at: datetime | None = None) -> UUID | None:
+        """Persist one watch event in the durable task queue.
+
+        The event id is the queue idempotency key.  Replaying the same event
+        returns ``None``; changing its trigger or payload reference under the
+        same key is rejected.  The queue stores only the event facts and never
+        an owner result or a trading side effect.
+        """
+        from futures_agent_os.agent_orchestration.v3_runtime import WatchEvent
+
+        if not isinstance(event, WatchEvent):
+            raise TypeError("enqueue_watch_event requires a WatchEvent")
+        task_id = uuid5(NAMESPACE_URL, f"fao:watch-task:{event.event_id}")
+        correlation_id = uuid5(NAMESPACE_URL, f"fao:watch-correlation:{event.event_id}")
+        idempotency_key = f"watch:{event.event_id}"
+        envelope = {
+            "schema": "v3.015.watch-event.1",
+            "event_id": event.event_id,
+            "trigger": event.trigger.value,
+            "occurred_at": event.occurred_at.astimezone(UTC).isoformat(),
+            "payload_ref": event.payload_ref,
+        }
+        with self.engine.begin() as connection:
+            inserted = connection.execute(
+                text(
+                    """INSERT INTO fao.agent_task
+                    (task_id,assigned_role_id,catalog_version,correlation_id,trace_id,idempotency_key,
+                     task_state,envelope,requested_at,deadline_at)
+                    VALUES (:task,'watch.' || :trigger,'v3.015',:correlation,:trace,:idempotency,'QUEUED',
+                            CAST(:envelope AS jsonb),:requested,:deadline)
+                    ON CONFLICT (correlation_id,idempotency_key) DO NOTHING"""
+                ),
+                {
+                    "task": task_id,
+                    "trigger": event.trigger.value.lower(),
+                    "correlation": correlation_id,
+                    "trace": uuid5(NAMESPACE_URL, f"fao:watch-trace:{event.event_id}"),
+                    "idempotency": idempotency_key,
+                    "envelope": _canonical(envelope),
+                    "requested": _utc(event.occurred_at),
+                    "deadline": _utc(deadline_at) if deadline_at is not None else None,
+                },
+            ).rowcount
+            if inserted == 1:
+                return task_id
+            existing = (
+                connection.execute(
+                    text(
+                        "SELECT task_id,envelope FROM fao.agent_task WHERE correlation_id=:correlation AND idempotency_key=:idempotency"
+                    ),
+                    {"correlation": correlation_id, "idempotency": idempotency_key},
+                )
+                .mappings()
+                .first()
+            )
+            if existing is None:
+                raise RuntimeError("watch event insert disappeared")
+            prior = existing["envelope"]
+            if isinstance(prior, str):
+                prior = json.loads(prior)
+            if prior != envelope:
+                raise ValueError("conflicting replay for watch event")
+            return None
+
+    def claim_watch_events(
+        self, worker_id: str, *, limit: int = 10, lease_seconds: int = 30
+    ) -> tuple[tuple[WatchEvent, GatewayTask], ...]:
+        """Claim only watch tasks and hydrate events after a process restart."""
+        from futures_agent_os.agent_orchestration.v3_runtime import WatchEvent, WatchTrigger
+
+        claimed = self.claim_tasks(worker_id, limit=limit, lease_seconds=lease_seconds, assigned_role_prefix="watch.")
+        hydrated: list[tuple[WatchEvent, GatewayTask]] = []
+        for task in claimed:
+            value = task.envelope
+            required = {"schema", "event_id", "trigger", "occurred_at", "payload_ref"}
+            if set(value) != required or value["schema"] != "v3.015.watch-event.1":
+                self.complete_task(task.task_id, worker_id, task.fencing_token, success=False)
+                raise ValueError("invalid durable watch event envelope")
+            try:
+                event = WatchEvent(
+                    str(value["event_id"]),
+                    WatchTrigger(str(value["trigger"])),
+                    datetime.fromisoformat(str(value["occurred_at"])),
+                    str(value["payload_ref"]),
+                )
+            except (TypeError, ValueError) as error:
+                self.complete_task(task.task_id, worker_id, task.fencing_token, success=False)
+                raise ValueError("invalid durable watch event") from error
+            hydrated.append((event, task))
+        return tuple(hydrated)
+
     def complete_task(self, task_id: UUID, worker_id: str, fencing_token: int, *, success: bool = True) -> bool:
         state = "COMPLETED" if success else "FAILED"
         with self.engine.begin() as connection:
@@ -432,6 +569,31 @@ class PostgresGatewayStore:
                     )"""
                 ),
                 {"state": state, "task": task_id, "worker": worker_id, "token": fencing_token},
+            ).rowcount
+            if changed:
+                connection.execute(
+                    text(
+                        "DELETE FROM fao.task_lease WHERE task_id=:task AND worker_id=:worker AND fencing_token=:token"
+                    ),
+                    {"task": task_id, "worker": worker_id, "token": fencing_token},
+                )
+            return changed == 1
+
+    def retry_task(self, task_id: UUID, worker_id: str, fencing_token: int, *, backoff_seconds: int = 1) -> bool:
+        """Return a leased task to RETRY after a transient worker failure."""
+        if isinstance(backoff_seconds, bool) or backoff_seconds < 0:
+            raise ValueError("backoff_seconds must be non-negative")
+        with self.engine.begin() as connection:
+            changed = connection.execute(
+                text(
+                    """UPDATE fao.agent_task t SET task_state='RETRY',
+                        requested_at=clock_timestamp() + (:delay * interval '1 second')
+                    WHERE t.task_id=:task AND t.task_state='RUNNING' AND EXISTS (
+                      SELECT 1 FROM fao.task_lease l WHERE l.task_id=t.task_id
+                        AND l.worker_id=:worker AND l.fencing_token=:token
+                    )"""
+                ),
+                {"task": task_id, "worker": worker_id, "token": fencing_token, "delay": backoff_seconds},
             ).rowcount
             if changed:
                 connection.execute(
@@ -485,6 +647,7 @@ class PostgresGatewayStore:
                         row["delivery_attempts"],
                         row["max_attempts"],
                         row["lease_owner"],
+                        payload,
                     )
                 )
                 connection.execute(
@@ -584,6 +747,71 @@ class PostgresGatewayStore:
             # Keep the expired lease row so a restarted worker receives a
             # strictly higher fencing token on the next claim.
             return tasks, outbox
+
+    def escalate_overdue_notifications(
+        self, *, now: datetime | None = None, policy: NotificationSLOPolicy | None = None
+    ) -> int:
+        """Create one durable operator escalation for each overdue delivery.
+
+        The unique ``deduplication_key`` makes concurrent monitors and
+        repeated heartbeats idempotent.  The escalation is written to the
+        existing supervision table and can itself be delivered by the normal
+        outbox/ops path.
+        """
+        policy = policy or NotificationSLOPolicy()
+        observed_at = _utc(now)
+        with self.engine.begin() as connection:
+            rows = (
+                connection.execute(
+                    text(
+                        """SELECT outbox_id,channel,conversation_id,severity,delivery_state,
+                                  correlation_id,created_at,available_at,delivery_attempts
+                           FROM fao.outbox
+                          WHERE delivery_state <> 'DELIVERED'
+                            AND severity IN ('TRADE','ACTION_REQUIRED','RISK','CRITICAL')"""
+                    )
+                )
+                .mappings()
+                .all()
+            )
+            created = 0
+            for row in rows:
+                severity = str(row["severity"]).upper()
+                created_at = _utc(row["created_at"])
+                if not policy.overdue(severity, created_at, now=observed_at):
+                    continue
+                escalation_severity = "CRITICAL" if severity == "CRITICAL" else "ACTION_REQUIRED"
+                deduplication_key = f"notification-slo:{row['outbox_id']}"
+                payload = {
+                    "schema": "v3.015.notification-slo.1",
+                    "outbox_id": str(row["outbox_id"]),
+                    "channel": row["channel"],
+                    "conversation_id": row["conversation_id"],
+                    "original_severity": severity,
+                    "delivery_state": row["delivery_state"],
+                    "delivery_attempts": int(row["delivery_attempts"]),
+                    "deadline_at": policy.deadline_at(severity, created_at).isoformat(),
+                    "observed_at": observed_at.isoformat(),
+                }
+                result = connection.execute(
+                    text(
+                        """INSERT INTO fao.supervision_notification
+                           (notification_id,notification_kind,severity,recipient_ref,correlation_id,
+                            deduplication_key,payload)
+                           VALUES (:id,'NOTIFICATION_SLO_ESCALATION',:severity,'user:operator',:correlation,
+                                   :dedup,CAST(:payload AS jsonb))
+                           ON CONFLICT (deduplication_key) DO NOTHING"""
+                    ),
+                    {
+                        "id": uuid5(NAMESPACE_URL, deduplication_key),
+                        "severity": escalation_severity,
+                        "correlation": row["correlation_id"],
+                        "dedup": deduplication_key,
+                        "payload": _canonical(payload),
+                    },
+                )
+                created += int(result.rowcount or 0)
+            return created
 
     def issue_control(self, callback: ControlCallback) -> ControlCallback:
         """Persist a one-use callback and return the secret token once."""
@@ -763,7 +991,12 @@ class OutboxWorker:
             try:
                 adapter.send(
                     OutboundNotification(
-                        item.channel, item.conversation_id, item.severity, item.text, item.idempotency_key
+                        item.channel,
+                        item.conversation_id,
+                        item.severity,
+                        item.text,
+                        item.idempotency_key,
+                        item.payload.get("payload") if isinstance(item.payload, Mapping) else None,
                     )
                 )
             except Exception as exc:  # transport failures are durable retry state
@@ -776,6 +1009,41 @@ class OutboxWorker:
                 results.append(
                     "DELIVERED" if self.store.mark_delivered(item.outbox_id, self.worker_id) else "LOST_LEASE"
                 )
+        return tuple(results)
+
+
+class DurableWatchWorker:
+    """Restart-safe consumer for the five-domain V3-015 watch queue.
+
+    The reduction handler is an injected owner command boundary.  This worker
+    only claims/reclaims queue leases and never writes order, position, or
+    ledger state itself.
+    """
+
+    def __init__(self, store: PostgresGatewayStore, coordinator: Any, worker_id: str, reduction_handler: Any) -> None:
+        if not worker_id.strip() or not callable(reduction_handler):
+            raise ValueError("watch worker requires worker id and reduction handler")
+        self.store = store
+        self.coordinator = coordinator
+        self.worker_id = worker_id
+        self.reduction_handler = reduction_handler
+
+    def run_once(self, *, limit: int = 10, max_attempts: int = 2) -> tuple[str, ...]:
+        results: list[str] = []
+        for event, task in self.store.claim_watch_events(self.worker_id, limit=limit):
+            try:
+                request = self.coordinator.process_with_retry(event, max_attempts=max_attempts)
+                if request is not None:
+                    self.reduction_handler(request)
+            except RuntimeError, TimeoutError, ConnectionError:
+                self.store.retry_task(task.task_id, self.worker_id, task.fencing_token)
+                results.append("RETRY")
+            except TypeError, ValueError:
+                self.store.complete_task(task.task_id, self.worker_id, task.fencing_token, success=False)
+                results.append("FAILED")
+            else:
+                self.store.complete_task(task.task_id, self.worker_id, task.fencing_token, success=True)
+                results.append("COMPLETED")
         return tuple(results)
 
 
@@ -800,6 +1068,7 @@ __all__ = [
     "IngestResult",
     "OutboxRecord",
     "OutboxWorker",
+    "DurableWatchWorker",
     "PostgresGatewayStore",
     "PostgresNotificationSink",
     "ControlHandler",
