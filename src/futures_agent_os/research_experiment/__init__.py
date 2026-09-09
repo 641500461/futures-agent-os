@@ -754,6 +754,9 @@ __all__ = [
     "StrategyPromotionRequest",
     "RuntimeVersionRegistry",
     "RuntimeVersionSet",
+    "EvidenceCatalog",
+    "EvidenceFormat",
+    "ExternalEvidence",
 ]
 
 from .v4_004 import (
@@ -770,3 +773,4 @@ from .v4_004 import (
 from .v4_005 import BatchRun, BatchStatus, ScaledExperimentManager, ScaledExperimentPlan
 from .strategy_promotion import PromotionStage, StrategyActivation, StrategyPromotionRegistry, StrategyPromotionRequest
 from .runtime_version_registry import RuntimeVersionRegistry, RuntimeVersionSet
+from .external_evidence import EvidenceCatalog, EvidenceFormat, ExternalEvidence
