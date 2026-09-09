@@ -757,6 +757,11 @@ __all__ = [
     "EvidenceCatalog",
     "EvidenceFormat",
     "ExternalEvidence",
+    "DriftKind",
+    "DriftTriggerEngine",
+    "GovernanceAgent",
+    "GovernanceProposal",
+    "ResearchTrigger",
 ]
 
 from .v4_004 import (
@@ -774,3 +779,4 @@ from .v4_005 import BatchRun, BatchStatus, ScaledExperimentManager, ScaledExperi
 from .strategy_promotion import PromotionStage, StrategyActivation, StrategyPromotionRegistry, StrategyPromotionRequest
 from .runtime_version_registry import RuntimeVersionRegistry, RuntimeVersionSet
 from .external_evidence import EvidenceCatalog, EvidenceFormat, ExternalEvidence
+from .v4_012_013 import DriftKind, DriftTriggerEngine, GovernanceAgent, GovernanceProposal, ResearchTrigger

@@ -375,12 +375,12 @@ Exit：PASS（独立审查 Evidence：`evidence/v3-exit/independent-review-2026-
 - [x] `V4-011` 接入宏观、新闻、库存、期限结构、拥挤度和历史相似案例的 point-in-time Evidence；明确授权与不可信内容边界。  
   Acceptance: 每条证据有来源、许可、发布时间/有效时点和质量；非结构化内容只作为研究数据进入 Agent 提案，不直接成为确定性业务指令或权限。当前范围不要求独立对抗性 Prompt Injection 测试。
   Evidence: [`evidence/v4-011/implementation-2026-09-10.json`](../evidence/v4-011/implementation-2026-09-10.json)。
-- [ ] `V4-012` 建立衰减/漂移触发器：策略 OOS 衰减、Regime 变化、规则变化、Lesson 过期自动创建 Research/Experiment Request。  
+- [x] `V4-012` 建立衰减/漂移触发器：策略 OOS 衰减、Regime 变化、规则变化、Lesson 过期自动创建 Research/Experiment Request。  
   Acceptance: 触发器幂等、可解释、可暂停；只创建研究任务，不自动修改策略或交易。  
-  Evidence: 待补。
-- [ ] `V4-013` 实现 Governance Agent，只能检查证据完整性并提出 `ChangeProposal/ActivationProposal`。  
+  Evidence: [`evidence/v4-012-013/implementation-2026-09-10.json`](../evidence/v4-012-013/implementation-2026-09-10.json)。
+- [x] `V4-013` 实现 Governance Agent，只能检查证据完整性并提出 `ChangeProposal/ActivationProposal`。  
   Acceptance: Governance Agent 无晋升、启用、回滚或风险政策修改权限；最终决定属于治理服务和用户。  
-  Evidence: 待补。
+  Evidence: [`evidence/v4-012-013/implementation-2026-09-10.json`](../evidence/v4-012-013/implementation-2026-09-10.json)。
 
 Exit：至少一个 Hypothesis 完成历史、稳健性、样本外和前向验证，并产生可审计的 Review、Lesson 或 StrategyCandidate；任何晋升均无绕过。
 
