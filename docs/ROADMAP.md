@@ -352,9 +352,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v3-exit/independent-review-2026-
   Status: COMPLETE（2026-09-10；批量父子生命周期、预算门禁、取消、恢复与证据汇总已实现）。  
   Acceptance: Experiment Manager 不能交易、晋升策略或修改风险规则。  
   Evidence: [`evidence/v4-005/implementation-2026-09-10.json`](../evidence/v4-005/implementation-2026-09-10.json)。
-- [ ] `V4-006` 扩展 Post-trade Reviewer，分别评价 Process Quality、Outcome Quality、执行质量、后续市场路径和可验证原因假设。  
+- [x] `V4-006` 扩展 Post-trade Reviewer，分别评价 Process Quality、Outcome Quality、执行质量、后续市场路径和可验证原因假设。  
+  Status: COMPLETE（2026-09-10；新增 market-path 质量与显式原因假设，保持源事件闭合校验）。  
   Acceptance: 每项评价引用 episode、行情、订单、账本和规则事实；原因解释默认仅为 Reflection。  
-  Evidence: 待补。
+  Evidence: [`evidence/v4-006/implementation-2026-09-10.json`](../evidence/v4-006/implementation-2026-09-10.json)。
 - [ ] `V4-007` 实现 Memory Curator，将 Reflection 变为有验证计划的 `LessonCandidate`，不自行发布 Lesson。  
   Acceptance: 缺证据需求、适用范围、置信度或过期策略的候选不能提交治理。  
   Evidence: 待补。

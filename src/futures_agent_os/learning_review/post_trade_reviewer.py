@@ -23,10 +23,16 @@ class TradeReview:
     execution_quality: ReviewQuality
     evidence_refs: tuple[str, ...]
     findings: tuple[str, ...]
+    market_path_quality: ReviewQuality = ReviewQuality.UNKNOWN
+    verifiable_cause_hypotheses: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if not self.episode_id or not self.evidence_refs or not self.findings:
             raise ValueError("trade review requires a closed episode, evidence and findings")
+        if type(self.market_path_quality) is not ReviewQuality or any(
+            type(x) is not str or not x.strip() for x in self.verifiable_cause_hypotheses
+        ):
+            raise ValueError("review hypotheses must be typed, non-empty strings")
 
 
 @dataclass(frozen=True, slots=True)
@@ -59,6 +65,8 @@ class PostTradeReviewer:
         execution_quality: ReviewQuality,
         source_event_refs: tuple[str, ...],
         findings: tuple[str, ...],
+        market_path_quality: ReviewQuality = ReviewQuality.UNKNOWN,
+        verifiable_cause_hypotheses: tuple[str, ...] = (),
     ) -> TradeReview:
         """Build a review only from a closed, reconstructible episode."""
         if not closed:
@@ -72,6 +80,8 @@ class PostTradeReviewer:
             execution_quality=execution_quality,
             evidence_refs=source_event_refs,
             findings=findings,
+            market_path_quality=market_path_quality,
+            verifiable_cause_hypotheses=verifiable_cause_hypotheses,
         )
 
     def review_trade_episode(
@@ -84,6 +94,7 @@ class PostTradeReviewer:
         outcome_quality: ReviewQuality,
         execution_quality: ReviewQuality,
         findings: tuple[str, ...],
+        market_path_quality: ReviewQuality = ReviewQuality.UNKNOWN,
     ) -> TradeReview:
         """Review only a closed projection whose complete source set matches."""
         if not closed:
@@ -100,6 +111,7 @@ class PostTradeReviewer:
             execution_quality=execution_quality,
             source_event_refs=refs,
             findings=findings,
+            market_path_quality=market_path_quality,
         )
 
     def review(
@@ -112,11 +124,22 @@ class PostTradeReviewer:
         execution_quality: ReviewQuality,
         evidence_refs: tuple[str, ...],
         findings: tuple[str, ...],
+        market_path_quality: ReviewQuality = ReviewQuality.UNKNOWN,
+        verifiable_cause_hypotheses: tuple[str, ...] = (),
     ) -> TradeReview:
         if not closed:
             raise ValueError("review requires a closed trade episode")
         self._validate_sources(evidence_refs)
-        return TradeReview(episode_id, process_quality, outcome_quality, execution_quality, evidence_refs, findings)
+        return TradeReview(
+            episode_id,
+            process_quality,
+            outcome_quality,
+            execution_quality,
+            evidence_refs,
+            findings,
+            market_path_quality,
+            verifiable_cause_hypotheses,
+        )
 
     def reflect(self, *, review: TradeReview, observation: str, lesson_candidate: str | None = None) -> Reflection:
         return Reflection(review.episode_id, observation, lesson_candidate, review.evidence_refs)
