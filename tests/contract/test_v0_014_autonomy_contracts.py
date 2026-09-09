@@ -22,6 +22,7 @@ from futures_agent_os.decision import (
     ExecutionOrigin,
     FinalGateOutcome,
     GateRequest,
+    MandateRecovery,
     MandateScope,
     MandateStatus,
     PlanApproval,
@@ -173,8 +174,23 @@ def test_mandate_nine_state_expiry_revoke_and_agent_recovery_denial() -> None:
     suspended = active.transition(MandateStatus.SUSPENDED, _at(4), actor_is_human=False)
     assert suspended.transition(MandateStatus.ACTIVE, _at(5), actor_is_human=True).status is MandateStatus.ACTIVE
     halted = active.transition(MandateStatus.HALTED, _at(4), actor_is_human=False)
-    recovering = halted.transition(MandateStatus.RECOVERING, _at(5), actor_is_human=True)
-    assert recovering.transition(MandateStatus.ACTIVE, _at(6), actor_is_human=True).status is MandateStatus.ACTIVE
+    recovery = MandateRecovery.begin(
+        halted,
+        _at(5),
+        actor="user:owner",
+        root_cause_ref="incident://root-cause",
+        reconciliation_ref="reconciliation://complete",
+    )
+    assert (
+        recovery.complete(
+            _at(6),
+            actor="user:owner",
+            governance_approval_ref="approval://halt-recovery",
+            qualified=True,
+            health_permits=True,
+        ).status
+        is MandateStatus.ACTIVE
+    )
     assert (
         active.transition(MandateStatus.REVOKED, _at(4), actor_is_human=True, reason="owner choice").status
         is MandateStatus.REVOKED

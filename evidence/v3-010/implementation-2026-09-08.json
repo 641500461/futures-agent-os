@@ -1,0 +1,141 @@
+{
+  "task": "V3-010",
+  "status": "COMPLETE",
+  "date": "2026-09-08",
+  "implementation_model": "gpt-5.6-sol",
+  "implementation_reasoning_effort": "high",
+  "reviewer_model": "NOT_EXPOSED",
+  "reviewer_reasoning_effort": "NOT_EXPOSED",
+  "reviewer_execution_context": "separate Codex task from the V3-010 implementation task; exact host model/profile and task identity were not exposed to the repository",
+  "review_conclusion": "V3-010 READY TO CLOSE; V3 Exit NOT READY because V3-011 through V3-015 are incomplete",
+  "commit": "uncommitted worktree; no commit created",
+  "changes": [
+    "submit_trade_plan now resolves Preflight and Basis before deterministic sizing or reservation",
+    "ESCALATE returns a reservation-free DEFERRED result until a human PlanApproval is supplied",
+    "safe risk sizing reductions remain bounded by the pre-issued Basis quantity",
+    "final submission re-issues and compares the current RiskDecision after Receipt issuance, releasing artifacts on drift",
+    "Agent REQUEST_ONE_OFF PlanApproval Basis is accepted by the in-memory Final Gate and Receipt consumption path",
+    "PostgreSQL reservation and receipt checks allow only safe quantity reductions under the immutable Basis ceiling",
+    "PostgreSQL autonomous receipt validation accepts a consumed PLAN_APPROVAL Basis only with the active Mode Binding, matching run/binding hashes and health permit"
+  ],
+  "acceptance_matrix": [
+    {
+      "requirement": "Preflight returns AUTHORIZED, ESCALATE, REJECT, or PROTECT_ONLY and only Final PERMIT issues a Receipt",
+      "status": "PASS",
+      "evidence": [
+        "tests/contract/test_v0_014_autonomy_contracts.py::test_two_phase_gate_and_full_single_use_receipt_binding",
+        "tests/contract/test_v0_014_autonomy_contracts.py::test_final_gate_requires_authoritative_reservation_and_receipt_consumption_is_shared"
+      ]
+    },
+    {
+      "requirement": "sizing and reservation occur only after an AuthorizationBasis; approval wait holds no reservation",
+      "status": "PASS",
+      "evidence": [
+        "tests/contract/test_v2_008_submit_trade_plan.py::test_submit_trade_plan_requires_authorization_before_reservation",
+        "tests/contract/test_v2_008_submit_trade_plan.py::test_autonomous_scope_escalation_waits_without_sizing_or_reservation",
+        "tests/contract/test_v2_008_submit_trade_plan.py::test_manual_test_requires_granted_plan_approval"
+      ]
+    },
+    {
+      "requirement": "a human-GRANTED PlanApproval is atomically consumed into one unique PLAN_APPROVAL Basis",
+      "status": "PASS",
+      "evidence": [
+        "tests/contract/test_v0_014_autonomy_contracts.py::test_plan_approval_is_atomically_consumed_once_under_race",
+        "tests/contract/test_v2_008_submit_trade_plan.py::test_requested_plan_approval_cannot_be_consumed_as_basis",
+        "tests/integration/test_v0_014_autonomy_postgresql.py::test_runtime_manual_chain_is_single_effect_and_all_scope_fields_are_authoritative",
+        "tests/integration/test_v3_009_autonomy_postgresql.py::test_human_grant_command_is_supervisor_only_and_idempotent"
+      ]
+    },
+    {
+      "requirement": "Agent REQUEST_ONE_OFF completes the durable approval-to-Basis-to-Receipt-to-consume chain without self-grant",
+      "status": "PASS",
+      "evidence": [
+        "tests/contract/test_v2_008_submit_trade_plan.py::test_autonomous_one_off_approval_can_reach_final_gate_once",
+        "tests/contract/test_v2_008_submit_trade_plan.py::test_request_one_off_grant_basis_receipt_and_durable_consume_golden_chain",
+        "tests/integration/test_v3_009_autonomy_postgresql.py::test_agent_exception_request_is_durable_idempotent_and_requires_exact_active_mode"
+      ]
+    },
+    {
+      "requirement": "cross-scope and Agent/tool authority overreach fail closed with no Order",
+      "status": "PASS",
+      "evidence": [
+        "tests/contract/test_v0_014_autonomy_contracts.py::test_execution_scope_dimensions_and_action_quantity_reject_any_post_preflight_drift",
+        "tests/contract/test_tool_registry_permissions.py::test_default_deny_and_unknown_or_undeclared_agents_are_stably_audited",
+        "tests/contract/test_tool_registry_permissions.py::test_every_resource_scope_dimension_rejects_cross_scope_calls"
+      ]
+    },
+    {
+      "requirement": "forged or repeated Approval, Basis, reservation, and Receipt artifacts cannot create a second authority or execution effect",
+      "status": "PASS",
+      "evidence": [
+        "tests/contract/test_v0_014_autonomy_contracts.py::test_preflight_basis_issuance_is_shared_idempotent_and_conflicts_fail_closed",
+        "tests/contract/test_v0_014_autonomy_contracts.py::test_receipt_issuance_is_atomic_per_basis_and_second_receipt_cannot_consume",
+        "tests/contract/test_v0_014_autonomy_contracts.py::test_final_gate_requires_authoritative_reservation_and_receipt_consumption_is_shared"
+      ]
+    },
+    {
+      "requirement": "old or drifted Plan, Basis, source authorization, Mode/scope, run-version, and reservation hashes are rejected",
+      "status": "PASS",
+      "evidence": [
+        "tests/contract/test_v0_014_autonomy_contracts.py::test_two_phase_gate_and_full_single_use_receipt_binding",
+        "tests/contract/test_v0_014_autonomy_contracts.py::test_autonomy_binding_account_scope_hash_and_snapshot_are_revalidated",
+        "tests/contract/test_v0_014_autonomy_contracts.py::test_composite_pause_resume_versions_stale_old_artifacts_and_health_pause_is_mode_only",
+        "tests/contract/test_v2_008_submit_trade_plan.py::test_mode_binding_run_versions_drift_rejects_before_reservation"
+      ]
+    },
+    {
+      "requirement": "expired Snapshot and changed or invalid final RiskDecision reject without an Order and release candidate risk",
+      "status": "PASS",
+      "evidence": [
+        "tests/contract/test_v2_008_submit_trade_plan.py::test_expired_snapshot_rejects_before_sizing_or_reservation",
+        "tests/contract/test_v2_008_submit_trade_plan.py::test_submit_rejects_when_current_risk_decision_changes_after_receipt"
+      ]
+    },
+    {
+      "requirement": "durable authorization, Receipt/reservation consumption, Order, and ledger effects are atomic, idempotent, and recoverable",
+      "status": "PASS",
+      "evidence": [
+        "tests/contract/test_v2_008_submit_trade_plan.py::test_durable_prepared_chain_rejection_fails_closed_before_consumption",
+        "tests/integration/test_v0_014_autonomy_postgresql.py::test_submit_trade_plan_persists_full_chain_and_recovers_after_restart",
+        "tests/integration/test_v0_014_autonomy_postgresql.py::test_submit_trade_plan_rolls_back_every_durable_stage"
+      ]
+    },
+    {
+      "requirement": "rejections are inspectable as immutable decisions with stable reason codes and correlation/fingerprints",
+      "status": "PASS",
+      "evidence": [
+        "frozen PreflightResult, FinalGateResult, and SubmitTradePlanResult carry stable outcome/reason facts",
+        "tests/contract/test_tool_registry_permissions.py::test_default_deny_and_unknown_or_undeclared_agents_are_stably_audited",
+        "tests/contract/test_tool_registry_permissions.py::test_tool_call_trace_must_match_correlation_and_fingerprints_immediate_causation"
+      ],
+      "boundary": "V3-014 owns the complete DecisionJournal projection for an end-to-end autonomous cycle; V3-010 does not claim that later task"
+    }
+  ],
+  "tests": [
+    "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v2_008_submit_trade_plan.py: 13 passed",
+    "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v0_014_autonomy_contracts.py tests/contract/test_v3_009_autonomy_mandate.py: passed",
+    "UV_CACHE_DIR=/tmp/fao-uv-cache make check: 771 contract, 9 property, 2 schema, 1 unit; lint, mypy, secret scan and health passed",
+    "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_010_20260908 uv run pytest -q tests/integration/test_v0_014_autonomy_postgresql.py tests/integration/test_v3_009_autonomy_postgresql.py: 35 passed",
+    "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_010_20260908 uv run pytest -q tests/integration/test_v3_009_autonomy_postgresql.py: 5 passed (including supervisor-only idempotent human grant)",
+    "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_010_20260908 uv run pytest -q tests/integration/test_v0_014_autonomy_postgresql.py tests/integration/test_v3_009_autonomy_postgresql.py: 36 passed",
+    "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_010_20260908 uv run alembic downgrade 0009_v3_002 && uv run alembic upgrade head: passed",
+    "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_010_20260908 uv run pytest -q tests/integration/test_postgresql_migration_round_trip.py: 8 passed (including 0011 forward migration)",
+    "alembic downgrade 0010_v3_009 then upgrade 0011_v3_010_gate_hardening; fao_supervisor EXECUTE privilege on grant_plan_approval=true",
+    "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_010_work?host=/tmp uv run pytest tests/integration -q: all integration tests passed",
+    "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v2_008_submit_trade_plan.py -q: 15 passed including durable persistence rejection fail-closed",
+    "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v2_008_submit_trade_plan.py -q: 17 passed including expired Snapshot and Mode Binding run-version drift",
+    "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v0_014_autonomy_contracts.py tests/contract/test_v2_008_submit_trade_plan.py tests/contract/test_v3_009_autonomy_mandate.py: 57 passed",
+    "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_tool_registry_permissions.py tests/contract/test_observability_idempotency_contracts.py: 30 passed",
+    "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_010_chain_20260908?host=/tmp uv run alembic upgrade head && uv run pytest -q tests/integration/test_v0_014_autonomy_postgresql.py tests/integration/test_v3_009_autonomy_postgresql.py: 36 passed",
+    "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_010_migration_20260908?host=/tmp uv run pytest -q tests/integration/test_postgresql_migration_round_trip.py: 8 passed",
+    "UV_CACHE_DIR=/tmp/fao-uv-cache make check: 776 contract, 9 property, 2 schema, 1 unit; Ruff, mypy, secret scan, lock check, formatting check, and health passed"
+  ],
+  "remaining": [],
+  "notes": [
+    "PostgreSQL request/grant Agent REQUEST_ONE_OFF path is covered by test_v3_009_autonomy_postgresql.py; receipt consumption remains covered by owner-level tests.",
+    "The Roadmap contains no separate adversarial-matrix specification; the authoritative matrix is the explicit list in V3-010 Acceptance and is mapped above.",
+    "The independent reviewer rule in docs/DEVELOPMENT-MODEL-POLICY.md applies to a version Exit. V3 Exit cannot start while V3-011 through V3-015 remain incomplete, so it is not a V3-010 completion blocker.",
+    "An attempted combined run against a previously populated database correctly refused destructive downgrade, and a first fresh-database run incorrectly mixed destructive migration tests with business integration tests. Neither run is counted as product Evidence; the passing Evidence uses separate clean chain and migration databases.",
+    "Current review host model/profile and reasoning effort were not exposed; they are recorded as NOT_EXPOSED rather than inferred."
+  ]
+}

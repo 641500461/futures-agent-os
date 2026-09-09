@@ -1,0 +1,49 @@
+{
+  "task": "V3-007",
+  "status": "COMPLETE",
+  "date": "2026-09-08",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "reviewer_model": "NOT_APPLICABLE_TASK_LEVEL_SELF_VERIFICATION",
+  "reviewer_reasoning_effort": "NOT_APPLICABLE_TASK_LEVEL_SELF_VERIFICATION",
+  "commit": "uncommitted worktree; no commit created",
+  "routing": {
+    "policy_target": "gpt-5.6-sol/high",
+    "actual": "current coordinator; exact model and reasoning effort not exposed"
+  },
+  "scope": [
+    "V3 Catalog 1.6 plan-facing Critic without reinterpreting V1 Catalog 1.5",
+    "distinct PRE_TRADE_CRITIQUE artifact kind",
+    "exact Thesis, Counter Evidence, Data Leakage, Cost Coverage, Regime Fit, Risk/Reward and Historical Failure checks",
+    "typed PASS/CONCERN/BLOCKER/UNKNOWN findings and PASS/REVISE/REJECT/DEFER verdict",
+    "mandatory follow-up validation for every non-pass finding",
+    "same-PIT immutable source lineage and complete citation",
+    "one bounded review iteration",
+    "no proposal rewrite, RiskDecision, Order, episode outcome or Reflection authority"
+  ],
+  "acceptance": {
+    "required_pre_trade_checks": "PASS",
+    "independent_counter_evidence": "PASS",
+    "critic_and_post_trade_roles_distinct": "PASS",
+    "critic_and_post_trade_states_distinct": "PASS",
+    "critic_and_post_trade_schemas_distinct": "PASS",
+    "rejected_proposal_cannot_advance": "PASS"
+  },
+  "tests": [
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v3_007_pre_trade_critic.py",
+      "result": "PASS: 16 passed"
+    },
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+      "result": "PASS: ruff, mypy 147 source files, secret scan, 2 schema, 1 unit, 9 property, 737 contract, health"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "historical_compatibility": "Catalog 1.2-1.5 remain available; V1 Catalog 1.5 still consumes research diagnostics and emits CRITIQUE.",
+  "deterministic_authority_note": "Pre-trade Critic can only block or advise revision/defer. It cannot rewrite a proposal, authorize risk, create an Order, or perform post-trade review.",
+  "remaining": ["V3-008 through V3-015 Acceptance", "independent V3 Exit review"]
+}

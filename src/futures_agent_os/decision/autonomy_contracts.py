@@ -101,6 +101,16 @@ class PlanApprovalStatus(StrEnum):
     CONSUMED = "CONSUMED"
 
 
+class EscalationMode(StrEnum):
+    SKIP_AND_NOTIFY = "SKIP_AND_NOTIFY"
+    REQUEST_ONE_OFF = "REQUEST_ONE_OFF"
+
+
+class OperationalPauseReason(StrEnum):
+    HEALTH_DEGRADED = "HEALTH_DEGRADED"
+    POLICY_OR_VERSION_QUARANTINE = "POLICY_OR_VERSION_QUARANTINE"
+
+
 class BasisKind(StrEnum):
     MANDATE = "MANDATE"
     PLAN_APPROVAL = "PLAN_APPROVAL"
@@ -234,6 +244,7 @@ class MandateScope:
     risk_constitution_ref: str
     notification_policy_ref: str
     escalation_policy_ref: str
+    escalation_mode: EscalationMode = EscalationMode.SKIP_AND_NOTIFY
 
     def __post_init__(self) -> None:
         if not isinstance(self.simulation_account_id, EntityId):
@@ -265,6 +276,8 @@ class MandateScope:
             for value in (self.risk_constitution_ref, self.notification_policy_ref, self.escalation_policy_ref)
         ):
             raise ValueError("mandate scope requires canonical risk, notification, and escalation references")
+        if not isinstance(self.escalation_mode, EscalationMode):
+            raise TypeError("mandate scope requires a typed escalation mode")
 
     @property
     def sha256(self) -> str:
@@ -279,6 +292,7 @@ class MandateScope:
                 "risk_constitution_ref": self.risk_constitution_ref,
                 "notification_policy_ref": self.notification_policy_ref,
                 "escalation_policy_ref": self.escalation_policy_ref,
+                "escalation_mode": self.escalation_mode.value,
             }
         )
 
@@ -398,6 +412,11 @@ class SimulationAutonomyMandate:
             raise ValueError("expiry is clock-derived")
         if target not in _MANDATE_TRANSITIONS[current]:
             raise ValueError(f"invalid mandate transition: {current} -> {target}")
+        if (current, target) in {
+            (MandateStatus.HALTED, MandateStatus.RECOVERING),
+            (MandateStatus.RECOVERING, MandateStatus.ACTIVE),
+        }:
+            raise PermissionError("HALTED recovery must use the explicit human recovery gate")
         if target in {MandateStatus.ACTIVE, MandateStatus.RECOVERING, MandateStatus.REVOKED} and not actor_is_human:
             raise PermissionError("agents cannot activate, recover, or revoke mandates")
         if target is MandateStatus.REVOKED and not reason:
@@ -410,6 +429,67 @@ class SimulationAutonomyMandate:
             revocation_reason=reason if target is MandateStatus.REVOKED else None,
             version=self.version + 1,
             recorded_at=now,
+        )
+
+
+@dataclass(frozen=True, slots=True)
+class MandateRecovery:
+    """Human-gated HALTED recovery with explicit reconciliation evidence."""
+
+    mandate: SimulationAutonomyMandate
+    root_cause_ref: str
+    reconciliation_ref: str
+    initiated_by: str
+
+    @classmethod
+    def begin(
+        cls,
+        mandate: SimulationAutonomyMandate,
+        now: RecordedAt,
+        *,
+        actor: str,
+        root_cause_ref: str,
+        reconciliation_ref: str,
+    ) -> MandateRecovery:
+        _actor(actor)
+        if not actor.startswith("user:"):
+            raise PermissionError("HALTED recovery requires a human actor")
+        if mandate.status_at(now) is not MandateStatus.HALTED:
+            raise ValueError("only a non-expired HALTED mandate may begin recovery")
+        if not all(_canonical_reference(ref) for ref in (root_cause_ref, reconciliation_ref)):
+            raise ValueError("recovery requires canonical root-cause and reconciliation evidence")
+        recovering = replace(
+            mandate,
+            status=MandateStatus.RECOVERING,
+            version=mandate.version + 1,
+            recorded_at=now,
+            recorded_by=actor,
+            revocation_reason=None,
+        )
+        return cls(recovering, root_cause_ref, reconciliation_ref, actor)
+
+    def complete(
+        self,
+        now: RecordedAt,
+        *,
+        actor: str,
+        governance_approval_ref: str,
+        qualified: bool,
+        health_permits: bool,
+    ) -> SimulationAutonomyMandate:
+        _actor(actor)
+        if not actor.startswith("user:"):
+            raise PermissionError("recovery activation requires a human actor")
+        if self.mandate.status_at(now) is not MandateStatus.RECOVERING:
+            raise ValueError("only a non-expired RECOVERING mandate may activate")
+        if not _canonical_reference(governance_approval_ref) or not qualified or not health_permits:
+            raise ValueError("recovery requires governance approval, qualification, and healthy reconciliation")
+        return replace(
+            self.mandate,
+            status=MandateStatus.ACTIVE,
+            version=self.mandate.version + 1,
+            recorded_at=now,
+            recorded_by=actor,
         )
 
 
@@ -902,6 +982,74 @@ class PlanApproval:
             raise PermissionError("only a human user may grant a plan approval")
         return replace(self, status=target, version=self.version + 1, decided_at=now, decided_by=actor)
 
+    @classmethod
+    def request_agent_exception(
+        cls,
+        *,
+        request: GateRequest,
+        mandate: SimulationAutonomyMandate,
+        binding: AutonomyModeBinding,
+        qualified: bool,
+        health_permits: bool,
+        approval_id: EntityId,
+        approval_token: EntityId,
+        expires_at: RecordedAt,
+        now: RecordedAt,
+        requested_by: str = "service:autonomous-quant-pm",
+    ) -> PlanApproval:
+        """Create a human-decidable exception request, never an authorization."""
+        if request.execution_origin is not ExecutionOrigin.AUTONOMOUS_AGENT:
+            raise ValueError("agent exceptions require AUTONOMOUS_AGENT origin")
+        effective = EffectiveAutonomy.evaluate(
+            mandate,
+            binding,
+            qualified=qualified,
+            health_permits=health_permits,
+            now=now,
+        )
+        if not effective.permitted:
+            raise ValueError("agent exceptions require current EffectiveAutonomy")
+        if mandate.scope.escalation_mode is not EscalationMode.REQUEST_ONE_OFF:
+            raise PermissionError("mandate does not permit one-off PlanApproval requests")
+        if mandate.scope.matches(
+            request.account_id,
+            request.instrument,
+            request.strategy,
+            request.session,
+            request.action,
+            request.quantity,
+        ):
+            raise ValueError("in-scope autonomous plans do not require an exception")
+        if expires_at.value > min(mandate.expires_at.value, binding.expires_at.value):
+            raise ValueError("agent exception cannot outlive its mandate or mode binding")
+        _actor(requested_by)
+        if not requested_by.startswith("service:"):
+            raise PermissionError("agent exception requests require a service actor")
+        scope = ApprovalScope(
+            request.account_id,
+            (request.instrument,),
+            (request.strategy,),
+            (request.session,),
+            frozenset({request.action}),
+            request.quantity,
+            now,
+            expires_at,
+        )
+        return cls(
+            approval_id,
+            1,
+            PlanApprovalStatus.REQUESTED,
+            request.plan_id,
+            request.plan_version,
+            request.plan_hash,
+            request.account_id,
+            scope,
+            approval_token,
+            requested_by,
+            expires_at,
+            now,
+        )
+
 
 @dataclass(frozen=True, slots=True)
 class AuthorizationBasis:
@@ -1300,8 +1448,10 @@ class AutonomyGate:
             request.action,
             request.quantity,
         ):
+            can_escalate = approval_allowed and mandate.scope.escalation_mode is EscalationMode.REQUEST_ONE_OFF
             return PreflightResult(
-                PreflightOutcome.ESCALATE if approval_allowed else PreflightOutcome.REJECT, reason="SCOPE_MISMATCH"
+                PreflightOutcome.ESCALATE if can_escalate else PreflightOutcome.REJECT,
+                reason="SCOPE_MISMATCH",
             )
         if not isinstance(basis_registry, BasisIssuanceRegistry):
             raise TypeError("preflight requires the authoritative Basis issuance registry")
@@ -1359,7 +1509,7 @@ class AutonomyGate:
             request.session,
         ):
             return FinalGateResult(FinalGateOutcome.REJECT, reason="BASIS_PLAN_MISMATCH")
-        if (basis.authorized_action, basis.authorized_quantity) != (request.action, request.quantity):
+        if basis.authorized_action is not request.action or request.quantity > basis.authorized_quantity:
             return FinalGateResult(FinalGateOutcome.REJECT, reason="BASIS_ACTION_QUANTITY_MISMATCH")
         if (
             reservation.plan_id,
@@ -1396,7 +1546,10 @@ class AutonomyGate:
             basis.source_hash,
         ):
             return FinalGateResult(FinalGateOutcome.REJECT, reason="RESERVATION_SOURCE_MISMATCH")
-        if request.execution_origin is ExecutionOrigin.AUTONOMOUS_AGENT and basis.kind is not BasisKind.MANDATE:
+        if request.execution_origin is ExecutionOrigin.AUTONOMOUS_AGENT and basis.kind not in {
+            BasisKind.MANDATE,
+            BasisKind.PLAN_APPROVAL,
+        }:
             return FinalGateResult(FinalGateOutcome.REJECT, reason="ORIGIN_BASIS_MISMATCH")
         if request.execution_origin is ExecutionOrigin.MANUAL_TEST and basis.kind is not BasisKind.PLAN_APPROVAL:
             return FinalGateResult(FinalGateOutcome.REJECT, reason="ORIGIN_BASIS_MISMATCH")
@@ -1836,6 +1989,48 @@ class BindingArtifactCoordinator:
 
 
 @dataclass(frozen=True, slots=True)
+class OperationalModePause:
+    """Health/version pause that leaves the business Mandate unchanged."""
+
+    mandate: SimulationAutonomyMandate
+    invalidation: BindingArtifactInvalidation
+    reason: OperationalPauseReason
+
+    @classmethod
+    def apply(
+        cls,
+        mandate: SimulationAutonomyMandate,
+        binding: AutonomyModeBinding,
+        now: RecordedAt,
+        *,
+        reason: OperationalPauseReason,
+        coordinator: BindingArtifactCoordinator,
+        actor: str,
+        evidence_ref: str,
+    ) -> OperationalModePause:
+        if not isinstance(reason, OperationalPauseReason):
+            raise TypeError("operational pause requires a typed health or quarantine reason")
+        _actor(actor)
+        if not actor.startswith(("service:", "system:")):
+            raise PermissionError("operational pause requires a service or system actor")
+        if binding.mode is not AutonomyMode.AUTONOMOUS_SIMULATION:
+            raise ValueError("operational pause requires an autonomous simulation binding")
+        if (
+            binding.mandate_id != mandate.mandate_id
+            or binding.mandate_version != mandate.version
+            or binding.simulation_account_id != mandate.scope.simulation_account_id
+        ):
+            raise ValueError("operational pause requires the exact mandate binding")
+        paused = binding.pause(
+            now,
+            reason=reason.value,
+            actor=actor,
+            evidence_ref=evidence_ref,
+        )
+        return cls(mandate, coordinator.pause(paused, now), reason)
+
+
+@dataclass(frozen=True, slots=True)
 class FinalGateResult:
     outcome: FinalGateOutcome
     receipt: AutonomyGateReceipt | None = None
@@ -1922,7 +2117,7 @@ class ReceiptRegistry:
                 return False
             if not basis.active_at(now):
                 return False
-            if (basis.authorized_action, basis.authorized_quantity) != (request.action, request.quantity):
+            if basis.authorized_action is not request.action or request.quantity > basis.authorized_quantity:
                 return False
             expected_source_kind = (
                 ReservationSourceKind.MANDATE
@@ -1939,29 +2134,52 @@ class ReceiptRegistry:
                 return False
             if receipt.execution_origin is ExecutionOrigin.AUTONOMOUS_AGENT:
                 if (
-                    basis.kind is not BasisKind.MANDATE
-                    or mandate is None
+                    mandate is None
                     or not mandate.is_active_at(now)
                     or binding is None
                     or not binding.is_active_at(now)
                     or binding.mode is not AutonomyMode.AUTONOMOUS_SIMULATION
                     or not qualified
                     or not health_permits
-                    or (receipt.source_id, receipt.source_version, receipt.source_hash)
-                    != (mandate.mandate_id, mandate.version, mandate.authorization_hash)
-                    or not mandate.scope.matches(
-                        request.account_id,
-                        request.instrument,
-                        request.strategy,
-                        request.session,
-                        request.action,
-                        request.quantity,
+                    or (
+                        basis.kind is BasisKind.MANDATE
+                        and (
+                            (receipt.source_id, receipt.source_version, receipt.source_hash)
+                            != (mandate.mandate_id, mandate.version, mandate.authorization_hash)
+                            or not mandate.scope.matches(
+                                request.account_id,
+                                request.instrument,
+                                request.strategy,
+                                request.session,
+                                request.action,
+                                request.quantity,
+                            )
+                        )
                     )
                     or binding.simulation_account_id != mandate.scope.simulation_account_id
                     or binding.simulation_account_id != request.account_id
                     or binding.scope_snapshot_hash != mandate.scope.sha256
                     or (receipt.mode_binding_id, receipt.mode_binding_version, receipt.mode_binding_hash)
                     != (binding.binding_id, binding.version, binding.binding_hash)
+                ):
+                    return False
+                if basis.kind is BasisKind.PLAN_APPROVAL and (
+                    approval is None
+                    or approval.status is not PlanApprovalStatus.CONSUMED
+                    or receipt.source_id != approval.approval_id
+                    or receipt.source_version != approval.version - 1
+                    or receipt.source_hash != approval.granted_authorization_hash
+                    or basis.approval_token != approval.approval_token
+                    or basis.scope_snapshot_hash != approval.scope.scope_hash
+                    or not approval.scope.permits(
+                        request.account_id,
+                        request.instrument,
+                        request.strategy,
+                        request.session,
+                        request.action,
+                        request.quantity,
+                        now,
+                    )
                 ):
                     return False
             elif (

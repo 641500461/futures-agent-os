@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "roadmap_task": "V3-002",
+  "status": "COMPLETE",
+  "recorded_at": "2026-09-08",
+  "branch": "codex/v3",
+  "base_commit": "7dd2ec6847025605c82899695355e5ee56c999e3",
+  "implementation_commit": "WORKTREE_UNCOMMITTED",
+  "execution": {
+    "coordinator": "Codex current task",
+    "implementation_model": "NOT_EXPOSED",
+    "implementation_reasoning_effort": "NOT_EXPOSED",
+    "reviewer_model": "NOT_APPLICABLE",
+    "reviewer_reasoning_effort": "NOT_APPLICABLE",
+    "model_escalation": false,
+    "note": "The host did not expose the exact active model slug or reasoning effort. No independent V3 Exit review is claimed; that review remains required after the version tasks are complete."
+  },
+  "acceptance": {
+    "deterministic_graph": "PASS: five trigger origins enter one ordered ten-stage workflow from snapshot through notification/review; no WAITING_USER state exists on the authorized path.",
+    "truth_ownership": "PASS: checkpoints contain closed StateReference objects with only kind, owner object ID, positive version, and SHA-256; every stage calls an injected owner command port with a stable idempotency key.",
+    "durability": "PASS: PostgreSQL stores canonical trigger/checkpoint bytes and digests, optimistic version, lease owner, expiry, fencing token, and append-only-by-permission checkpoint history.",
+    "restart_recovery": "PASS: each of the ten stage commands was interrupted after its idempotent owner effect and before checkpoint persistence, then resumed through a new SQLAlchemy Engine without a duplicate owner effect.",
+    "revalidation": "PASS: recovery revalidates every acquired Snapshot, TradePlan, AuthorizationBasis, Gate Receipt, and RiskDecision before the next owner command; each stale-kind counterexample fails closed with zero subsequent commands.",
+    "concurrency": "PASS: eight concurrent equivalent triggers converge on one deterministic run; active foreign lease is rejected and stale checkpoint versions/fencing tokens cannot advance state.",
+    "boundary": "PASS: no real-money mode, broker routing, Agent self-authorization, risk override, order/ledger mutation, or V3-003+ product Agent activation was added."
+  },
+  "tests": [
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v3_002_autonomy_workflow.py -q",
+      "result": "PASS: 23 passed"
+    },
+    {
+      "command": "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_002_root_20260908_04?host=/tmp UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/integration -ra",
+      "result": "PASS: 72 passed, including 12 V3-002 restart/concurrency tests"
+    },
+    {
+      "command": "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_002_root_20260908_02?host=/tmp UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/integration/test_postgresql_migration_round_trip.py::test_empty_database_upgrade_downgrade_upgrade_preserves_schema_isolation",
+      "result": "PASS: empty database upgrade, downgrade, and re-upgrade"
+    },
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+      "result": "PASS: uv lock, format, lint, mypy 143 source files, secret scan, 2 schema, 1 unit, 9 property, 622 contract tests, and health"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "deterministic_adjudication": [
+    "Roadmap Acceptance and tests, not model output, determine completion.",
+    "Owner services remain responsible for EffectiveAutonomy, authorization, reservation, receipt, risk, execution, protection, accounting, and notification truth.",
+    "An owner effect/checkpoint gap is resolved by stable command idempotency plus recovery revalidation; checkpoint state is never treated as trading authority."
+  ],
+  "remaining_scope": [
+    "V3-003 and later product Agents are not enabled or implemented by this task.",
+    "The V3 version Exit still requires an independent reviewer that did not lead implementation.",
+    "Real-money trading and real order routing remain out of scope."
+  ]
+}

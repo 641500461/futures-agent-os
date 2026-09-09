@@ -1,0 +1,62 @@
+{
+  "task": "V3-001",
+  "status": "COMPLETE",
+  "date": "2026-09-08",
+  "execution_identity": "/root/v3_001_sol_medium",
+  "implementation_model": "gpt-5.6-sol",
+  "implementation_reasoning_effort": "medium",
+  "routing_adjustment": {
+    "previous_plan": "gpt-5.6-sol/xhigh via /root/v3_001_implementation",
+    "actual": "gpt-5.6-sol/medium via /root/v3_001_sol_medium",
+    "reason": "explicit user instruction",
+    "note": "Uncommitted safe work from the discontinued work package was audited and corrected; it is not represented as an independent review."
+  },
+  "review": {
+    "reviewer": "NOT_PERFORMED",
+    "reviewer_model": "NOT_APPLICABLE",
+    "reviewer_reasoning_effort": "NOT_APPLICABLE",
+    "note": "No independent reviewer is claimed for this Roadmap task. Completion is based on reproducible Acceptance evidence; the V3 version Exit review remains separate."
+  },
+  "commit": "ac552f4374b32d3a8d8a65a07312d18046f39aea",
+  "acceptance": {
+    "channel_neutral_core": "PASS: contracts and PostgresGatewayStore contain no Feishu SDK types; Feishu is registered through ChannelAdapter and unsupported capabilities fail explicitly.",
+    "identity_and_namespace": "PASS: channel/external actor/conversation mapping is application-owned; inbox and notification idempotency keys include channel namespace.",
+    "durable_inbox": "PASS: inbox insert and unique agent_task enqueue are one PostgreSQL transaction; 8-way concurrent duplicate delivery creates one task; conflicting replay fails closed; expired task lease is restart-reclaimed with a higher fencing token.",
+    "outbox": "PASS: channel-scoped durable enqueue, lease claim, at-least-once retry, exponential backoff, delivered/dead-letter states, conflicting replay rejection, and append-like per-attempt delivery records are tested.",
+    "control_callback": "PASS: only server-issued challenges can be consumed; unknown callbacks cannot self-register; actor, action, target ID/version/SHA-256, payload, expiry, and token are bound; row locking proves one effect under 8 concurrent clicks.",
+    "feishu": "PASS: official lark-oapi websocket event/card callback registration, protocol translation, HTTP notification construction, redacted configuration, and `futures-agent-os gateway run` entrypoint are implemented.",
+    "truth_boundary": "PASS: gateway persistence owns only identity, inbox/task, callback, outbox/delivery state and invokes an injected owner command in the same transaction; it has no Order, Fill, Position, RiskDecision, or Ledger writer.",
+    "latency": "PASS: 100 isolated PostgreSQL durable ingests p95=1.107ms and max=12.253ms; target p95 < 2000ms."
+  },
+  "verification": [
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+      "result": "PASS: uv lock, ruff format/check, mypy (143 source files), secret scan, 2 schema, 1 unit, 9 property, 599 contract tests, and health."
+    },
+    {
+      "command": "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_001_final2_20260908_sol_medium?host=/tmp UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/integration/test_v3_001_gateway_postgresql.py -ra",
+      "result": "PASS: 6 tests."
+    },
+    {
+      "command": "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_001_final2_20260908_sol_medium?host=/tmp UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/integration -ra",
+      "result": "PASS: 60 tests."
+    },
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q -ra",
+      "result": "PASS: all non-PostgreSQL tests; 60 PostgreSQL tests skipped as designed without FAO_DATABASE_URL and proven separately above."
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "residual_risk": [
+    "No live Feishu credentials were available. Provider connectivity and real external delivery remain deployment verification, while SDK construction and local protocol boundaries are covered.",
+    "At-least-once delivery may call Feishu before a crash prevents DELIVERED persistence; the stable SDK uuid/delivery key provides the required receiver-side idempotency rather than claiming cross-system exactly-once."
+  ],
+  "scope_excluded": [
+    "V3-002 and later autonomous workflow/agent behavior",
+    "real-money trading and real order routing",
+    "additional channel adapters"
+  ]
+}

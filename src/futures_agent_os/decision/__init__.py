@@ -16,11 +16,15 @@ from .autonomy_contracts import (
     CompositePause,
     CompositeResume,
     EffectiveAutonomy,
+    EscalationMode,
     ExecutionOrigin,
     FinalGateOutcome,
     GateRequest,
     MandateScope,
+    MandateRecovery,
     MandateStatus,
+    OperationalModePause,
+    OperationalPauseReason,
     PlanApproval,
     PlanApprovalRegistry,
     PlanApprovalStatus,
@@ -52,6 +56,7 @@ from .trade_contracts import (
     Settlement,
     V2_CONTRACT_SCHEMA,
 )
+from .risk_reduction import ProtectionTriggerKind, RiskReductionRequest
 from .submission import SubmissionResult, TradePlanSubmitter
 from .manual_test import ManualApprovalCommandResult, ManualTestApprovalStore, ManualTestContext, require_manual_test
 
@@ -73,11 +78,15 @@ __all__ = [
     "CompositePause",
     "CompositeResume",
     "EffectiveAutonomy",
+    "EscalationMode",
     "ExecutionOrigin",
     "FinalGateOutcome",
     "GateRequest",
     "MandateScope",
+    "MandateRecovery",
     "MandateStatus",
+    "OperationalModePause",
+    "OperationalPauseReason",
     "PlanApproval",
     "PlanApprovalRegistry",
     "PlanApprovalStatus",
@@ -104,6 +113,8 @@ __all__ = [
     "LedgerEntry",
     "Settlement",
     "V2_CONTRACT_SCHEMA",
+    "ProtectionTriggerKind",
+    "RiskReductionRequest",
     "SubmissionResult",
     "SubmitTradePlanResult",
     "SubmitTradePlanService",

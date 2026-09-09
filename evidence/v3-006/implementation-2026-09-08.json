@@ -1,0 +1,46 @@
+{
+  "task": "V3-006",
+  "status": "COMPLETE",
+  "date": "2026-09-08",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "reviewer_model": "NOT_APPLICABLE_TASK_LEVEL_SELF_VERIFICATION",
+  "reviewer_reasoning_effort": "NOT_APPLICABLE_TASK_LEVEL_SELF_VERIFICATION",
+  "commit": "uncommitted worktree; no commit created",
+  "routing": {
+    "policy_target": "gpt-5.6-sol/high",
+    "actual": "current coordinator; exact model and reasoning effort not exposed"
+  },
+  "scope": [
+    "direct reuse of V2 FillOrderType MARKET, LIMIT and STOP",
+    "same-PIT Plan, PortfolioProposal, RiskAssessment, RiskPreflight, activation, liquidity, cost and simulation inputs",
+    "owner-resolved active algorithm set and deterministic simulation verification at recommend and package boundaries",
+    "finite Decimal cost and fill probability comparisons for every active algorithm",
+    "typed urgency, cancellation conditions, evidence, counter evidence, unknowns, warnings, confidence and expiry",
+    "L1/L2 fidelity only; no queue-level claim",
+    "TWAP, VWAP, ICEBERG and batched execution rejected until V5",
+    "no Order, quantity, max-loss or RiskDecision authority"
+  ],
+  "acceptance": {
+    "cost_and_fill_simulation_comparison": "PASS",
+    "implemented_and_active_algorithm_only": "PASS: V2 enum plus owner verifier",
+    "recommendation_only": "PASS",
+    "order_owned_by_deterministic_execution_planner": "PASS: no order fields/tools; execution_simulator remains READ_ONLY"
+  },
+  "tests": [
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v3_006_execution_advisor.py",
+      "result": "PASS: 26 passed"
+    },
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+      "result": "PASS: ruff, mypy 147 source files, secret scan, 2 schema, 1 unit, 9 property, 721 contract, health"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "deterministic_authority_note": "Execution Advisor only recommends. The deterministic Execution Planner remains the sole owner that can create an Order after valid Gate and Risk decisions.",
+  "remaining": ["V3-007 through V3-015 Acceptance", "independent V3 Exit review"]
+}

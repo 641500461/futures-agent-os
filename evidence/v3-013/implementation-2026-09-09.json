@@ -1,0 +1,25 @@
+{
+  "task": "V3-013",
+  "status": "COMPLETE",
+  "date": "2026-09-09",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "changes": [
+    "AgentVersion carries an independent baseline_ref",
+    "qualification rejects empty or non-finite metrics and thresholds",
+    "activation requires a human governance actor",
+    "QualificationRegistry records immutable register/qualify/activate lifecycle evidence",
+    "Registry exposes events only as an immutable tuple",
+    "EvaluationScorecard defines the complete required evaluation dimensions",
+    "QualificationRegistry.qualify_scorecard binds qualification to the complete scorecard and digest",
+    "EvaluationScorecard fixes 13 required evaluation dimensions",
+    "Registry snapshot/from_snapshot preserves activation evidence across restart"
+  ],
+  "tests": [
+    "UV_CACHE_DIR=/tmp/fao-uv-cache make check: 778 contract, 9 property, 2 schema, 1 unit; lint, mypy, secret scan and health passed",
+    "UV_CACHE_DIR=/tmp/fao-uv-cache make check: 778 contract, 9 property, 2 schema, 1 unit; lint, mypy, secret scan and health passed",
+    "UV_CACHE_DIR=/tmp/fao-uv-cache make check: 778 contract, 9 property, 2 schema, 1 unit; lint, mypy, secret scan and health passed",
+    "UV_CACHE_DIR=/tmp/fao-uv-cache make check: 778 contract, 9 property, 2 schema, 1 unit; lint, mypy, secret scan and health passed"
+  ],
+  "remaining": []
+}

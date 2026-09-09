@@ -1,0 +1,18 @@
+{
+  "task": "V3-003",
+  "status": "COMPLETE",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "routing": {"requested_model": "gpt-5.6-sol", "requested_effort": "high", "identity": "/root/strategy_correction", "result": "429_TOO_MANY_REQUESTS", "fallback": "current coordinator performed correction"},
+  "commit": "uncommitted worktree; no commit created",
+  "regression_before": "15 failures in 23 Strategy tests reproduced invalid protection, nonfinite exposure, invalid draft semantics and implicit decision fallback",
+  "regression_after": {"command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v3_003_strategy_agent.py tests/contract/test_v3_003_strategy_task.py tests/contract/test_v3_001_gateway_contracts.py", "result": "PASS: 52 passed"},
+  "full_gate": {"command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check", "result": "PASS: 660 contract, 9 property, 2 schema, 1 unit; ruff, mypy (147 source files), secret scan and health pass"},
+  "scope": ["explicit TRADE default with required protection", "finite Decimal exposure", "positive finite protection max loss", "typed protection", "DRAFT-only Strategy output", "NO_TRADE/DEFER zero risk and exposure", "non-empty draft evidence elements", "LONG/SHORT draft direction", "StrategyAgentResult direct-construction lineage and expiry guards", "process-stable canonical delegation digest over proposal and full source lineage"],
+  "durable_integration": {"command": "FAO_DATABASE_URL=postgresql+psycopg://qiu@/fao_v3_exit_20260908 UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/integration/test_v3_002_autonomy_workflow_postgresql.py -k strategy_delegation", "result": "PASS: Strategy delegation reference survives PostgreSQL worker restart and checkpoint contains references only"},
+  "acceptance": {"candidate_or_trade_plan_draft_only": "PASS", "thesis_invalidation_evidence_target_risk_exit": "PASS", "no_order_or_ledger_authority": "PASS", "bounded_task_and_durable_delegation": "PASS"},
+  "reviewer_model": "NOT_APPLICABLE_TASK_LEVEL_SELF_VERIFICATION",
+  "reviewer_reasoning_effort": "NOT_APPLICABLE_TASK_LEVEL_SELF_VERIFICATION",
+  "remaining": ["independent V3 version Exit review", "V3-004 through V3-015 Acceptance"],
+  "completion_correction": "Roadmap V3-004 through V3-015 completion flags remain withdrawn; V3-003 alone is complete. V4/V5 erroneous V3 evidence references were restored to HEAD content."
+}

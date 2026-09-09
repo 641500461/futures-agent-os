@@ -1,0 +1,59 @@
+{
+  "task": "V3-008",
+  "status": "COMPLETE",
+  "date": "2026-09-08",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "reviewer_model": "NOT_APPLICABLE_TASK_LEVEL_SELF_VERIFICATION",
+  "reviewer_reasoning_effort": "NOT_APPLICABLE_TASK_LEVEL_SELF_VERIFICATION",
+  "commit": "uncommitted worktree; no commit created",
+  "routing": {
+    "policy_target": "gpt-5.6-sol/high",
+    "actual": "current coordinator; exact model and reasoning effort not exposed"
+  },
+  "scope": [
+    "typed CollaborationPlan DAG with immutable PIT inputs and exact role/output/tool declarations",
+    "two bounded parallel waves for Regime/Portfolio and Risk/Critic/Execution",
+    "deterministic plan-order fan-in independent of worker completion order",
+    "per-task and aggregate token, tool-call, wall-time and compute hard limits",
+    "bounded graph depth as the collaboration loop/round hard limit",
+    "cooperative task cancellation plus global deadline for non-cooperative workers",
+    "explicit conflict records retaining every position, scope, evidence, as_of, confidence and unknown",
+    "authority-rule conflict classification without majority voting",
+    "Autonomous Quant PM synthesis that cannot draft through unresolved conflicts or incomplete specialists",
+    "no agent-to-agent recipient, message, peer or chat surface"
+  ],
+  "acceptance": {
+    "agents_do_not_freely_chat": "PASS",
+    "conflicts_are_explicit": "PASS",
+    "no_majority_vote_authority": "PASS",
+    "deterministic_fan_out_fan_in": "PASS",
+    "loop_round_hard_limit": "PASS",
+    "token_hard_limit": "PASS",
+    "wall_time_hard_limit": "PASS",
+    "tool_call_hard_limit": "PASS",
+    "compute_hard_limit": "PASS",
+    "timeout_cancellation_and_fail_closed_dependencies": "PASS"
+  },
+  "tests": [
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v3_008_structured_parallel.py",
+      "result": "PASS: 11 passed"
+    },
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v3_008_structured_parallel.py tests/contract/test_v3_001_gateway_contracts.py",
+      "result": "PASS: 32 passed; legacy ParallelFanout gateway contract remains compatible"
+    },
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+      "result": "PASS: uv lock, ruff format/check, mypy 147 source files, secret scan, 2 schema, 1 unit, 9 property, 748 contract, health"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "authority_note": "Specialists publish structured proposals only. Conflict classification preserves deterministic owner precedence; the PM cannot authorize a draft through a conflict, and no output replaces Risk Constitution, Execution Planner, Position Protection or Ledger truth.",
+  "durability_boundary": "V3-002 remains the durable workflow owner. V3-008 supplies the typed bounded fan-out/fan-in primitive consumed at its orchestration stages; full opportunity-to-trade integration remains V3-014.",
+  "remaining": ["V3-009 through V3-015 Acceptance", "independent V3 Exit review"]
+}

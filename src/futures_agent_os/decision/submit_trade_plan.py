@@ -33,7 +33,6 @@ from .autonomy_contracts import (
     AutonomyGateReceipt,
     AutonomyModeBinding,
     BasisIssuanceRegistry,
-    EffectiveAutonomy,
     GateRequest,
     PlanApproval,
     PlanApprovalRegistry,
@@ -427,6 +426,8 @@ class SubmitTradePlanService:
         hard = TradePlanSubmitter.validate_plan(plan, now=now)
         if hard != "PLAN_VALID":
             return SubmitTradePlanResult("REJECTED", hard)
+        if snapshot_expires_at.value <= now.value:
+            return SubmitTradePlanResult("REJECTED", "SNAPSHOT_EXPIRED")
         base_request = self._request(
             plan,
             execution_origin=execution_origin,
@@ -436,62 +437,46 @@ class SubmitTradePlanService:
             session=session,
         )
 
-        # Check the requested quantity against the authorization envelope before
-        # sizing.  A plan cannot evade a ceiling by being silently shrunk to a
-        # smaller quantity later.  These checks are side-effect free; no Basis
-        # or reservation exists while authorization is pending.
-        if execution_origin is ExecutionOrigin.AUTONOMOUS_AGENT:
-            effective = EffectiveAutonomy.evaluate(
-                mandate, binding, qualified=qualified, health_permits=health_permits, now=now
-            )
-            if not effective.permitted:
-                preflight = PreflightResult(
-                    PreflightOutcome.PROTECT_ONLY
-                    if effective.reason in {"HEALTH_BLOCKED", "MANDATE_PROTECT_ONLY", "MODE_PAUSED"}
-                    else PreflightOutcome.REJECT,
-                    reason=effective.reason,
-                )
-                return SubmitTradePlanResult("REJECTED", effective.reason, preflight=preflight)
-            assert mandate is not None
-            if (
-                binding is None
-                or binding.simulation_account_id != plan.account_id
-                or binding.scope_snapshot_hash != mandate.scope.sha256
-                or not mandate.scope.matches(
-                    plan.account_id,
-                    plan.instrument,
-                    plan.strategy_ref,
-                    session,
-                    base_request.action,
-                    plan.quantity,
-                )
-            ):
-                preflight = PreflightResult(PreflightOutcome.REJECT, reason="SCOPE_MISMATCH")
-                return SubmitTradePlanResult("REJECTED", "SCOPE_MISMATCH", preflight=preflight)
-        else:
+        # Authorization is resolved before sizing or reservation.  ESCALATE is
+        # a durable wait state: until a human grants the supplied approval,
+        # this method returns without invoking the risk engine or creating a
+        # reservation.
+        preflight = AutonomyGate.preflight(
+            base_request,
+            mandate,
+            binding,
+            qualified=qualified,
+            health_permits=health_permits,
+            now=now,
+            approval_allowed=approval_allowed,
+            basis_registry=basis_registry,
+        )
+        basis = preflight.basis
+        if preflight.outcome is PreflightOutcome.ESCALATE:
             if approval is None:
-                preflight = PreflightResult(
-                    PreflightOutcome.ESCALATE if approval_allowed else PreflightOutcome.REJECT,
-                    reason="MANUAL_REQUIRES_APPROVAL",
-                )
                 return SubmitTradePlanResult("DEFERRED", "PLAN_APPROVAL_REQUIRED", preflight=preflight)
-            if approval.status_at(now).value != "GRANTED":
-                preflight = PreflightResult(PreflightOutcome.REJECT, reason="APPROVAL_NOT_GRANTED")
-                return SubmitTradePlanResult("REJECTED", "APPROVAL_NOT_GRANTED", preflight=preflight)
-            if not approval.scope.permits(
-                plan.account_id,
-                plan.instrument,
-                plan.strategy_ref,
-                session,
-                base_request.action,
-                plan.quantity,
+            approval_consumed, basis = approval_registry.consume(
+                approval,
                 now,
-            ):
-                preflight = PreflightResult(PreflightOutcome.REJECT, reason="SCOPE_MISMATCH")
-                return SubmitTradePlanResult("REJECTED", "SCOPE_MISMATCH", preflight=preflight)
+                EntityId.deterministic("authorization_basis", plan.plan_hash),
+                plan_id=plan.plan_id,
+                plan_version=plan.version,
+                plan_hash=plan.plan_hash,
+                account_id=plan.account_id,
+                instrument=plan.instrument,
+                strategy=plan.strategy_ref,
+                session=session,
+                action=base_request.action,
+                quantity=base_request.quantity,
+            )
+            if approval_consumed.status is not PlanApprovalStatus.CONSUMED or basis is None:
+                return SubmitTradePlanResult("REJECTED", "AUTHORIZATION_CONSUMPTION_INVALID", preflight=preflight)
+            approval = approval_consumed
+        elif preflight.outcome is not PreflightOutcome.AUTHORIZED or basis is None:
+            return SubmitTradePlanResult("REJECTED", preflight.reason or preflight.outcome.value, preflight=preflight)
 
-        # Sizing is deterministic and side-effect free.  No reservation exists
-        # before authorization and sizing both pass.
+        # Sizing is deterministic and side-effect free, and is reached only
+        # after a valid Basis exists.  No reservation exists before this point.
         risk_engine = RiskEngine(self.constitution)
         risk = risk_engine.decide(
             plan,
@@ -504,50 +489,6 @@ class SubmitTradePlanService:
         if risk.outcome not in {RiskDecisionOutcome.APPROVE, RiskDecisionOutcome.MODIFY}:
             return SubmitTradePlanResult("REJECTED", "RISK_NOT_APPROVED", preflight=None, risk=risk)
         request = replace(base_request, quantity=risk.approved_quantity)
-
-        # Issue the Basis only for the exact quantity that sizing approved.  A
-        # safe reduction therefore remains authorized while an expansion can
-        # never reuse this immutable Basis.
-        preflight = AutonomyGate.preflight(
-            request,
-            mandate,
-            binding,
-            qualified=qualified,
-            health_permits=health_permits,
-            now=now,
-            approval_allowed=approval_allowed,
-            basis_registry=basis_registry,
-        )
-        basis = preflight.basis
-        if preflight.outcome is PreflightOutcome.ESCALATE and execution_origin is ExecutionOrigin.MANUAL_TEST:
-            if approval is None:
-                return SubmitTradePlanResult("REJECTED", "PLAN_APPROVAL_REQUIRED", preflight=preflight)
-            assert approval is not None
-            # Build a candidate only. Durable approval consumption happens
-            # inside persist_submission_chain's savepoint alongside the
-            # reservation, receipt and execution facts. An external callback
-            # here would escape that rollback boundary.
-            approval_consumed, basis = approval_registry.consume(
-                approval,
-                now,
-                EntityId.deterministic("authorization_basis", plan.plan_hash),
-                plan_id=plan.plan_id,
-                plan_version=plan.version,
-                plan_hash=plan.plan_hash,
-                account_id=plan.account_id,
-                instrument=plan.instrument,
-                strategy=plan.strategy_ref,
-                session=session,
-                action=request.action,
-                quantity=request.quantity,
-            )
-            if approval_consumed.status is not PlanApprovalStatus.CONSUMED or basis is None:
-                return SubmitTradePlanResult("REJECTED", "AUTHORIZATION_CONSUMPTION_INVALID")
-            approval = approval_consumed
-        elif preflight.outcome is not PreflightOutcome.AUTHORIZED or basis is None:
-            return SubmitTradePlanResult("REJECTED", preflight.reason or preflight.outcome.value, preflight=preflight)
-        if basis is None:
-            return SubmitTradePlanResult("DEFERRED", "PLAN_APPROVAL_REQUIRED", preflight=preflight)
         expiry = min((plan.expires_at, basis.expires_at, snapshot_expires_at), key=lambda item: item.value)
         reservation = self._reservation(plan, basis, risk, self.constitution, expires_at=expiry, session=session)
         if not risk_ledger.reserve(reservation, now):
@@ -574,6 +515,32 @@ class SubmitTradePlanService:
                 "REJECTED", final.reason or final.outcome.value, preflight, basis, reservation, risk
             )
         receipt = final.receipt
+        # The risk result used for sizing is a proposal until the final
+        # submission boundary.  Re-issue it after the Receipt has been
+        # produced and require an exact match; a changed rule set, plan hash,
+        # or mutable risk input therefore cannot turn an old decision into an
+        # execution authority.
+        current_risk = risk_engine.decide(
+            plan,
+            decision_id=EntityId.deterministic("risk_decision", plan.plan_hash),
+            now=now,
+            data_quality=data_quality,
+            concentration=concentration,
+            days_to_delivery=days_to_delivery,
+        )
+        if current_risk != risk:
+            receipt_issuance.invalidate_basis(basis.basis_id)
+            risk_ledger.release(reservation.reservation_id)
+            return SubmitTradePlanResult(
+                "REJECTED",
+                "RISK_DECISION_STALE",
+                preflight,
+                basis,
+                reservation,
+                current_risk,
+                receipt=receipt,
+            )
+        risk = current_risk
         protection = self._protection(plan, risk, now)
         submission = TradePlanSubmitter().submit(
             plan,

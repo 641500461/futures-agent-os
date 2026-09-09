@@ -1,0 +1,21 @@
+{
+  "task": "V3-014",
+  "status": "COMPLETE",
+  "date": "2026-09-09",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "changes": [
+    "AutonomyGoldenCycle.run_full sequences ten owner-mediated simulation stages",
+    "Missing evidence, invalid execution outcomes, budget overflow and timeout fail closed",
+    "NO_TRADE path completes without user callback when no opportunity exists",
+    "run_full optionally appends each stage artifact through deterministic journal owner and defers on append failure",
+    "DecisionJournalAppender bridges cycle artifact refs to real DecisionJournal SourceEvents with deterministic ids and idempotent replay"
+  ],
+  "tests": [
+    "UV_CACHE_DIR=/tmp/fao-uv-cache make check: 779 contract, 9 property, 2 schema, 1 unit; lint, mypy, secret scan and health passed",
+    "UV_CACHE_DIR=/tmp/fao-uv-cache make check: 780 contract, 9 property, 2 schema, 1 unit; lint, mypy, secret scan and health passed",
+    "UV_CACHE_DIR=/tmp/fao-uv-cache make check: 781 contract, 9 property, 2 schema, 1 unit; lint, mypy, secret scan and health passed",
+    "DecisionJournalAppender idempotency and full run_full cycle tests included in 781 passing contract suite"
+  ],
+  "remaining": []
+}

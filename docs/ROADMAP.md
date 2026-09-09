@@ -1,7 +1,7 @@
 # 绿地版本路线图与可勾选任务
 
 版本：`3.0-proposed`<br>
-最后更新：2026-09-06
+最后更新：2026-09-08
 任务状态唯一来源：本文件
 
 ## 状态约定
@@ -14,6 +14,8 @@
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
 当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-010`；`MVP-R-001` 与 `MVP-R-002` 均已在 Gate 停止。`MVP-R-003` v1 记为测量方案失败，Evidence 不得改写成通过。`MVP-R-004` 已 `STOP/PIVOT`。`MVP-R-005` Research Decision Brief 已通过 correction-v5 独立功能复核并完成。正式 MVP-R eval v1 与 v2 均保留 `FORMAL_DIAGNOSTIC_FAIL`，holdout/shadow 未启动；v2 采用产品模型 `gpt-5.6-sol/high`，诊断 13/30 完成后因 3 条失败达到停止条件。2026-09-04 最小 MVP Closure Acceptance 得出 `MVP_ACCEPTED`：核心 end-to-end 闭环成立，关键安全边界成立，没有明确产品 blocker。Formal Eval 不再阻塞 MVP 结束；formal evaluation reliability / quality improvement 转入后续 backlog。没有 `MVP-R-006`；`V1-011` 是下一项 Roadmap 任务，但等待用户确认后开始。
+
+当前 V3 状态：`V3-003` 至 `V3-015` 的 Acceptance 已完成并各自具备实现 Evidence；V3 Exit 尚未通过，下一步按 `DEVELOPMENT-MODEL-POLICY.md` 由未主导 V3 实现的独立执行身份进行审查。
 
 ## MVP Closure：`MVP_ACCEPTED`（2026-09-04）
 
@@ -36,46 +38,46 @@
 目标：建立独立仓库、完整领域边界、Agent/Tool 契约、数据底座、安全边界和工程质量门槛，不承接任何旧运行状态。
 
 - [x] `V0-001` 创建独立新仓库，确定项目名称、Python/runtime 版本、许可证、目录结构和本地开发入口。
-  Acceptance: 不修改或依赖旧仓库即可完成 clean checkout、安装、启动和测试；记录新仓库 commit。  
+  Acceptance: 不修改或依赖旧仓库即可完成 clean checkout、安装、启动和测试；记录新仓库 commit。
   Evidence: 2026-08-18 在 `/Users/qiu/Documents/Codex/2026-08-18/new-chat/work/futures-agent-os` 创建独立 Git 仓库；项目名 `futures-agent-os`，包名 `futures_agent_os`，Python 3.14，uv 锁定依赖，MIT License；基线 commit `8d00a4331581026175270ae3bfa1414d438dc5df`。从该 commit 执行 clean clone 后，`uv sync --locked` 成功，`uv run pytest` 为 `2 passed`，`uv run futures-agent-os health` 返回 `status=ok` 与 `legacy_runtime_dependency=false`；契约测试通过 AST 检查禁止 `futures_workflow` 运行时 import。
 - [x] `V0-002` 确认绿地 ADR 集：项目独立性、确定性内核真值、Agent 以 TradePlan/RiskReductionRequest 表达交易意图但不直接提交 Order、Simulation Autonomy Mandate、模块化 monorepo、PostgreSQL、审计模型和队列策略。
-  Acceptance: 所有难逆转决策有状态、理由、替代项和后果；不使用旧 ADR 编号暗示继承。  
+  Acceptance: 所有难逆转决策有状态、理由、替代项和后果；不使用旧 ADR 编号暗示继承。
   Evidence: 2026-08-18 按领域建模 ADR 门槛复核并接受 `docs/adr/0001` 至 `0007`，索引见 `docs/adr/README.md`；commit `dad8c5802abba56fa285a53ee6b7e436daf093fd`。7 项决策均使用新项目连续编号，状态为 `accepted`，并包含 Context、Decision、Consequences 与 Considered Options；`tests/contract/test_adr_baseline.py` 自动检查编号连续、状态合法、V0 基线已接受及权衡/后果章节，`uv run pytest` 为 `5 passed`。
 - [x] `V0-003` 建立领域上下文与统一语言：Reference/Market Data、Market Intelligence、Research & Experiment、Decision、Portfolio & Risk、Execution Simulation、Accounting & Settlement、Learning & Review、Governance & Registry。
-  Acceptance: 每个聚合只有一个权威上下文；Agent Orchestration 明确为 supporting context；Simulation Autonomy Mandate、AutonomyModeBinding 与 AuthorizationBasis 由 Decision 拥有，DecisionJournal 追加投影由 Learning & Review 拥有。  
+  Acceptance: 每个聚合只有一个权威上下文；Agent Orchestration 明确为 supporting context；Simulation Autonomy Mandate、AutonomyModeBinding 与 AuthorizationBasis 由 Decision 拥有，DecisionJournal 追加投影由 Learning & Review 拥有。
   Evidence: 2026-08-18 使用 `gpt-5.6-terra` / `medium` 实现，统筹对话复核；commit `8d53b4b2ae485848b25153d50ff1a0d8fb796412`。`docs/DOMAIN-BOUNDARY-BASELINE.md` 固化 9 个核心业务上下文、1 个 supporting context 和 16 个关键聚合的唯一 owner；Decision 词汇补齐 Autonomy Gate Receipt 所有权。`tests/contract/test_domain_boundary_baseline.py` 自动验证上下文数量/分类、关键 owner、projection/T4-SAFE 边界，以及全部 201 个 canonical term 跨上下文唯一且具有 `_Avoid_`；`uv run pytest` 为 `10 passed`，健康检查为 `status=ok`、`legacy_runtime_dependency=false`。模型路由规则另见 commit `8f4f63fa8c3a4b88c39ed342812c82f5f2671d60`。
 - [x] `V0-004` 定义跨上下文 ID、Money/Price/Quantity、时区、`trading_date`、版本和错误码规范。
-  Acceptance: Decimal/定点、Asia/Shanghai、UTC 记录时间、schema version 和 reason code 均有契约测试。  
+  Acceptance: Decimal/定点、Asia/Shanghai、UTC 记录时间、schema version 和 reason code 均有契约测试。
   Evidence: 2026-08-18 使用 `gpt-5.6-terra` / `medium` 实现，统筹对话复核并补强极端定点数与 Failure 序列化边界；commit `eadb35640365a03759bcedf53446dbbfb8c0fb1e`。`shared_kernel` 提供不可变 UUIDv7 `EntityId`、拒绝 float 且绑定 unit/currency/scale 的 Money/Price/Quantity、UTC `RecordedAt`、Asia/Shanghai `ShanghaiTimestamp`、由交易日历显式赋值而不从自然日猜测的 `TradingDate`、`SchemaVersion`、稳定 `ReasonCode` 与 `Failure`。scale 限制为 0–18，异常 Decimal 统一为稳定 ValueError；`tests/contract/test_shared_kernel_contracts.py` 覆盖序列化、精度、时区和失败边界，全量 `uv run pytest` 为 `19 passed`，健康检查为 `status=ok`、`legacy_runtime_dependency=false`。
 - [x] `V0-005` 定义完整 Agent Catalog、`AgentTaskEnvelope`、结构化交接 artifact 和有界协作协议。
-  Acceptance: 12 个目标逻辑角色均写明职责、非职责、用户/时间表/市场/账户/系统事件触发、输入、输出、工具、权限、预算、失败策略、指标和启用版本。  
+  Acceptance: 12 个目标逻辑角色均写明职责、非职责、用户/时间表/市场/账户/系统事件触发、输入、输出、工具、权限、预算、失败策略、指标和启用版本。
   Evidence: 2026-08-18 使用 `gpt-5.6-terra` / `medium` 实现，统筹对话复核并收紧预算、输入和失败结果边界；commit `6070d236f0129de01455001870cdaf2b3f87b66a`。版本化 `AGENT_CATALOG` 机器可检查 12 个逻辑角色的职责/非职责、五类触发、输入输出、工具声明、权限边界、预算、失败策略、指标与启用版本；`AgentTaskEnvelope` 拒绝角色版本、输入、工具、输出或预算越界及重复声明。`ArtifactRef`/`StructuredArtifact`/`AgentHandoff` 只传递带 SHA-256、schema、as_of/expiry 的不可变引用，不转移权限；Main 与确定性 Workflow Orchestrator 保持分离。全量 `uv run pytest` 为 `24 passed`，compileall、健康检查与 diff check 通过；未实现模型调用、Tool Grant 或交易副作用。
 - [x] `V0-006` 建立 Tool Registry 与权限模型：细分只读、研究请求、提案、Mandate Scope 内自治模拟变更、可选逐计划批准、晋升和启用权限，并支持账户/策略/品种/环境作用域。
-  Acceptance: 默认拒绝；未授权 Agent、节点或作用域无法调用工具；权限矩阵有自动化测试。  
+  Acceptance: 默认拒绝；未授权 Agent、节点或作用域无法调用工具；权限矩阵有自动化测试。
   Evidence: 2026-08-18 按安全关键路由使用 `gpt-5.6-terra` / `high` 实现，统筹对话复核并修正工具 owner、交易/治理 scope 与受信 Grant 来源边界；commit `2ed377491212de476ec20bc9521fe48f9affba1e`。版本化 Tool Registry 仅精确解析 `tool_id@major.minor`，覆盖 READ_ONLY、RESEARCH_REQUEST、PROPOSAL、MANDATE_SCOPED_SIMULATION、PLAN_APPROVAL、PROMOTION、ACTIVATION 七类权限；确定性 ToolAuthorizer 默认拒绝，并校验 Agent Catalog、节点、工具版本、Grant 状态/有效期、账户/策略/品种/政策/环境或 governed artifact scope。每次判定产生稳定 reason code、request hash、call/correlation ID 与匹配 Grant 引用；ToolGrant 不替代 Mandate/Basis/Receipt/RiskDecision/Activation。`risk_check` 仅是非权威预检；正式 RiskDecision 仍归 Portfolio & Risk。全量 `uv run pytest` 为 `39 passed`，compileall、健康检查和 diff check 通过。
 - [x] `V0-007` 建立 PostgreSQL 初始 schema、正式 schema migration、数据库角色、inbox/outbox、任务租约、Mandate/可选批准、调度、监督通知和 durable checkpoint 基础。
-  Acceptance: 空库可重复建库、升级、降级演练；业务表与 Agent checkpoint schema 隔离；不包含旧表导入。  
+  Acceptance: 空库可重复建库、升级、降级演练；业务表与 Agent checkpoint schema 隔离；不包含旧表导入。
   Evidence: 2026-08-18 按安全关键路由使用 `gpt-5.6-terra` / `high` 完成实现，统筹对话复核并修正 checkpoint 跨 schema 外键权限与 URL 编码凭据边界；实现 commit `64ceb630975fa46420875a8e8c383e8bfd9c1906`。已建立 PostgreSQL-only Alembic baseline、NOLOGIN 最小权限角色、`fao`/`agent_checkpoint` schema 隔离、inbox/outbox/dead-letter、命令/事件/审计、任务租约、schedule、监督通知、Mandate/PlanApproval 基础和 durable checkpoint；CI 与本地 runbook 均定义真实 PostgreSQL `upgrade → downgrade → upgrade` 验收。已通过 Homebrew PostgreSQL `17.11` 在隔离空库 `futures_agent_os_v0_007` 执行真实 `upgrade → downgrade → upgrade` 及 integration round-trip；随后 `FAO_DATABASE_URL=postgresql+psycopg://qiu@/futures_agent_os_v0_007?host=/tmp uv run pytest` 为 `48 passed`，health、compileall、离线 migration SQL、shell 语法和 diff check 通过。无旧表导入。
 - [x] `V0-008` 建立行情/研究数据分层：raw immutable、normalized point-in-time、feature snapshot、dataset manifest 和 artifact store。
-  Acceptance: 每份数据集具有来源、许可、schema、时间覆盖、`as_of`、摄取时间、hash、质量和修订信息。  
+  Acceptance: 每份数据集具有来源、许可、schema、时间覆盖、`as_of`、摄取时间、hash、质量和修订信息。
   Evidence: 2026-08-18 按常规开发路由使用 `gpt-5.6-terra` / `medium` 实现，统筹对话使用 domain-modeling 审核并修正“内容 hash 与 manifest identity 必须分离”的数据所有权边界；commit `87bc6416eb367d6f9f754134eba5fac3205ea6b4`。Reference & Market Data 提供不可变 `DatasetManifest`、Provenance、License、Schema、Coverage、`as_of`/ingested time、Quality 与 Revision 契约；raw/normalized PIT/features/datasets/artifacts 分层，PIT 记录以 `available_time` 拒绝未来数据泄漏。内容按 SHA-256 去重，manifest 按 Dataset ID 独立不可变保存，读取时复验 hash；同内容可对应不同修订 manifest，冲突 identity 不可覆盖。`uv run pytest` 为 `53 passed, 1 skipped`，compileall 与 diff check 通过；未下载外部数据、未引入 donor 运行时依赖。
 - [x] `V0-009` 建立身份、密钥、日志脱敏、Prompt Injection、代码执行沙箱、网络出口和供应链威胁模型。
-  Acceptance: Git/日志无凭据；不可信文本不能改变权限；研究执行有 CPU/内存/时间/文件/网络上限。  
+  Acceptance: Git/日志无凭据；不可信文本不能改变权限；研究执行有 CPU/内存/时间/文件/网络上限。
   Evidence: 2026-08-18 按安全关键路由使用 `gpt-5.6-terra` / `high` 实现，统筹对话发现并修正“冻结对象接受可变 collection”的授权/沙箱 TOCTOU 漏洞；commit `4810527f049f1d0bc5c82b4b9a5d05035064dea6`。已提供 ServiceIdentity、只允许 `secret://` reference 的 credential binding、递归结构化日志脱敏、不可信内容与 AuthorityContext 隔离、资源/文件/精确出口 allowlist 的 default-deny 研究沙箱 validator，以及供应链威胁模型。V0 不解析 secret、不运行代码、不读取外部数据或联网；未来 executor 仍需独立 OS/container 强制隔离。`uv run pytest` 为 `60 passed, 1 skipped`，compileall、health 与 diff check 通过。
 - [x] `V0-010` 建立统一 correlation/causation、命令幂等、追加审计、metrics/logs/traces 和最小告警框架。
-  Acceptance: 从请求到工具调用和领域事件可关联；重复命令最多产生一个业务效果。  
+  Acceptance: 从请求到工具调用和领域事件可关联；重复命令最多产生一个业务效果。
   Evidence: 2026-08-19 按安全关键路由使用 `gpt-5.6-terra` / `high` 加固并完成实现，统筹对话两轮复核修正 caller-owned mutable payload、迁移测试混线、ToolCall trace 断点以及告警缺少 runbook/影响范围；commit `50cd1b756ea301a5d4b4ea59a821956b08eb1df4`。已实现统一 `TraceContext` 与真实 AgentTask/ToolCall/ToolAuthorization correlation/causation 传播、稳定 canonical request hash、并发安全的单效果幂等参考模型、深度不可变追加审计 hash chain、递归脱敏且不可变的本地 metrics/logs/traces、threshold/absence 告警及 `runbook_ref/impact_scope`。PostgreSQL migration `0002_v0_010` 增加全局 idempotency-effect 唯一约束、audit append-only trigger、telemetry 与 alert 表；在隔离 PostgreSQL 17 数据库强制 `downgrade base → upgrade head` 后，全量 `FAO_DATABASE_URL=postgresql+psycopg://qiu@/futures_agent_os_v0_007?host=/tmp uv run pytest` 为 `74 passed`，compileall、health、migration history 与 diff check 通过。
 - [x] `V0-011` 建立 CI、依赖锁、类型/静态检查、单元/属性/契约测试、schema 兼容检查和敏感信息扫描。
-  Acceptance: 新仓库主分支保护启用；本地与 CI 使用相同锁定环境。  
+  Acceptance: 新仓库主分支保护启用；本地与 CI 使用相同锁定环境。
   Evidence: 2026-08-19 按常规开发路由使用 `gpt-5.6-terra` / `medium` 完成实现，统筹对话复核并将无密码本地 PostgreSQL 限定到 loopback、把 GitHub Actions 固定到官方仓库 commit SHA；基础实现 commit `a2aaeeaba6ab102c3d55213005d0bb67604c4efb`。uv.lock 已锁定 Ruff、mypy、Hypothesis、detect-secrets 与测试依赖；`Makefile` 是本地/CI 统一入口，覆盖 lock/format/lint/type/secret scan/schema compatibility/unit/property/contract/integration/health，workflow 使用相同 targets 与临时 PostgreSQL。`make check` 通过（mypy 29 source files、schema 2、unit 1、property 1、contract 76）；真实 PostgreSQL integration 为 `2 passed`，DB-backed 全量为 `80 passed`，diff check 通过。公开 GitHub 仓库 `641500461/futures-agent-os` 的远端 Quality gate 五个 job 均通过；`main` branch protection 已由 API 回读证明启用，strict required checks 为 `quality/unit/property/contract/integration`，要求 PR，管理员同样受约束，禁止 force push/delete，并要求线性历史与会话解决。
 - [x] `V0-012` 建立新项目 synthetic/golden 数据集与边界案例库；首批验收宇宙明确选择 AG、CU、RB、JM、I、MA、SA、M、P、SR、SC、JD。
-  Acceptance: 品种选择有产品理由；夜盘、规则变更、涨跌停、跳空、无流动性、乱序和缺失数据均有样本。  
+  Acceptance: 品种选择有产品理由；夜盘、规则变更、涨跌停、跳空、无流动性、乱序和缺失数据均有样本。
   Evidence: 2026-08-19 按常规开发路由使用 `gpt-5.6-terra` / `medium` 实现，统筹对话使用独立 `gpt-5.6-sol` / `high` 三轮验收并修正版本身份漂移、全局到达顺序、bundle lineage 和语义伪阳性。已建立 AG/CU/RB/JM/I/MA/SA/M/P/SR/SC/JD 的可复现 Q2 synthetic 低频数据、非冗余产品选择理由和案例目录；夜盘交易日归属、历史规则变更、上/下涨跌停、Decimal 跳空、无 OHLCV/报价流动性、按 `available_time` 有序但事件时间逆序的迟到数据、显式缺失区间均有严格契约。事件、事件 manifest、catalog 和 bundle 四份资产由 bundle hash 与独立 release oracle 锁定，manifest-only 篡改也 fail closed；Dataset 与 Bundle 分别使用首版 revision 1 且无虚构 predecessor。`make check` 通过（contract `89 passed`），全量 `uv run pytest` 为 `91 passed, 2 skipped`，Ruff、mypy、secret scan 与 diff check 通过；Sol/high 最终复核无 P0–P3。数据明确不声称 tick、订单簿、成交或执行保真度。
 - [x] `V0-013` 按 `LEGACY-ASSET-REUSE.md` 对 donor 候选逐项做资格评估，不迁移运行状态。
-  Acceptance: 每个采用项有 provenance、新接口、隔离性、安全扫描和新项目测试；拒绝项有理由。  
+  Acceptance: 每个采用项有 provenance、新接口、隔离性、安全扫描和新项目测试；拒绝项有理由。
   Evidence: 2026-08-19 按常规开发路由使用 `gpt-5.6-terra` / `medium` 实现，统筹对话使用独立 `gpt-5.6-terra` / `high` 安全复核并修正两项 SQLite/绝对路径/DB 写入扫描误报、自洽假阳性与 `ABSENT` 未验真。机器可校验清单完整覆盖 `LEGACY-ASSET-REUSE.md` 的 34 个候选，固定 donor commit `b9f3bb9d185a6d659e096d615b5afb435769134d`、34 项 ID→R1/R2/R3/R4→source 基准、manifest digest、license 门禁和全部 provenance/gate/next-action。结果为 20 `CANDIDATE`、3 `DEFERRED`、9 `EVIDENCE_ONLY`、2 `REJECTED`、0 `QUALIFIED`；`futures_sim_trade_bridge` 与 `db_manager` 的 R4 拒绝理由已记录，未验证许可证阻断任何后续 qualification。显式人工参数脚本仅使用 `git rev-parse/cat-file/ls-tree` 对 `/Users/qiu/futures_workflow` 固定 commit 做只读复验，38 个 blob 与 1 个 `ABSENT` 均通过；29 个 tracked 修改和 3 个 untracked 工作树项不影响 Git object snapshot。未运行 donor 代码/测试，未读取数据库或运行状态，无 donor 运行时依赖。`make check` 通过（contract `98 passed`），全量 `uv run pytest` 为 `100 passed, 2 skipped`，diff check 通过；Terra/high 最终复核无 P0–P3。
 - [x] `V0-014` 定义 Simulation Autonomy Mandate、Mandate Scope、AutonomyModeBinding、AuthorizationBasis/PlanApproval、两阶段 AutonomyGate、AutonomyGateReceipt、RiskBudgetReservation、DecisionJournal、TradeEpisode 投影与监督控制契约。
-  Acceptance: Mandate 必须版本化并绑定模拟账户、品种/策略/时段范围、有效期、风险引用、通知和升级规则；Mandate 九态 `DRAFT/VALIDATED/APPROVED/ACTIVE/SUSPENDED/EXPIRED/REVOKED/HALTED/RECOVERING` 完整，除 DRAFT 外所有非终态受 expiry 约束，APPROVED/ACTIVE/SUSPENDED/HALTED/RECOVERING 可 revoke；Mode 四态、Binding ACTIVE/EXPIRED/SUPERSEDED、EffectiveAutonomy、composite pause 与 V1 可空 account/mandate 语义明确；PlanApproval 五态和“GRANTED 原子消费为唯一 Basis”契约完整；Receipt 绑定 Plan/AuthorizationBasis/源授权 hash、`execution_origin`、快照、运行版本、预算预留、有效期、单次 nonce 及 AUTONOMOUS_AGENT 必需的 Mode id/version/hash；Reservation 归属 Portfolio & Risk；DecisionJournal 区分 DECISION_TIME/POST_HOC 且可重建，TradeEpisode 明确归 Learning & Review 且只投影源事件；并发与竞态契约测试通过；任何对象都不能放宽 Risk Constitution。  
+  Acceptance: Mandate 必须版本化并绑定模拟账户、品种/策略/时段范围、有效期、风险引用、通知和升级规则；Mandate 九态 `DRAFT/VALIDATED/APPROVED/ACTIVE/SUSPENDED/EXPIRED/REVOKED/HALTED/RECOVERING` 完整，除 DRAFT 外所有非终态受 expiry 约束，APPROVED/ACTIVE/SUSPENDED/HALTED/RECOVERING 可 revoke；Mode 四态、Binding ACTIVE/EXPIRED/SUPERSEDED、EffectiveAutonomy、composite pause 与 V1 可空 account/mandate 语义明确；PlanApproval 五态和“GRANTED 原子消费为唯一 Basis”契约完整；Receipt 绑定 Plan/AuthorizationBasis/源授权 hash、`execution_origin`、快照、运行版本、预算预留、有效期、单次 nonce 及 AUTONOMOUS_AGENT 必需的 Mode id/version/hash；Reservation 归属 Portfolio & Risk；DecisionJournal 区分 DECISION_TIME/POST_HOC 且可重建，TradeEpisode 明确归 Learning & Review 且只投影源事件；并发与竞态契约测试通过；任何对象都不能放宽 Risk Constitution。
   Evidence: 2026-08-21 按安全关键路由使用 `gpt-5.6-terra` / `high` 实现并多轮收紧，独立 `gpt-5.6-sol` / `high` 对每个失败反例重现和回归，最终无 P0–P3。新增内存参考契约与 PostgreSQL migrations `0003/0004`，覆盖 Mandate/Mode/Basis/Approval/两阶段 Gate/Receipt、原子风险预留、监督暂停/恢复/到期/撤销、DecisionJournal 与 TradeEpisode 确定性投影。真实 PostgreSQL 17.11 验证了 DB 权威时钟、最小权限角色、并发预算不超卖、单用途与幂等授权、scope/health/snapshot/actor 边界、源事件身份、旧数据 fail-closed 归一化、populated `0002 → head → 0002 → head` 及 legacy `0003` 往返。`make check` 通过（contract `118 passed`）；连接隔离 PostgreSQL 的全量测试为 `145 passed`；Ruff、mypy、secret scan、health 与 diff check 通过。未实现真实交易、Order/Fill/Ledger 或 LLM 运行时。
 
 Exit：新仓库可独立启动和恢复；领域、Agent、Tool、数据、安全、存储和测试基础全部有证据；旧项目不可用不会影响新项目。
@@ -85,32 +87,32 @@ Exit：新仓库可独立启动和恢复；领域、Agent、Tool、数据、安�
 目标：Main、Market Regime、Research、Critic 和基础 Experiment Manager 除了回答用户问题，还能按 Trading Calendar、行情收盘、数据更新或市场事件主动扫描授权研究宇宙，形成可复现的机会候选与研究结果；本版本不产生交易副作用。
 
 - [x] `V1-001` 实现 Instrument/Variety/Exchange/Continuous Series 注册和解析，严格区分研究连续序列与可交易合约。
-  Depends: V0。  
-  Acceptance: 首批验收宇宙的别名、交易所和合约解析契约通过；Continuous Series 不能进入交易计划。  
+  Depends: V0。
+  Acceptance: 首批验收宇宙的别名、交易所和合约解析契约通过；Continuous Series 不能进入交易计划。
   Evidence: 2026-08-23 使用 `gpt-5.6-terra` / `medium` 实现不可变、版本化 Instrument Registry，并由独立 `gpt-5.6-terra` / `high` 反例审查至无 P0–P3。首批 AG/CU/RB/JM/I/MA/SA/M/P/SR/SC/JD 12 个 synthetic contract 均可按交易所规则解析；Alias 与 Dominant target 同时受 `acquired_at` PIT 门禁；SHFE/DCE/INE 四位、CZCE 三位交割码显式校验且不猜年代；Variety、Dominant、Continuous、8888/9999 均不能成为可交易目标。固定 registry id/version/content hash oracle、半开生效区间、重叠拒绝、Unicode/空白/畸形输入、不可变 snapshot 与并发读取均有契约/属性测试。`make check` 通过（contract `137 passed`），连接 PostgreSQL 的全量测试为 `165 passed`，health、Ruff、mypy、secret scan 与 diff check 通过；未接入外部行情、真实交易或 donor 运行时。
 - [x] `V1-002` 实现带有效期的 `ContractRuleVersion` 和来源追踪：乘数、tick、保证金、手续费、涨跌停、交易时段、最后交易日、限仓、开平今。
-  Acceptance: 指定 Instrument 与 trading date 只能命中一个适用版本；缺失或冲突时返回稳定失败码。  
+  Acceptance: 指定 Instrument 与 trading date 只能命中一个适用版本；缺失或冲突时返回稳定失败码。
   Evidence: 2026-08-23 按规则真值安全边界使用 `gpt-5.6-terra` / `high` 实现，并由独立 `gpt-5.6-terra` / `high` 对抗验收至无 P0–P3。新增不可变、Instrument 精确作用域的完整 `ContractRuleVersion`、双时维 `resolve(instrument, trading_date, as_of)`、release/rule content hash 与历史 `RuleSetRef`；明确不做 Exchange/Variety 字段继承或跨版本拼接。乘数、tick、最小量、保证金、开/平/平今费、涨跌停、sessions、最后交易日、交割限制、持仓/交易限额和 offset 规则均为完整显式事实；Decimal、scale、`<underlying>/lot` 与 `<currency>/<underlying>` 单位维度严格校验。缺失、冲突、未来不可见分别稳定返回 `RULE_MISSING/RULE_CONFLICT/REFERENCE_NOT_YET_VISIBLE`，半开区间、provenance、不可变并发和畸形输入有契约/属性回归。`make check` 通过（contract `146 passed`），连接 PostgreSQL 的全量测试为 `176 passed`，Ruff、mypy、secret scan、health 与 diff check 通过；未实现交易日推导、资金计算、外部规则源或交易副作用。
 - [x] `V1-003` 实现交易日历与 `trading_date` 服务，覆盖夜盘、节假日、主力切换、临近交割和规则临时调整。
-  Acceptance: 上期所、大商所、郑商所和中金所代表性夜盘/节假日边界测试通过。  
+  Acceptance: 上期所、大商所、郑商所和中金所代表性夜盘/节假日边界测试通过。
   Evidence: 2026-08-23 按时间归属安全边界使用 `gpt-5.6-terra` / `high` 实现，并由独立 `gpt-5.6-terra` / `high` 多轮对抗验收至无 P0–P3。新增不可变、版本化、Variety 精确作用域的 PIT `TradingCalendar/TradingDateService`，补齐 CFFEX；SHFE/DCE/CZCE 的代表性夜盘与四所日盘、集合竞价、午休、节假日、临时休市和提前收市均由显式 Asia/Shanghai session occurrence 绑定 TradingDate，不使用自然日或下一个工作日猜测。日历 revision 以不可变 ID 和显式 supersedes 建模，可按 `as_of` 重放 open→closure→reopen；future correction、可变集合、跨品种/跨日期 supersession、半开边界、错误时区、冲突和并发均 fail closed。主力切换、近交割和规则调整只保存跨 owner 引用，不在日历内解释或改变交易对象。固定 synthetic release id/version/hash oracle 已锁定。`make check` 通过（contract `161 passed`），连接 PostgreSQL 的全量测试为 `193 passed`，Ruff、mypy、secret scan、health 与 diff check 通过；未接入官方日历源、调度器或交易副作用。
 - [x] `V1-004` 实现 point-in-time `MarketSnapshot`、数据新鲜度/完整性/冲突检测和稳定 reason code。
-  Acceptance: 缺失、陈旧、乱序或未来泄漏数据不会被静默采用。  
+  Acceptance: 缺失、陈旧、乱序或未来泄漏数据不会被静默采用。
   Evidence: 2026-08-23 按市场数据安全边界使用 `gpt-5.6-terra` / `high` 实现，并由独立 `gpt-5.6-terra` / `high` 多轮对抗验收至无 P0–P3。新增不可变、用途专属、内容寻址的 PIT `MarketObservation/MarketSnapshot`；快照只接受实际 Instrument Registry Resolution、ContractRuleRegistry/RuleResolution、TradingCalendar/TradingDateResolution、DatasetManifest 及逐记录 `DatasetRecordRef`，并将完整证据、policy/schema 版本和目的纳入哈希。支持 Quote/Bar/Trade/Settlement/Open Interest；缺失、陈旧、到达乱序、重复、冲突、未来可见、未完成 Bar、缺口、异常跳变、fallback 和不可信时间戳均产生结构化质量事实与稳定失败码。Observation 修订图验证前序、自然键、来源谱系、版本/时间单调、无环无分叉，并按 `as_of` 选择唯一 active leaf；完整历史仍进入快照哈希。DISPLAY/RESEARCH/BACKTEST/EXECUTION 独立准入，零深度或非主源报价、连续合约、跨合约规则、闭市/旧日历、过期规则均不能获得执行资格；精确触及规则涨跌停与未解释跳变分开处理。`make check` 通过（contract `175 passed`、property `9 passed`），连接 PostgreSQL 的全量测试为 `210 passed`，Ruff、mypy、secret scan、health 与 diff check 通过；未接入外部行情、特征模型、Agent 或交易副作用。
 - [x] `V1-005` 实现版本化 Feature Engine 和确定性 Regime/Signal Model Service。
-  Acceptance: 特征输入、窗口、版本和快照可重现；模型输出不被当作交易许可。  
+  Acceptance: 特征输入、窗口、版本和快照可重现；模型输出不被当作交易许可。
   Evidence: 2026-08-24 按 point-in-time 与模型完整性边界使用 `gpt-5.6-terra` / `high` 实现，并由独立 `gpt-5.6-sol` / `high` 以 15 组真实反例多轮验收至无 P0–P3。Research & Experiment 拥有版本化 `FeatureDefinition/FeatureSpec` 与 `SignalDefinition/SignalModelSpec/Signal`，Market Intelligence 拥有不可变 `FeatureObservation` 与确定性 `RegimeAssessment`；所有计算绑定用途、唯一市场引用、精确 ObservationKind、快照/记录 hash、窗口、cadence、session、scale、算法和模型版本，使用固定 Decimal context，拒绝未来、跨 session、跨 reference、缺口、未完成 Bar、未知版本、重复证据和伪造 lineage。Regime 分别记录 return/volatility/liquidity 正反证据与未知项；Signal 通过深冻结 anti-corruption evidence ref 消费特征，重放 content hash 不依赖随机实体 ID。所有模型产物固定为 `NON_TRADING`，静态契约禁止依赖 Decision/Risk/Execution/Accounting 权威对象。`make check` 通过（contract `184 passed`、property `9 passed`），连接隔离 PostgreSQL 的全量测试为 `219 passed`，Ruff、mypy、secret scan、health 与 diff check 通过。当前单 component `MarketSnapshot` 无法安全表达跨换月连续历史、期限结构和基差，相关能力显式 fail closed 并留待其 PIT 证据模型任务，不虚构完成；未接入外部行情、Agent 或交易副作用。
 - [x] `V1-006` 实现 Market Regime Agent，输出带正反证据和不确定性的 `MarketStateAssessment`。
-  Acceptance: 输出通过 schema，引用不可变快照和特征版本；不能生成 TradePlan、RiskDecision 或 Order。  
+  Acceptance: 输出通过 schema，引用不可变快照和特征版本；不能生成 TradePlan、RiskDecision 或 Order。
   Evidence: 2026-08-24 按 Agent/市场解释边界使用 `gpt-5.6-terra` / `high` 实现，并由独立 `gpt-5.6-sol` / `high` 多轮反例验收至无 P0–P3。Market Intelligence 以纯、版本化 Composer 消费 V1-005 的不可变 `MarketSnapshotRef`、完整 `FeatureObservation` lineage 与确定性 `RegimeAssessment`，输出 `MarketStateAssessment`：保留全部候选、冲突、正反证据、未知项、替代解释、有效期和转换风险；只有具备正向证据的唯一最高候选可成为主状态，反证-only/unknown-only 明确无主状态且风险为 `UNKNOWN`。Agent Orchestration 仅依赖 task/artifact ports，Catalog 显式升级至 `1.1` 并新增三类只读输入 artifact；adapter 将裸 hash 严格转换为 `sha256:`、逐项核验角色/版本/工具/输出/时间/快照/特征/Regime 谱系，深冻结并独立复算 payload hash，再生成每条 claim 均有 source refs 的 `StructuredArtifact`，不完整输入只可 `DEFERRED`。重复 lineage、错快照、额外特征、过期或变异 payload、证据语义漂移及 caller-owned mutable duck 均 fail closed。输出固定 `NON_TRADING`，静态契约禁止依赖 Decision/Portfolio & Risk/Execution/Accounting 交易权威对象。`make check` 通过（contract `187 passed`、property `9 passed`、mypy `45` source files），连接隔离 PostgreSQL 的全量测试为 `222 passed`，Ruff、secret scan、health 与 diff check 通过；未实现外部新闻/期限结构、LLM 调度、持久 AgentRun、Research Agent 或交易副作用。
 - [x] `V1-007` 实现 Research Agent，输出可证伪 `Hypothesis`、未知项、证据缺口和 `ExperimentRequest`。
-  Acceptance: Research Agent 没有交易、审批、晋升或账本权限。  
+  Acceptance: Research Agent 没有交易、审批、晋升或账本权限。
   Evidence: 2026-08-24 按研究产物与 Agent 权限边界使用 `gpt-5.6-terra` / `high` 实现，独立 `gpt-5.6-sol` / `high` 四轮对抗验收最终无 P0–P3。Research & Experiment 新增不可变、内容寻址且绑定精确 PIT `MarketStateAssessment` 的 `Hypothesis`、`EvidenceSynthesis` 与非执行 `ExperimentRequest`；Hypothesis 完整表达适用市场、可观察结果、反证、所需数据、提出来源和七态生命周期，但本任务只允许创建/封装 `DRAFT`。实验请求固定数据、对照、评估窗口、方法、指标、预期诊断、停止条件和潜在偏差；known/unknown/conflict/gap 可显式为空而不诱导伪造。Agent Catalog 升至 1.2，仅声明已实现的 MarketStateAssessment 输入和三个研究输出；Research 无 TradePlan/StrategyCandidate 输出，也无交易、审批、晋升或账本工具。封闭 payload key set、严格 schema/type/time/identity、深冻结、spec/source identity hash、跨 artifact 数据一致性与重放由 authority-injection、READY_FOR_TEST 越权、bool-as-int、mutable duck、数据漂移等真实重哈希反例证明。实现 commit `5ee47cb`；`make check` 通过（contract `208 passed`、property `9 passed`、mypy `47` source files），连接隔离 PostgreSQL 的全量测试为 `243 passed`，Ruff、secret scan、schema compatibility、health 与 diff check 均通过。未发生模型升级；实现模型未覆盖的 lifecycle owner、空冲突语义和封闭 port 攻击由确定性测试与 Sol/high reviewer 裁决。未实现实验执行、LLM/持久 AgentRun、用户观点/Reflection adapter、StrategyCandidate 或交易副作用。
 - [x] `V1-008` 实现只读 Autonomous Quant PM / Main Agent、确定性持久 Workflow Orchestrator、`AutonomyCycle/DecisionEpisode` 与 DecisionJournal 基础投影，支持用户、时间表与市场/数据事件触发，以及 typed DelegationPlan、fan-out/fan-in、取消、超时和预算。
-  Acceptance: 同一 cycle/episode 可跨进程恢复；重复触发最多产生一个有效周期；Main 不拥有 durable 调度状态；DecisionJournal 可从源事件重建，不覆盖当时事实。  
+  Acceptance: 同一 cycle/episode 可跨进程恢复；重复触发最多产生一个有效周期；Main 不拥有 durable 调度状态；DecisionJournal 可从源事件重建，不覆盖当时事实。
   Evidence: 2026-08-25 按跨上下文持久编排与幂等边界使用 `gpt-5.6-terra` / `high` 实现并多轮加固，独立 `gpt-5.6-sol` / `high` 以并发和故障反例最终验收无 P0–P3；实现 commit `8be2e36`。新增 Catalog 1.3 只读 Main、不可变 typed `DelegationPlan`、确定性 fan-out/fan-in、预算/超时/取消、租约 fencing 与 PostgreSQL 持久 checkpoint；用户、时间表及市场/数据事件触发以规范 payload/hash 和幂等键最多创建一个有效 `AutonomyCycle`，Main 只提出计划且不拥有 durable schedule state。`AutonomyCycle/DecisionEpisode` 生命周期、task definition/execution/binding 均不可覆盖，可跨新连接恢复；并发首次精确持久化收敛到相同稳定任务 identity，非精确重试 fail closed；下游只消费上游实际产出的唯一 artifact identity。DecisionJournal 按 episode 绑定追加式源事件 identity，可重建 DECISION_TIME/POST_HOC 历史而不改写当时事实。`make check` 通过（contract `215 passed`、property `9 passed`、mypy `48` source files），连接隔离 PostgreSQL 的全量测试为 `266 passed`，迁移 `0004 → head` 与 8 项 downgrade/upgrade round-trip 通过；Ruff、secret/schema、health 与 diff check 通过。未发生模型升级；未实现 LLM 调用、实验执行、TradePlan、RiskDecision、Order 或任何交易副作用。
 - [x] `V1-009` 实现研究版 Pre-trade Critic，检查反证、数据泄漏、成本覆盖、样本适用性和结论强度。
-  Acceptance: 高严重度未解决项强制 `DEFER`，迭代次数有上限。  
+  Acceptance: 高严重度未解决项强制 `DEFER`，迭代次数有上限。
   Evidence: 2026-08-25 初始实现按常规研究契约路由使用 `gpt-5.6-terra` / `medium`，在独立验收发现持久化、权限和 SQL/Python 一致性风险后升级为 `gpt-5.6-terra` / `high` 加固；独立 `gpt-5.6-sol` / `high` 多轮对抗复验最终无 P0–P3。实现 commit `efd832a`。Catalog 升至 1.4；新增不可变、内容寻址的 `Critique`、固定 policy/revision 上限、Pre-trade Critic artifact-only adapter，以及跨进程可恢复的 Research 三产物 fan-in、专用 fenced completion、sidecar hydration 与最小权限 migration `0006`。因 V1-010 的确定性诊断生产者尚未实现，V1-009 不接受调用方自报诊断，八类检查固定产生完整 `GAP/UNRESOLVED`，其中 `DATA_LEAKAGE=HIGH`，唯一合法结论为 `DEFER` 且 `max_iterations=1`；generic/legacy completion、过期来源、非规范嵌套快照、错误 hypothesis/revision、越权字段、直接 sidecar 读取及不精确重试均 fail closed。`make check` 通过（contract `224 passed`、property `9 passed`、mypy `50` source files），全新 PostgreSQL 全量测试为 `276 passed`，Critic integration `1 passed`，8 项 migration round-trip 通过；空库 `head → 0005 → head` 正确恢复 V1-008 worker 权限，有 durable Critique 事实时 downgrade 在任何 schema 变更前原子拒绝并保留 `0006` 数据。未实现模型调用、V1-010 诊断工具、StrategyCandidate、TradePlan、Order 或任何交易副作用。
 - [x] `V1-010` 实现研究工具：market/historical/feature/contract 查询、memory/experiment search、L0 Signal Test、L1 Bar Backtest，以及单策略基础 walk-forward、成本/滑点 stress 与 counterfactual。
   Acceptance: 工具结果包含版本、`as_of`、source refs、warnings、artifact refs 和失败码；基础验证固定样本切分、成本假设、停止规则与可复现配置，供后续 L2 资格证据复用；至少一条冻结 `MarketSnapshot → research diagnostics → Critic` 垂直链路可重放，且工具不能产生交易副作用。V1-010 完成只触发 `MVP-R-001`，不等于 MVP 已成立。<br>
@@ -184,17 +186,17 @@ Exit：新仓库可独立启动和恢复；领域、Agent、Tool、数据、安�
 - [x] `V1-011` 实现基础 Experiment Manager 与异步 Research Job 状态机：预注册实验、排队、运行、部分完成、失败、取消、超时和恢复。
   Status: COMPLETE；最小闭环已验收，未启动 formal eval v3 或任何交易能力。<br>
   Depends: `MVP-R-005` 已通过 correction-v5 独立功能复核，且最小 MVP Closure Acceptance 为 `MVP_ACCEPTED`。Formal Eval v1/v2 失败保留为后续质量 backlog，不阻塞本任务启动。<br>
-  Acceptance: 每个任务有算力/时间预算；结果可回流原对话；Experiment Manager 不能交易或晋升策略。  
+  Acceptance: 每个任务有算力/时间预算；结果可回流原对话；Experiment Manager 不能交易或晋升策略。
   Evidence: [`evidence/v1-011/implementation-2026-09-04.json`](../evidence/v1-011/implementation-2026-09-04.json)。
 - [x] `V1-012` 建立 Agent 研究评测集：工具选择、引用正确性、数字 grounding、反证覆盖、`NO_TRADE/DEFER` 和相同证据重放。
   Depends: `MVP-R-005` 通过，并完成正式 MVP-R eval、取得 `GO`、`V1-011`。<br>
-  Acceptance: 评测集、评分规则和版本已冻结；每次模型/Prompt/Toolset 变更都会生成可比较报告。  
+  Acceptance: 评测集、评分规则和版本已冻结；每次模型/Prompt/Toolset 变更都会生成可比较报告。
   Status: COMPLETE；实现、定向测试和未主导实现的 Sol/high 独立验收均通过。<br>
   Evidence: [`evidence/v1-012/implementation-2026-09-04.json`](../evidence/v1-012/implementation-2026-09-04.json)。
 - [x] `V1-013` 实现 `OBSERVE` Opportunity Radar：按 ScanPolicy/UniversePolicy 或事件扫描品种宇宙，产出 `OpportunityScan` 与 `OpportunityCandidate`，并形成重要研究摘要。
   Status: COMPLETE；OBSERVE-only 最小扫描契约与独立 Sol/high 验收均通过。<br>
   Depends: `V1-011`、`V1-012`。<br>
-  Acceptance: 每次扫描绑定宇宙、时点、数据/特征版本和预算；OBSERVE 的 account/mandate 可空；候选有支持与反对证据、时间尺度、去重/冷却信息和 `NO_OPPORTUNITY`结果；漏跑可补跑，且不能创建 TradePlan、Order 或账务副作用。  
+  Acceptance: 每次扫描绑定宇宙、时点、数据/特征版本和预算；OBSERVE 的 account/mandate 可空；候选有支持与反对证据、时间尺度、去重/冷却信息和 `NO_OPPORTUNITY`结果；漏跑可补跑，且不能创建 TradePlan、Order 或账务副作用。
   Evidence: [`evidence/v1-013/implementation-2026-09-05.json`](../evidence/v1-013/implementation-2026-09-05.json)。
 
 Exit：`MVP-R-005` 单 Agent 研究决策简报通过，且最小 MVP Closure Acceptance 证明从用户问题或时间表/市场事件到 Hypothesis、实验结果和证据化答复的核心路径可完整重放；Critic 若存在只作为影子质检。没有任何 Order、Fill、Position 或账本副作用。Formal Eval v1/v2 仍作为独立质量记录，不再阻塞本 MVP Exit；formal evaluation reliability / quality improvement 进入后续 backlog。`MVP-R-003` v1 与 `MVP-R-004` 强制多 Agent 主路径均不得单独作为该 Exit 的通过证据。
@@ -205,53 +207,53 @@ Exit：`MVP-R-005` 单 Agent 研究决策简报通过，且最小 MVP Closure Ac
 
 - [x] `V2-001` 定义 `TradePlan`、`ProtectionIntent`、`RiskReductionRequest`、`RiskReductionValidation`、`ProtectiveRiskAction`、`AuthorizationBasis`、`SimulationAutonomyMandate`、可选 `PlanApproval`、`RiskDecision`、`ProtectionMandate`、`ExecutionPlan`、`StopPolicy`、`Order`、`Fill`、`PositionLot`、`LedgerEntry` 和 `Settlement` 契约。
   Status: COMPLETE；版本化契约、确定性 hydrate/replay、跨上下文引用绑定、owner-facing canonical surfaces、非法状态 fail-closed 校验及 PostgreSQL 黄金链持久化/重启重放均通过独立复核。<br>
-  Depends: V0；复用 V1 市场/规则快照。  
-  Acceptance: 所有对象具有 schema/version/ID/时间/来源；跨对象引用和非法状态有契约测试。  
+  Depends: V0；复用 V1 市场/规则快照。
+  Acceptance: 所有对象具有 schema/version/ID/时间/来源；跨对象引用和非法状态有契约测试。
   Evidence: [`evidence/v2-001/implementation-2026-09-05.json`](../evidence/v2-001/implementation-2026-09-05.json)、[`evidence/v2-001/durable-golden-chain-2026-09-06.json`](../evidence/v2-001/durable-golden-chain-2026-09-06.json)、[`evidence/v2-001/independent-review-2026-09-06.json`](../evidence/v2-001/independent-review-2026-09-06.json)。
 - [x] `V2-002` 实现仓位计算、风险预算、原子 `RiskBudgetReservation` 和 `immutable_risk_ceiling`；风险修订只能单调收紧。
   Status: COMPLETE；风险预算并发、生命周期、快照恢复及多空/部分止盈/加仓/跳空最坏损失场景均通过复核。<br>
-  Acceptance: 多空、部分止盈、加仓、并发修订和跳空场景的最坏损失属性测试通过；两个并发计划合计超限时至多允许安全组合预留，且预留可幂等缩小、消费、释放、超时与对账。  
+  Acceptance: 多空、部分止盈、加仓、并发修订和跳空场景的最坏损失属性测试通过；两个并发计划合计超限时至多允许安全组合预留，且预留可幂等缩小、消费、释放、超时与对账。
   Evidence: [`evidence/v2-002/implementation-2026-09-06.json`](../evidence/v2-002/implementation-2026-09-06.json)、[`evidence/v2-002/independent-review-2026-09-06.json`](../evidence/v2-002/independent-review-2026-09-06.json)。
 - [x] `V2-003` 实现 Risk Constitution：数据质量、单笔风险、保证金、品种/方向/组合集中度、日回撤、临近交割和 Kill Switch。
   Status: COMPLETE；多维规则、fail-closed 和稳定 code/version 已通过独立复核。<br>
-  Acceptance: 风险不可算时 fail closed；每条检查返回规则版本和稳定 code。  
+  Acceptance: 风险不可算时 fail closed；每条检查返回规则版本和稳定 code。
   Evidence: [`evidence/v2-003/implementation-2026-09-05.json`](../evidence/v2-003/implementation-2026-09-05.json)、[`evidence/v2-003/independent-review-2026-09-06.json`](../evidence/v2-003/independent-review-2026-09-06.json)。
 - [x] `V2-004` 实现订单状态机和幂等应用命令，覆盖接受、拒绝、工作、部分成交、成交、撤单、过期和 cancel/fill race。
   Status: COMPLETE；状态转换、幂等、事件序列、竞态和可恢复命令结果均通过独立复核。<br>
-  Acceptance: 非法状态转换被拒绝；任何 Fill 总量不超过 Order；重复命令不重复产生业务效果。  
+  Acceptance: 非法状态转换被拒绝；任何 Fill 总量不超过 Order；重复命令不重复产生业务效果。
   Evidence: [`evidence/v2-004/implementation-2026-09-06.json`](../evidence/v2-004/implementation-2026-09-06.json)、[`evidence/v2-004/independent-review-2026-09-06.json`](../evidence/v2-004/independent-review-2026-09-06.json)。
 - [x] `V2-005` 实现 L1 Bar/Quote 和 L2 Event FillModel：市价、限价、止损触发、滑点、无对手价、涨跌停和部分成交。
   Status: COMPLETE；L1/L2 FillModel、触发/成交分离、滑点、深度消耗与保守 STOP_FIRST 同 Bar 规则通过独立复核。<br>
-  Acceptance: 触发不等于成交；同 Bar 止盈止损歧义采用声明的保守规则。  
+  Acceptance: 触发不等于成交；同 Bar 止盈止损歧义采用声明的保守规则。
   Evidence: [`evidence/v2-005/implementation-2026-09-06.json`](../evidence/v2-005/implementation-2026-09-06.json)、[`evidence/v2-005/independent-review-2026-09-06.json`](../evidence/v2-005/independent-review-2026-09-06.json)。
 - [x] `V2-006` 实现账户、持仓批次和统一账本：开仓、平仓、平今、手续费、保证金、冻结、逐日盯市、PnL 和每日结算。
   Status: COMPLETE；开平仓、平今、手续费、保证金、盯市结算、幂等与资金守恒通过独立复核。<br>
-  Acceptance: 资金与账本不变量通过；Position 只能由 Fill/Settlement 改变。  
+  Acceptance: 资金与账本不变量通过；Position 只能由 Fill/Settlement 改变。
   Evidence: [`evidence/v2-006/implementation-2026-09-06.json`](../evidence/v2-006/implementation-2026-09-06.json)、[`evidence/v2-006/independent-review-2026-09-06.json`](../evidence/v2-006/independent-review-2026-09-06.json)。
 - [x] `V2-007` 实现 Position Protection：初始止损、Strategy Spec 显式且可重放的确定性 Thesis 失效谓词、追踪止损、时间止损、组合止损、Kill Switch，以及 RiskReductionRequest/ProtectionTrigger 到 RiskReductionValidation/ProtectiveRiskAction 的 T4-SAFE 链。
   Status: COMPLETE；六类确定性触发器、Position version 绑定、幂等/单调降险、拒绝零 Action 和文件恢复通过独立复核。<br>
   实现记录：[`evidence/v2-007/implementation-2026-09-06.json`](../evidence/v2-007/implementation-2026-09-06.json)（8 项定向测试）。
-  Acceptance: 六层保护在无 Agent/模型/交互服务时仍运行；V2 P2 不依赖自由文本或语义推理；每个降险请求绑定 Position expected version 和幂等键，REJECTED/STALE 零 Action，VALIDATED Action 只能单调降险且可跨崩溃恢复；无保护 OPEN Position 为最高级故障。  
+  Acceptance: 六层保护在无 Agent/模型/交互服务时仍运行；V2 P2 不依赖自由文本或语义推理；每个降险请求绑定 Position expected version 和幂等键，REJECTED/STALE 零 Action，VALIDATED Action 只能单调降险且可跨崩溃恢复；无保护 OPEN Position 为最高级故障。
   Evidence: [`evidence/v2-007/independent-review-2026-09-06.json`](../evidence/v2-007/independent-review-2026-09-06.json)。
 - [x] `V2-008` 实现 `submit_trade_plan` 最小两阶段安全链：计划硬校验 → Authorization Preflight/AuthorizationBasis → 仓位计算 → 原子 RiskBudgetReservation → Final Receipt Gate → 风险裁决/ProtectionMandate → ExecutionPlan/StopPolicy → Order。
   Status: COMPLETE；PostgreSQL 单事务 Basis→Reservation→Receipt→Order→Ledger 链、MANUAL_TEST 应用服务、重复调用、保存点回滚和新连接恢复均通过真实数据库验证。<br>
-  Acceptance: MANUAL_TEST 的 PlanApproval/AuthorizationBasis 缺失、失效、过期或范围不匹配时 fail closed；每次增加风险都同时要求有效 Receipt 与 RiskDecision；Receipt 绑定 Plan/AuthorizationBasis/源授权 hash、execution_origin、快照/预留、过期且只消费一次；等待授权时不占 reservation；API 不向调用方暴露 matcher、数据库或账本写句柄。  
+  Acceptance: MANUAL_TEST 的 PlanApproval/AuthorizationBasis 缺失、失效、过期或范围不匹配时 fail closed；每次增加风险都同时要求有效 Receipt 与 RiskDecision；Receipt 绑定 Plan/AuthorizationBasis/源授权 hash、execution_origin、快照/预留、过期且只消费一次；等待授权时不占 reservation；API 不向调用方暴露 matcher、数据库或账本写句柄。
   Evidence: [`evidence/v2-008/implementation-2026-09-05.json`](../evidence/v2-008/implementation-2026-09-05.json)、[`evidence/v2-008/durable-golden-chain-2026-09-06.json`](../evidence/v2-008/durable-golden-chain-2026-09-06.json)。
 - [x] `V2-009` 实现回测与模拟共享的规则、订单、FillModel、账本和结算接口，并支持冻结 StrategySpec fixture 的 L2 事件驱动验证。
   Status: COMPLETE；共享 L1/L2 引擎、订单/成交/账户重放及 base/counterfactual/stress 三变体矩阵均通过冻结 fixture 与真实 V1 MVP-R PIT 候选桥接验证。<br>
-  Acceptance: 相同事件和 FillModel 产生相同订单/账本结果；V1 的基础 walk-forward/stress/counterfactual 可在 L2 语义下重跑以证明引擎能力；V3 Strategy Agent 创建 StrategyCandidate 后可复用同一引擎形成资格证据。  
+  Acceptance: 相同事件和 FillModel 产生相同订单/账本结果；V1 的基础 walk-forward/stress/counterfactual 可在 L2 语义下重跑以证明引擎能力；V3 Strategy Agent 创建 StrategyCandidate 后可复用同一引擎形成资格证据。
   Evidence: [`evidence/v2-009/implementation-2026-09-06.json`](../evidence/v2-009/implementation-2026-09-06.json)。
 - [x] `V2-010` 实现追加式审计、当前态投影、历史重放、日终对账和更正事件。
   Status: COMPLETE；追加式哈希链支持跨进程写者锁、授权→风险→执行→保护→成交→结算 linked episode、逐 episode 重放、对账和更正事件。<br>
-  Acceptance: 任一模拟交易可重建完整链路，重放结果与当前投影和账本校验一致。  
+  Acceptance: 任一模拟交易可重建完整链路，重放结果与当前投影和账本校验一致。
   Evidence: [`evidence/v2-010/implementation-2026-09-05.json`](../evidence/v2-010/implementation-2026-09-05.json)。
 - [x] `V2-011` 建立故障注入：进程崩溃、重复命令、乱序/断档行情、数据库重启、时钟偏移、规则缺失和无流动性。
   Status: COMPLETE；持久订单命令与审计写入使用 OS writer lock + reload，恢复/重复命令、乱序/断档、时钟、规则和无流动性均通过契约与数据库保存点验证。<br>
-  Acceptance: 已提交命令 RPO=0，恢复后无重复业务副作用。  
+  Acceptance: 已提交命令 RPO=0，恢复后无重复业务副作用。
   Evidence: [`evidence/v2-011/implementation-2026-09-05.json`](../evidence/v2-011/implementation-2026-09-05.json)。
 - [x] `V2-012` 实现授权操作者的短期 `MANUAL_TEST PlanApproval` request/grant/reject/expire/consume 状态机，并提供人工 CLI/API 验收、应急模拟入口与确定性回放报告。
   Status: COMPLETE；ManualTestApplication 将 PlanApproval 消费、RiskDecision、Receipt、Order、成交、保护、结算和确定性报告纳入同一 PostgreSQL 事务；重复 run 返回已提交结果，报告可离线重放。<br>
-  Acceptance: GRANTED PlanApproval 仅能在原子创建唯一 PLAN_APPROVAL AuthorizationBasis 时转为 CONSUMED，记录 consumer_basis_id/consumed_at；数据库唯一约束、并发与重放测试证明同一 Approval 不能生成第二个 Basis/成功交易。用户可在无 LLM 环境以 `execution_origin=MANUAL_TEST`、被该 Basis 消费一次的 PlanApproval 完成一笔 SHADOW 校验后的计划、成交、保护退出和结算；本入口标记为测试/应急 fallback，不需伪装 AUTONOMOUS_SIMULATION，也不是 V3 日常操作模式。  
+  Acceptance: GRANTED PlanApproval 仅能在原子创建唯一 PLAN_APPROVAL AuthorizationBasis 时转为 CONSUMED，记录 consumer_basis_id/consumed_at；数据库唯一约束、并发与重放测试证明同一 Approval 不能生成第二个 Basis/成功交易。用户可在无 LLM 环境以 `execution_origin=MANUAL_TEST`、被该 Basis 消费一次的 PlanApproval 完成一笔 SHADOW 校验后的计划、成交、保护退出和结算；本入口标记为测试/应急 fallback，不需伪装 AUTONOMOUS_SIMULATION，也不是 V3 日常操作模式。
   Evidence: [`evidence/v2-012/implementation-2026-09-05.json`](../evidence/v2-012/implementation-2026-09-05.json)。
 
 Exit：确定性黄金链路可在固定数据集上完全重放；任何新增风险都具有有效 RiskBudgetReservation、AutonomyGateReceipt 与 RiskDecision；无重复交易、无无保护持仓、无不可解释账本差异。
@@ -260,54 +262,70 @@ Exit：确定性黄金链路可在固定数据集上完全重放；任何新增�
 
 目标：用户激活 Simulation Autonomy Mandate，并为通过资格的版本组合激活 AUTONOMOUS_SIMULATION Mode、健康门禁通过后，系统可在 EffectiveAutonomy 范围内按时间表与市场/账户/系统事件自主找机会、研究、质疑、形成 TradePlan、调用 V2 内核模拟执行、持续盯盘与复盘；用户主要接收重要信息、学习决策证据并在异常时介入。
 
-- [ ] `V3-001` 实现飞书长连接 Gateway、用户/群映射、快速去重入箱、异步通知和监督控制回调防重放。  
-  Depends: V1、V2。  
-  Acceptance: 入站事件在目标时限内去重入箱；重复消息/回调不会重复创建任务或交易效果；飞书定位为通知、解释、例外介入与紧急控制台，常规周期无需用户回调。  
-  Evidence: 待补。
-- [ ] `V3-002` 实现由确定性 Workflow Orchestrator 推进、Autonomous Quant PM / Main 负责决策的 durable 自治图：用户/时间表/市场/账户/系统事件触发 → 快照固化 → 机会扫描 → 委派与质疑 → TradePlan → Authorization Preflight/AuthorizationBasis → sizing/RiskBudgetReservation → Final Receipt Gate → Risk/Execution → 盯盘 → 通知/复盘。  
-  Acceptance: 图可在任一 checkpoint 或例外 interrupt 后跨重启恢复；恢复前重新校验计划、AuthorizationBasis、AutonomyGateReceipt、RiskDecision 和快照有效性；范围内常规周期不等待用户输入。  
-  Evidence: 待补。
-- [ ] `V3-003` 实现 Strategy Agent，输出 `StrategyCandidate` 或 `TradePlanDraft`，不输出 Order。  
-  Acceptance: 输出包含 Thesis、Invalidation、证据、目标风险和退出意图；无订单或账本写权限。  
-  Evidence: 待补。
-- [ ] `V3-004` 实现 Portfolio Agent，基于账户、相关性、策略预算和现有暴露提出 `TargetExposure/PortfolioProposal`。  
-  Acceptance: 最终手数仍由确定性 Position Sizing 和 Risk Constitution 产生。  
-  Evidence: 待补。
-- [ ] `V3-005` 实现 Risk Analyst Agent，输出非权威 `RiskAssessment`、情景和反面证据。  
-  Acceptance: Risk Analyst 不能产生或覆盖 `RiskDecision`。  
-  Evidence: 待补。
-- [ ] `V3-006` 实现 Execution Advisor，调用成本/成交仿真比较 V2 已注册的 Market、Limit、Stop 执行意图；分批、TWAP/VWAP/Iceberg 等高级算法延至 V5。  
-  Acceptance: 输出仅为 `ExecutionRecommendation`，且只能选择当前已实现并已激活的执行算法；Order 仍由确定性 Execution Planner 创建。  
-  Evidence: 待补。
-- [ ] `V3-007` 实现独立 Pre-trade Critic，审查 Thesis、反证、泄漏、成本、Regime、风险收益和历史失效。  
-  Acceptance: Critic 与 Post-trade Reviewer 是不同角色、状态和 schema。  
-  Evidence: 待补。
-- [ ] `V3-008` 实现结构化并行协作：Regime/Portfolio、Risk/Critic/Execution 可并行，由确定性 Workflow Orchestrator 完成 fan-out/fan-in，Autonomous Quant PM 负责冲突呈现与决策综合。  
-  Acceptance: Agent 不自由互聊；冲突显式展示；循环、token、时间、工具和算力预算有硬上限。  
-  Evidence: 待补。
-- [ ] `V3-009` 实现 Simulation Autonomy Mandate 与 AutonomyModeBinding 生命周期、EffectiveAutonomy 合成门禁和 composite pause/resume，并扩展 V2 PlanApproval 为 Mandate 允许的 Agent 例外路径。  
-  Acceptance: Mandate 的账户、品种/策略/时段、风险引用、有效期、通知和升级范围可精确校验；除 DRAFT 外所有非终态支持 expiry，APPROVED/ACTIVE/SUSPENDED/HALTED/RECOVERING 可 revoke；Mode Binding expiry/supersession 立即令 EffectiveAutonomy 为 false、使 Basis/Receipt stale 并释放 reservation；USER_PAUSE 仅人类恢复，HEALTH_DEGRADED/版本隔离只暂停 Mode/Health 而不改写 Mandate，HALTED 必须人工恢复门禁；用户 pause 事务性联动 Mandate SUSPENDED + Mode PAUSED + Basis/Receipt 失效 + reservation 释放；Agent 例外 PlanApproval 仍要求 AUTONOMOUS_SIMULATION Mode。  
-  Evidence: 待补。
-- [ ] `V3-010` 在 V2 最小门禁上扩展完整两阶段自治 AutonomyGate、Preflight ESCALATE/PROTECT_ONLY、Final Gate、单用途 `AutonomyGateReceipt` 与精细工具权限。  
-  Acceptance: Preflight 返回 AUTHORIZED/ESCALATE/REJECT/PROTECT_ONLY，只有获得 Basis 后才 sizing/reserve；GRANTED PlanApproval 原子消费为唯一 Basis，不能重复签发；Final Gate 只返回 PERMIT/REJECT/PROTECT_ONLY 并签发 Receipt；最终 `submit_trade_plan` 才同事务检查 Receipt 和随后签发的当前 RiskDecision。Agent 越权、跨 scope、伪造/重复 Approval/Receipt、旧 Plan/Basis/source/Mode hash、过期快照和失效 RiskDecision 全部被拒绝并审计；等待 PlanApproval 不占 reservation。  
-  Evidence: 待补。
-- [ ] `V3-011` 实现飞书监督卡片：Mandate 状态、机会与反面证据、TradePlan、RiskDecision、成交/持仓/保护、保证金、最坏损失、复盘和暂停/恢复/撤销/Kill Switch。  
-  Acceptance: 所有数字来自工具引用，不由模型自由生成；通知统一按 INFO/TRADE/ACTION_REQUIRED/RISK/CRITICAL 分级、去重且可追溯；TRADE 只解释关键交易生命周期，常规信息不要求用户操作。  
-  Evidence: 待补。
-- [ ] `V3-012` 实现基础 Post-trade Reviewer，输出独立的 `TradeReview` 与 `Reflection`，区分过程质量、结果质量和执行质量。  
-  Acceptance: Learning & Review 从 Decision/Execution/Accounting 源事件构建并关闭可重建 TradeEpisode 后才触发 Reviewer；Reviewer 不能发布 Lesson，也不能由原 Strategy Agent 自评替代。  
-  Evidence: 待补。
-- [ ] `V3-013` 建立多 Agent 自治评测与 V3 最小人工治理 Registry：机会覆盖/精度、`NO_TRADE` 纪律、不必要交易率、Mandate 遵循、通知精度、委派、handoff、冲突、预算耗尽、超时、工具/作用域错误输入和模型降级。
+- [x] `V3-001` 实现渠道无关的 Gateway 与首个飞书长连接适配器、用户/群映射、快速去重入箱、异步通知和监督控制回调防重放。
+  Status: COMPLETE；负责人：Codex；工作区：`codex/v3`；开始日期：2026-09-06；完成日期：2026-09-08。
+  Work package: 按完整任务收敛；用户将原 `gpt-5.6-sol/xhigh` 计划调整为 `gpt-5.6-sol/medium`，实际执行身份 `/root/v3_001_sol_medium`。验收覆盖 PostgreSQL 重启/并发去重、逐次 outbox 投递记录与 retry/dead-letter、绑定操作者/对象 ID/version/hash/有效期/token 的预签发一次性监督回调、可替换渠道与飞书官方 SDK 长连接运行入口；100 次隔离 PostgreSQL 持久入箱实测 p95=1.107ms（TECHNICAL-DESIGN §15 目标 <2 秒）。
+  Depends: V1、V2。
+  Acceptance: 核心层仅依赖统一 InboundEvent、OutboundNotification、ControlCallback 和 ChannelAdapter 契约；飞书是首个可替换实现，新增其他渠道无需修改核心处理逻辑。用户/群映射、去重入箱、通知分级与回调防重放由渠道无关的应用层负责，渠道身份与事件 ID 带渠道命名空间；适配器声明支持的通知和控制能力，不支持的操作明确拒绝。入站事件在目标时限内去重入箱；重复消息/回调不会重复创建任务或交易效果；通讯渠道仅承担通知、解释、例外介入与紧急控制台，不直接写入订单、账本或风险真值；常规周期无需用户回调。
+  Evidence: [`evidence/v3-001/implementation-2026-09-08.json`](../evidence/v3-001/implementation-2026-09-08.json)。
+- [x] `V3-002` 实现由确定性 Workflow Orchestrator 推进、Autonomous Quant PM / Main 负责决策的 durable 自治图：用户/时间表/市场/账户/系统事件触发 → 快照固化 → 机会扫描 → 委派与质疑 → TradePlan → Authorization Preflight/AuthorizationBasis → sizing/RiskBudgetReservation → Final Receipt Gate → Risk/Execution → 盯盘 → 通知/复盘。
+  Status: COMPLETE；确定性 10 阶段图、五类触发、稳定 owner command 幂等键、PostgreSQL lease/fencing/checkpoint history 与仅引用式 checkpoint 已落地；10 个阶段逐一验证 owner effect 提交后异常中断可跨新 Engine 恢复且不重复效果，恢复前逐项复验 Snapshot、TradePlan、AuthorizationBasis、AutonomyGateReceipt 与 RiskDecision。V3-004 及后续 Agent 尚未启用，本任务只建立可注入 owner command 的正式运行边界。<br>
+  Acceptance: 图可在任一 checkpoint 或例外 interrupt 后跨重启恢复；恢复前重新校验计划、AuthorizationBasis、AutonomyGateReceipt、RiskDecision 和快照有效性；范围内常规周期不等待用户输入。
+  Evidence: [`evidence/v3-002/implementation-2026-09-08.json`](../evidence/v3-002/implementation-2026-09-08.json)。
+- [x] `V3-003` 实现 Strategy Agent，输出 `StrategyCandidate` 或 `TradePlanDraft`，不输出 Order。
+  Status: COMPLETE；完成日期：2026-09-08。Strategy 输出保持 DRAFT/proposal-only，显式支持 TRADE/NO_TRADE/DEFER；ProtectionIntent、有限 Decimal 暴露、正有限最大损失、方向和非空证据均 fail closed。bounded task adapter 校验 Catalog role/tool/output/budget、同一 PIT 的不可变输入和证据 lineage；durable delegation 使用提案与完整 lineage 的规范化内容哈希，PostgreSQL 跨重启只保存引用。<br>
+  Acceptance: 输出包含 Thesis、Invalidation、证据、目标风险和退出意图；无订单或账本写权限。
+  Evidence: [`evidence/v3-003/validation-correction-2026-09-08.json`](../evidence/v3-003/validation-correction-2026-09-08.json)。
+- [x] `V3-004` 实现 Portfolio Agent，基于账户、相关性、策略预算和现有暴露提出 `TargetExposure/PortfolioProposal`。
+  Status: COMPLETE；负责人：Codex；工作区：`codex/v3`；开始/完成日期：2026-09-08。Portfolio task 必须绑定同一 PIT 的 TradePlanDraft、Critique、PortfolioSnapshot、StrategyBudget 与 CorrelationAssessment，并逐项引用全部输入；输出以 0–1 风险预算比例表达 LONG/SHORT/FLAT TargetExposure，支持 ACCEPT/DOWNWEIGHT/HEDGE/REPLACE/REJECT，携带正反证据、unknowns、warnings、confidence 与 expiry。<br>
+  Acceptance: 最终手数仍由确定性 Position Sizing 和 Risk Constitution 产生。
+  Evidence: [`evidence/v3-004/implementation-2026-09-08.json`](../evidence/v3-004/implementation-2026-09-08.json)。
+- [x] `V3-005` 实现 Risk Analyst Agent，输出非权威 `RiskAssessment`、情景和反面证据。
+  Status: COMPLETE；负责人：Codex；工作区：`codex/v3`；开始/完成日期：2026-09-08。Risk task 绑定同一 PIT 的 TradePlanDraft、PortfolioProposal、MarketStateAssessment、RiskPreflight 与 StressTestResult；Assessment 包含主要风险、typed 尾部情景、缓解建议、未知项、正反证据、warnings、confidence 与非权威 advisory。Advisory 无 APPROVE/PERMIT，且不能软化 REJECT/PROTECT_ONLY/HALT 预检。<br>
+  Acceptance: Risk Analyst 不能产生或覆盖 `RiskDecision`。
+  Evidence: [`evidence/v3-005/implementation-2026-09-08.json`](../evidence/v3-005/implementation-2026-09-08.json)。
+- [x] `V3-006` 实现 Execution Advisor，调用成本/成交仿真比较 V2 已注册的 Market、Limit、Stop 执行意图；分批、TWAP/VWAP/Iceberg 等高级算法延至 V5。
+  Status: COMPLETE；负责人：Codex；工作区：`codex/v3`；开始/完成日期：2026-09-08。Advisor 直接复用 V2 `FillOrderType`，绑定同一 PIT 的 Plan、PortfolioProposal、RiskAssessment/Preflight、算法激活、流动性、成本与逐算法仿真；只读 owner verifier 在 recommend/package 两个边界复验激活集合和仿真来源。Recommendation 包含算法、紧急度、取消条件、完整比较和正反证据；TWAP/VWAP/Iceberg/分批无法进入 V2 enum。<br>
+  Acceptance: 输出仅为 `ExecutionRecommendation`，且只能选择当前已实现并已激活的执行算法；Order 仍由确定性 Execution Planner 创建。
+  Evidence: [`evidence/v3-006/implementation-2026-09-08.json`](../evidence/v3-006/implementation-2026-09-08.json)。
+- [x] `V3-007` 实现独立 Pre-trade Critic，审查 Thesis、反证、泄漏、成本、Regime、风险收益和历史失效。
+  Status: COMPLETE；负责人：Codex；工作区：`codex/v3`；开始/完成日期：2026-09-08。V3 plan-facing Critic 使用独立 Catalog 1.6 与 `PRE_TRADE_CRITIQUE` artifact，不重解释 Catalog 1.5 的 V1 研究 Critic。每份 Critique 必须恰好覆盖 Thesis、反证、泄漏、成本、Regime、风险收益和历史失效；非 PASS finding 必须给出补证要求，任一非 PASS finding 阻断 PASS，REJECT 不能进入后续组合阶段。<br>
+  Acceptance: Critic 与 Post-trade Reviewer 是不同角色、状态和 schema。
+  Evidence: [`evidence/v3-007/implementation-2026-09-08.json`](../evidence/v3-007/implementation-2026-09-08.json)。
+- [x] `V3-008` 实现结构化并行协作：Regime/Portfolio、Risk/Critic/Execution 可并行，由确定性 Workflow Orchestrator 完成 fan-out/fan-in，Autonomous Quant PM 负责冲突呈现与决策综合。
+  Status: COMPLETE；负责人：Codex；工作区：`codex/v3`；开始/完成日期：2026-09-08。新增 typed CollaborationPlan DAG：Regime/Portfolio 与 Risk/Critic/Execution 形成两个依赖波次，任务只接收不可变 PIT 引用、工具 allowlist、CancellationToken 与预算 meter；fan-in 始终按计划顺序，依赖失败即 SKIPPED。冲突记录保留各方 claim、scope、evidence、as_of、confidence 和 unknowns，按 owner/Critic/Portfolio/Risk/PM 规则分类且不投票；未解决冲突或未完整完成时 PM 只能 NO_TRADE/DEFER。<br>
+  Acceptance: Agent 不自由互聊；冲突显式展示；循环、token、时间、工具和算力预算有硬上限。
+  Evidence: [`evidence/v3-008/implementation-2026-09-08.json`](../evidence/v3-008/implementation-2026-09-08.json)。
+- [x] `V3-009` 实现 Simulation Autonomy Mandate 与 AutonomyModeBinding 生命周期、EffectiveAutonomy 合成门禁和 composite pause/resume，并扩展 V2 PlanApproval 为 Mandate 允许的 Agent 例外路径。
+  Status: COMPLETE；负责人：Codex；工作区：`codex/v3`；开始/完成日期：2026-09-08。授权真值统一归 Decision，删除 Agent Orchestration 的弱化重复模型。Mandate scope 内容寻址地绑定账户、品种/策略/Session、动作/数量、Risk Constitution、通知与 typed escalation mode；默认 `SKIP_AND_NOTIFY`，仅显式 `REQUEST_ONE_OFF` 且当前 EffectiveAutonomy 成立时可由 Agent 请求单次 PlanApproval，仍只能由人类 grant。HALTED 恢复必须经过人工根因/对账与治理批准门；USER_PAUSE 原子暂停 Mandate+Mode 并失效 Basis/Receipt、释放 reservation，健康/版本隔离则只暂停 Mode。Migration `0010_v3_009` 提供相同的 PostgreSQL owner commands 与最小权限。<br>
+  Acceptance: Mandate 的账户、品种/策略/时段、风险引用、有效期、通知和升级范围可精确校验；除 DRAFT 外所有非终态支持 expiry，APPROVED/ACTIVE/SUSPENDED/HALTED/RECOVERING 可 revoke；Mode Binding expiry/supersession 立即令 EffectiveAutonomy 为 false、使 Basis/Receipt stale 并释放 reservation；USER_PAUSE 仅人类恢复，HEALTH_DEGRADED/版本隔离只暂停 Mode/Health 而不改写 Mandate，HALTED 必须人工恢复门禁；用户 pause 事务性联动 Mandate SUSPENDED + Mode PAUSED + Basis/Receipt 失效 + reservation 释放；Agent 例外 PlanApproval 仍要求 AUTONOMOUS_SIMULATION Mode。
+  Evidence: [`evidence/v3-009/implementation-2026-09-08.json`](../evidence/v3-009/implementation-2026-09-08.json)。
+- [x] `V3-010` 在 V2 最小门禁上扩展完整两阶段自治 AutonomyGate、Preflight ESCALATE/PROTECT_ONLY、Final Gate、单用途 `AutonomyGateReceipt` 与精细工具权限。
+  Status: COMPLETE；负责人：Codex；完成日期：2026-09-08；执行路由：`gpt-5.6-sol/high`（用户于 2026-09-08 明确调整）。提交链按 Preflight → Basis → sizing → reservation → Final Gate → 当前 RiskDecision 复验 → 同事务消费执行；Agent `REQUEST_ONE_OFF` 等待期零 reservation，只有人类 GRANTED Approval 可原子消费为唯一 Basis。Roadmap Acceptance 中的完整对抗矩阵已逐项映射到 contract/PostgreSQL Evidence：跨 scope、伪造/重复 Approval/Receipt、旧 Plan/Basis/source/Mode/run hash、过期 Snapshot、失效 RiskDecision 和 durable 中途失败均 fail closed；工具授权保持 exact-version、default-deny，并返回稳定可审计决定。Decision Journal 的完整自治周期投影仍属于 V3-014，不在本任务虚构完成。
+  Acceptance: Preflight 返回 AUTHORIZED/ESCALATE/REJECT/PROTECT_ONLY，只有获得 Basis 后才 sizing/reserve；GRANTED PlanApproval 原子消费为唯一 Basis，不能重复签发；Final Gate 只返回 PERMIT/REJECT/PROTECT_ONLY 并签发 Receipt；最终 `submit_trade_plan` 才同事务检查 Receipt 和随后签发的当前 RiskDecision。Agent 越权、跨 scope、伪造/重复 Approval/Receipt、旧 Plan/Basis/source/Mode hash、过期快照和失效 RiskDecision 全部被拒绝并审计；等待 PlanApproval 不占 reservation。
+  Evidence: [`evidence/v3-010/implementation-2026-09-08.json`](../evidence/v3-010/implementation-2026-09-08.json)。
+- [x] `V3-011` 实现飞书监督卡片：Mandate 状态、机会与反面证据、TradePlan、RiskDecision、成交/持仓/保护、保证金、最坏损失、复盘和暂停/恢复/撤销/Kill Switch。
+  Status: COMPLETE；已实现 channel-neutral lifecycle card、确定性事实/action 引用校验、TRADE 与操作请求分级约束、内容摘要、结构化 Feishu payload、durable outbox 持久化与 interactive card adapter。
+  Acceptance: 所有数字来自工具引用，不由模型自由生成；通知统一按 INFO/TRADE/ACTION_REQUIRED/RISK/CRITICAL 分级、去重且可追溯；TRADE 只解释关键交易生命周期，常规信息不要求用户操作。
+  Evidence: [`evidence/v3-011/implementation-2026-09-09.json`](../evidence/v3-011/implementation-2026-09-09.json)。
+- [x] `V3-012` 实现基础 Post-trade Reviewer，输出独立的 `TradeReview` 与 `Reflection`，区分过程质量、结果质量和执行质量。
+  Status: COMPLETE；Reviewer 只接受已关闭 TradeEpisode 及同时包含 Decision、Execution、Accounting 的精确可重建源事件集合，并输出独立 TradeReview/Reflection。
+  Acceptance: Learning & Review 从 Decision/Execution/Accounting 源事件构建并关闭可重建 TradeEpisode 后才触发 Reviewer；Reviewer 不能发布 Lesson，也不能由原 Strategy Agent 自评替代。
+  Evidence: [`evidence/v3-012/implementation-2026-09-09.json`](../evidence/v3-012/implementation-2026-09-09.json)。
+- [x] `V3-013` 建立多 Agent 自治评测与 V3 最小人工治理 Registry：机会覆盖/精度、`NO_TRADE` 纪律、不必要交易率、Mandate 遵循、通知精度、委派、handoff、冲突、预算耗尽、超时、工具/作用域错误输入和模型降级。
+  Status: COMPLETE；AgentVersion 已绑定独立 baseline_ref，完整 EvaluationScorecard 固定 13 个评测维度，qualification 只接受有限数值门槛，Activation 强制人工 governance actor，并支持不可变 snapshot 重放。
   Acceptance: 每个已启用 Strategy/Agent/Prompt/Model/Toolset 版本都有独立基准集和发布门槛，并经人工分离的 qualification + Activation 后才能绑定 AUTONOMOUS_SIMULATION；Mandate 遵循、数字引用、不必要交易和错误输入不产生越界业务效果达到硬门槛。对抗性 Prompt Injection/red-team 不属于当前可信本机范围的硬门槛。
-  Evidence: 待补。
-- [ ] `V3-014` 实现有界自治机会到交易周期：扫描、候选排名、专家论证、TradePlan、AuthorizationBasis、RiskBudgetReservation、AutonomyGateReceipt、风险裁决、模拟执行和交易后触发。  
-  Acceptance: 在固定数据与 EffectiveAutonomy 下，无任何用户回调也能完成一次 `NO_TRADE` 周期与一次完整模拟交易周期；全链追加进 DecisionJournal 并可重建；超范围、证据不足或风险不可算时必须 `DEFER` 或拒绝。  
-  Evidence: 待补。
-- [ ] `V3-015` 实现 Market/Order/Position/Portfolio/System 持续盯盘，并在 V2 确定性 P2 基线上增加可降级的 Agent Thesis Watch，包括 lease、幂等触发、漏跑补跑、冷却、背压、降级和重要事件通知。  
-  Acceptance: Agent Thesis Watch 只能提交 Decision 所有的 RiskReductionRequest，Execution 独立执行 T4-SAFE Validation 并拥有 ProtectiveRiskAction；LLM、飞书或研究 worker 不可用时，确定性 Position Protection、Risk Watch 和 Kill Switch 仍运行；重复/补跑不重复交易；TRADE/ACTION_REQUIRED/RISK/CRITICAL 事件在目标时限内送达或升级。  
-  Evidence: 待补。
+  Evidence: [`evidence/v3-013/implementation-2026-09-09.json`](../evidence/v3-013/implementation-2026-09-09.json)。
+- [x] `V3-014` 实现有界自治机会到交易周期：扫描、候选排名、专家论证、TradePlan、AuthorizationBasis、RiskBudgetReservation、AutonomyGateReceipt、风险裁决、模拟执行和交易后触发。
+  Status: COMPLETE；run_full 串起 Snapshot、扫描、策略、Critic、AuthorizationBasis、RiskDecision、模拟执行、Protection、Notification、Review，并通过 DecisionJournalAppender 追加全链 SourceEvent；缺失证据、Journal 失败或预算超限 fail closed。
+  Acceptance: 在固定数据与 EffectiveAutonomy 下，无任何用户回调也能完成一次 `NO_TRADE` 周期与一次完整模拟交易周期；全链追加进 DecisionJournal 并可重建；超范围、证据不足或风险不可算时必须 `DEFER` 或拒绝。
+  Evidence: [`evidence/v3-014/implementation-2026-09-09.json`](../evidence/v3-014/implementation-2026-09-09.json)。
+- [x] `V3-015` 实现 Market/Order/Position/Portfolio/System 持续盯盘，并在 V2 确定性 P2 基线上增加可降级的 Agent Thesis Watch，包括 lease、幂等触发、漏跑补跑、冷却、背压、降级和重要事件通知。
+  Status: COMPLETE；五域默认注册确定性保护 owner，Agent Thesis owner 仅作为 Position Watch 的可降级语义层；Decision 持有 canonical RiskReductionRequest，Execution 通过 T4-SAFE 验证后才产生 ProtectiveRiskAction。PostgreSQL durable watch queue 支持稳定 key、bounded lease、fencing、过期 reclaim、补跑和 RETRY；Outbox 重要通知按 TRADE/ACTION_REQUIRED/RISK/CRITICAL deadline 监测并以 supervision dedup escalation 收口。
+  Acceptance: Agent Thesis Watch 只能提交 Decision 所有的 RiskReductionRequest，Execution 独立执行 T4-SAFE Validation 并拥有 ProtectiveRiskAction；LLM、飞书或研究 worker 不可用时，确定性 Position Protection、Risk Watch 和 Kill Switch 仍运行；重复/补跑不重复交易；TRADE/ACTION_REQUIRED/RISK/CRITICAL 事件在目标时限内送达或升级。
+  Evidence: [`evidence/v3-015/implementation-2026-09-09.json`](../evidence/v3-015/implementation-2026-09-09.json)。
 
-Exit：EffectiveAutonomy 成立时，系统可在无用户日常操作下跨重启完成“自主扫描 → 多 Agent 研究/质疑 → TradePlan → 两阶段授权 → Risk Constitution → 模拟执行 → 持续保护 → 重要通知 → 复盘”；用户可查看全部证据、暂停/撤销 Mandate、暂停 Mode 或触发 Kill Switch，且业务真值不在 AgentState。
+Exit：PASS（独立审查 Evidence：`evidence/v3-exit/independent-review-2026-09-09.json`）。V4 可启动。EffectiveAutonomy 成立时，系统可在无用户日常操作下跨重启完成“自主扫描 → 多 Agent 研究/质疑 → TradePlan → 两阶段授权 → Risk Constitution → 模拟执行 → 持续保护 → 重要通知 → 复盘”；用户可查看全部证据、暂停/撤销 Mandate、暂停 Mode 或触发 Kill Switch，且业务真值不在 AgentState。
 
 ## V4：实验、复盘与验证式学习
 

@@ -1,0 +1,32 @@
+{
+  "task": "V3-015",
+  "status": "COMPLETE",
+  "date": "2026-09-09",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "changes": [
+    "Decision owns canonical RiskReductionRequest and ProtectionTriggerKind; orchestration compatibility shorthand translates to typed canonical requests",
+    "WatchCoordinator.with_deterministic_protection registers MARKET/ORDER/POSITION/PORTFOLIO/SYSTEM on an Agent-independent protection owner",
+    "Optional Agent Thesis owner is layered only on POSITION with deterministic fallback when LLM/research worker fails",
+    "Durable PostgreSQL watch queue persists immutable event envelopes with stable idempotency keys, bounded leases, fencing, reclaim and RETRY",
+    "DurableWatchWorker claims/replays watch events through owner command boundary without writing business truth",
+    "Execution T4-SAFE ProtectionValidator and ProtectiveRiskAction are verified as the only action path",
+    "NotificationSLOPolicy measures severity deadlines and PostgresGatewayStore escalates overdue important notifications once via supervision deduplication",
+    "Outbox worker preserves structured notification payloads for Feishu interactive cards"
+  ],
+  "tests": [
+    "UV_CACHE_DIR=/tmp/fao-uv-cache make check: 788 contract, 9 property, 2 schema, 1 unit; ruff, mypy, secret scan and health passed",
+    "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v3_remaining_contracts.py -q: 19 passed",
+    "FAO_DATABASE_URL=postgresql+psycopg:///fao_v3_015_accept_20260909 uv run pytest tests/integration/test_v3_015_watch_postgresql.py -q: 4 passed on disposable PostgreSQL database",
+    "FAO_DATABASE_URL=postgresql+psycopg:///fao_v3_015_final_20260909 uv run pytest tests/integration/test_v3_001_gateway_postgresql.py tests/integration/test_v3_015_watch_postgresql.py -q: 9 passed on disposable PostgreSQL database",
+    "git diff --check: passed"
+  ],
+  "remaining": [],
+  "implementation_route": "gpt-6-astra/medium requested by user; host telemetry exact model/effort not exposed",
+  "acceptance_evidence": {
+    "multi_domain_and_fallback": "tests/contract/test_v3_remaining_contracts.py::test_default_coordinator_registers_all_five_domains_on_deterministic_owner and ::test_agent_thesis_watch_degrades_to_position_protection_on_worker_outage",
+    "t4_safe": "tests/contract/test_v3_remaining_contracts.py::test_watch_request_crosses_execution_t4_safe_before_action",
+    "durable_recovery_and_idempotency": "tests/integration/test_v3_015_watch_postgresql.py (4 tests) on disposable PostgreSQL",
+    "notification_slo": "tests/integration/test_v3_015_watch_postgresql.py::test_important_notification_escalates_once_when_delivery_slo_expires"
+  }
+}
