@@ -1,6 +1,6 @@
 {
   "task": "V4-001",
-  "status": "IN_PROGRESS",
+  "status": "COMPLETE",
   "branch": "codex/v4",
   "implementation_model": "NOT_EXPOSED",
   "implementation_reasoning_effort": "NOT_EXPOSED",
@@ -11,7 +11,7 @@
     "profile": "gpt-6-astra/medium",
     "dispatch_attempted": true
   },
-  "reviewer_model": "NOT_EXPOSED",
+  "reviewer_model": "gpt-5.6-sol",
   "validation": {
     "command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
     "result": "PASS",
@@ -33,11 +33,11 @@
     "toolset and authority identity included in input digest",
     "run result stores serialized plan, snapshot identity envelope, and request payload"
   ],
-  "remaining": [
-    "independent acceptance review"
-  ],
-  "commit": "c012b36",
-  "reviewer_status": "PENDING_RERUN",
+  "remaining": [],
+  "commit": "d03427c",
+  "reviewer_status": "PASS",
   "review_findings": "Prior findings addressed in c012b36; awaiting rerun verdict",
-  "commit_scope": "baseline before hydration correction; correction tests and code included with this evidence update"
+  "commit_scope": "baseline before hydration correction; correction tests and code included with this evidence update",
+  "reviewer_reasoning_effort": "high",
+  "acceptance": "PASS"
 }

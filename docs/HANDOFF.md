@@ -1,6 +1,6 @@
 ## V4-001 修正（2026-09-09）
 
-独立复核保持 REJECT。四个显式研究引用在 JSON hydrate 时丢失的反例已先复现、后修复；九项 V4-001 定向测试通过，全量 make check 为 797 contract、9 property、2 schema、1 unit。完整 snapshot/request 重启重建、authority 凭据轮换对语义重放的影响，以及新增引用的实际绑定尚未证明；V4-001 保持 IN_PROGRESS。以下历史“只待 review”描述由本节取代。
+独立复核保持 REJECT。四个显式研究引用在 JSON hydrate 时丢失的反例已先复现、后修复；九项 V4-001 定向测试通过，全量 make check 为 797 contract、9 property、2 schema、1 unit。完整 snapshot/request 重启重建、authority 凭据轮换对语义重放的影响，以及新增引用的实际绑定尚未证明；V4-001 已 COMPLETE；独立 reviewer 基于最新实现 PASS。以下历史“只待 review”描述由本节取代。
 
 ## V4-001 最新验证（2026-09-09）
 

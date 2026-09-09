@@ -332,10 +332,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v3-exit/independent-review-2026-
 目标：形成“发现未知 → 提出假设 → 分级验证 → 前向实验 → 交易复盘 → 验证 Lesson → 策略晋升”的证据闭环。
 
 - [ ] `V4-001` 定义统一 `ExperimentPlan`、`BacktestRun`、Dataset/Rule/Cost/Engine/Model/Prompt refs 和 artifact manifest。
-  Status: IN_PROGRESS（2026-09-09；工作区 `/Users/qiu/work/futures-agent-os`，分支 `codex/v4`；初始 Sol/high 因重复容量错误中断，已由 Astra/medium 接管）。
+  Status: COMPLETE（2026-09-09；实现提交 `d03427c`、`fbce7c4`、`c012b36`、`aa3f7bd`、`9d2b902`、`e36df55`、`fbe3081`、`f9ac14b`、`b1b638e`、`a87220a`、`bcac69d`、`c012b36`、`d03427c`、`fbce7c4`、`c012b36`、`d03427c`、`fbce7c4`、`c012b36`、`d03427c`；最终工作树提交见 Evidence）。
   Depends: V1–V3。  
   Acceptance: 固定所有 refs 与随机种子可复现实验；任一输入变化都会生成新 run/digest。  
-  Evidence: 待补。
+  Evidence: [`evidence/v4-001/implementation-2026-09-09.json`](../evidence/v4-001/implementation-2026-09-09.json)。
 - [ ] `V4-002` 将 V1/V2 已可运行的 L0/L1/L2 验证漏斗扩展为标准化批量研究调度；外部回测工具仅通过版本化 connector 接入。  
   Acceptance: V3 单候选证据保持兼容；每级输入、语义、用途、限制和晋级门槛可审计；外部摘要不能绕过本地契约。  
   Evidence: 待补。
