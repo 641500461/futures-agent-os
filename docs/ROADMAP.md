@@ -364,9 +364,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v3-exit/independent-review-2026-
   Status: COMPLETE（2026-09-10；独立验证、过期和撤销生命周期已实现）。  
   Acceptance: 未验证内容与决策检索隔离；LessonCandidate 与 ValidatedLesson 不共享状态写者；ValidatedLesson 的验证生命周期与 Governance Activation 分离；每次 Lesson 使用可追踪其影响。  
   Evidence: [`evidence/v4-008/implementation-2026-09-10.json`](../evidence/v4-008/implementation-2026-09-10.json)。
-- [ ] `V4-009` 扩展 V3 基础 Strategy Registry 与晋升门禁：历史初筛、稳健性、样本外、前向模拟、人工批准和独立 Activation，并明确更高阶自治模拟资格。  
+- [x] `V4-009` 扩展 V3 基础 Strategy Registry 与晋升门禁：历史初筛、稳健性、样本外、前向模拟、人工批准和独立 Activation，并明确更高阶自治模拟资格。  
+  Status: COMPLETE（2026-09-10；四阶段证据门禁、人工批准和独立激活已实现）。  
   Acceptance: 跳过任一强制证据阶段的晋升请求被拒绝；只有获得 autonomous-simulation qualification 且在目标范围激活的 Strategy Version 才可被 Mandate 引用；批准、注册和启用是独立审计事件，不是逐笔 PlanApproval。  
-  Evidence: 待补。
+  Evidence: [`evidence/v4-009/implementation-2026-09-10.json`](../evidence/v4-009/implementation-2026-09-10.json)。
 - [ ] `V4-010` 扩展 V3 基础 Agent/Prompt/Model/Toolset Registry：候选、规模化离线评测、批准、启用、回滚、废弃和兼容矩阵。  
   Acceptance: 任一运行可解析完整版本组合；不兼容、未激活或未取得 autonomous-simulation qualification 的版本不能进入 Mandate 下的自治运行。  
   Evidence: 待补。

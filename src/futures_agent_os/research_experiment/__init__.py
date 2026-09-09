@@ -748,6 +748,10 @@ __all__ = [
     "BatchStatus",
     "ScaledExperimentManager",
     "ScaledExperimentPlan",
+    "PromotionStage",
+    "StrategyActivation",
+    "StrategyPromotionRegistry",
+    "StrategyPromotionRequest",
 ]
 
 from .v4_004 import (
@@ -762,3 +766,4 @@ from .v4_004 import (
 )
 
 from .v4_005 import BatchRun, BatchStatus, ScaledExperimentManager, ScaledExperimentPlan
+from .strategy_promotion import PromotionStage, StrategyActivation, StrategyPromotionRegistry, StrategyPromotionRequest
