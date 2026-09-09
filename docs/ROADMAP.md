@@ -372,9 +372,9 @@ Exit：PASS（独立审查 Evidence：`evidence/v3-exit/independent-review-2026-
   Status: COMPLETE（2026-09-10；版本组合、资格和独立激活门禁已实现）。  
   Acceptance: 任一运行可解析完整版本组合；不兼容、未激活或未取得 autonomous-simulation qualification 的版本不能进入 Mandate 下的自治运行。  
   Evidence: [`evidence/v4-010/implementation-2026-09-10.json`](../evidence/v4-010/implementation-2026-09-10.json)。
-- [ ] `V4-011` 接入宏观、新闻、库存、期限结构、拥挤度和历史相似案例的 point-in-time Evidence；明确授权与不可信内容边界。  
+- [x] `V4-011` 接入宏观、新闻、库存、期限结构、拥挤度和历史相似案例的 point-in-time Evidence；明确授权与不可信内容边界。  
   Acceptance: 每条证据有来源、许可、发布时间/有效时点和质量；非结构化内容只作为研究数据进入 Agent 提案，不直接成为确定性业务指令或权限。当前范围不要求独立对抗性 Prompt Injection 测试。
-  Evidence: 待补。
+  Evidence: [`evidence/v4-011/implementation-2026-09-10.json`](../evidence/v4-011/implementation-2026-09-10.json)。
 - [ ] `V4-012` 建立衰减/漂移触发器：策略 OOS 衰减、Regime 变化、规则变化、Lesson 过期自动创建 Research/Experiment Request。  
   Acceptance: 触发器幂等、可解释、可暂停；只创建研究任务，不自动修改策略或交易。  
   Evidence: 待补。
