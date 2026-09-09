@@ -15,11 +15,11 @@
   "validation": {
     "command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
     "result": "PASS",
-    "contract": 793,
+    "contract": 797,
     "property": 9,
     "schema": 2,
     "unit": 1,
-    "scope": "real V1 deterministic adapter, exact ref binding, replay, seed/model/prompt/strategy/cost sensitivity, reproducibility envelope"
+    "scope": "make check PASS; nine focused cases, including four initially failing JSON roundtrip cases now passing"
   },
   "implemented": [
     "typed refs and immutable plan config/seed/environment",
@@ -33,18 +33,19 @@
     "toolset and authority identity included in input digest"
   ],
   "remaining": [
-    "implement ExperimentPlan/BacktestRun hydrate/full envelope",
-    "explicit hypothesis/universe/feature graph/split refs or documented config schema",
-    "capture tool authority identity in input envelope",
-    "rerun independent review"
+    "persist and reconstruct full V1 snapshot/request envelope after restart",
+    "resolve result-authority credential rotation effect on semantic replay",
+    "bind nonempty hypothesis/universe/feature/split refs to actual calculation and mark missing provenance nonreproducible",
+    "final acceptance review"
   ],
-  "commit": "f9ac14b",
-  "reviewer_status": "REJECT",
+  "commit": "b1b638e",
+  "reviewer_status": "REJECT; optional ref hydrate regression reproduced and corrected, other original findings still require verification",
   "review_findings": [
     "No hydrate/serialized full input envelope",
     "Required 9.1 refs not explicit typed fields",
     "tool authority state not included in input identity",
     "replay digest semantics required correction",
     "manifest type validation corrected in current working tree"
-  ]
+  ],
+  "commit_scope": "baseline before hydration correction; correction tests and code included with this evidence update"
 }

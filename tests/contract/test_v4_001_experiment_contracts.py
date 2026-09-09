@@ -216,3 +216,16 @@ def test_real_v1_metrics_replay():
     assert restored_plan.content_sha256 == plan.content_sha256
     assert restored_run.content_sha256 == run.content_sha256
     assert replay_backtest(restored_plan, restored_run, (frozen, request, tools)).content_sha256 == run.content_sha256
+
+
+@pytest.mark.parametrize("name", ["hypothesis_ref", "universe_ref", "feature_graph_ref", "split_ref"])
+def test_explicit_research_refs_survive_json_roundtrip(name):
+    import json
+    from dataclasses import replace
+    from futures_agent_os.research_experiment.v4_001 import PinnedRef
+    from futures_agent_os.shared_kernel import canonical_json_text
+
+    plan = replace(_plan(), **{name: PinnedRef(name, "1", "9" * 64)})
+    restored = ExperimentPlan.hydrate(json.loads(canonical_json_text(plan.to_dict())))
+    assert getattr(restored, name) == getattr(plan, name)
+    assert restored.content_sha256 == plan.content_sha256

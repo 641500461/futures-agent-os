@@ -294,6 +294,10 @@ class ExperimentPlan:
             strategy_ref=cast(StrategyRef, ref("strategy_ref", StrategyRef))
             if value["strategy_ref"] is not None
             else None,
+            hypothesis_ref=ref("hypothesis_ref", PinnedRef) if value["hypothesis_ref"] is not None else None,
+            universe_ref=ref("universe_ref", PinnedRef) if value["universe_ref"] is not None else None,
+            feature_graph_ref=ref("feature_graph_ref", PinnedRef) if value["feature_graph_ref"] is not None else None,
+            split_ref=ref("split_ref", PinnedRef) if value["split_ref"] is not None else None,
             seeds=SeedBundle(cast(Mapping[str, int], seeds)),
             config=cast(Mapping[str, JsonValue], _object(value["config"])),
             environment=cast(Mapping[str, JsonValue], _object(value["environment"])),

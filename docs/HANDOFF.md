@@ -1,3 +1,7 @@
+## V4-001 修正（2026-09-09）
+
+独立复核保持 REJECT。四个显式研究引用在 JSON hydrate 时丢失的反例已先复现、后修复；九项 V4-001 定向测试通过，全量 make check 为 797 contract、9 property、2 schema、1 unit。完整 snapshot/request 重启重建、authority 凭据轮换对语义重放的影响，以及新增引用的实际绑定尚未证明；V4-001 保持 IN_PROGRESS。以下历史“只待 review”描述由本节取代。
+
 ## V4-001 最新验证（2026-09-09）
 
 真实 V1 run_snapshot_suite 适配已落地，采用真实 MarketSnapshot/ValidationRunRequest 的指标一致性与 hydrate 重放测试通过。执行前核对 dataset/rule/cost refs 和 config；manifest entries 脱离调用方可变列表。`make check` 通过（793 contract、9 property、2 schema、1 unit）。引擎 fingerprint、真实计算重放、引用/seed/model/prompt 敏感性与 NON_REPRODUCIBLE 信封状态已补齐；`make check` 通过（793 contract、9 property、2 schema、1 unit）。仍需独立 V4-001 review 后才能标记 COMPLETE；Sol reviewer dispatch 当前因 429 容量失败。实现已提交 `2944bc9`。旧容量错误不是当前开发阻塞。
