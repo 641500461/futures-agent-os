@@ -30,7 +30,8 @@
     "replay and sensitivity contract coverage",
     "ExperimentPlan/BacktestRun/ArtifactManifest hydrate from canonical JSON with digest validation",
     "explicit hypothesis/universe/feature_graph/split refs",
-    "toolset and authority identity included in input digest"
+    "toolset and authority identity included in input digest",
+    "run result stores serialized plan, snapshot identity envelope, and request payload"
   ],
   "remaining": [
     "persist and reconstruct full V1 snapshot/request envelope after restart",
@@ -38,8 +39,8 @@
     "bind nonempty hypothesis/universe/feature/split refs to actual calculation and mark missing provenance nonreproducible",
     "final acceptance review"
   ],
-  "commit": "b1b638e",
-  "reviewer_status": "REJECT; optional ref hydrate regression reproduced and corrected, other original findings still require verification",
+  "commit": "fbce7c4",
+  "reviewer_status": "REJECT; review findings remain for full snapshot/request hydration and authority credential identity",
   "review_findings": [
     "No hydrate/serialized full input envelope",
     "Required 9.1 refs not explicit typed fields",
