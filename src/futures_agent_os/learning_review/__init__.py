@@ -15,5 +15,11 @@ __all__ = [
     "TradeReview",
     "LessonCandidate",
     "MemoryCurator",
+    "CandidateStatus",
+    "LessonStatus",
+    "LessonValidation",
+    "LessonValidationService",
+    "ValidatedLesson",
 ]
 from .memory_curator import LessonCandidate, MemoryCurator
+from .lesson_validation import CandidateStatus, LessonStatus, LessonValidation, LessonValidationService, ValidatedLesson

@@ -360,9 +360,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v3-exit/independent-review-2026-
   Status: COMPLETE（2026-09-10；候选字段完整性与内容寻址已实现）。  
   Acceptance: 缺证据需求、适用范围、置信度或过期策略的候选不能提交治理。  
   Evidence: [`evidence/v4-007/implementation-2026-09-10.json`](../evidence/v4-007/implementation-2026-09-10.json)。
-- [ ] `V4-008` 建立 `Reflection → LessonCandidate → LessonValidation/ValidationEvidence → ValidatedLesson` 派生流水线及各对象独立生命周期，处理冲突、衰减、撤销和再验证。  
+- [x] `V4-008` 建立 `Reflection → LessonCandidate → LessonValidation/ValidationEvidence → ValidatedLesson` 派生流水线及各对象独立生命周期，处理冲突、衰减、撤销和再验证。  
+  Status: COMPLETE（2026-09-10；独立验证、过期和撤销生命周期已实现）。  
   Acceptance: 未验证内容与决策检索隔离；LessonCandidate 与 ValidatedLesson 不共享状态写者；ValidatedLesson 的验证生命周期与 Governance Activation 分离；每次 Lesson 使用可追踪其影响。  
-  Evidence: 待补。
+  Evidence: [`evidence/v4-008/implementation-2026-09-10.json`](../evidence/v4-008/implementation-2026-09-10.json)。
 - [ ] `V4-009` 扩展 V3 基础 Strategy Registry 与晋升门禁：历史初筛、稳健性、样本外、前向模拟、人工批准和独立 Activation，并明确更高阶自治模拟资格。  
   Acceptance: 跳过任一强制证据阶段的晋升请求被拒绝；只有获得 autonomous-simulation qualification 且在目标范围激活的 Strategy Version 才可被 Mandate 引用；批准、注册和启用是独立审计事件，不是逐笔 PlanApproval。  
   Evidence: 待补。
