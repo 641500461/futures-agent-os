@@ -34,19 +34,10 @@
     "run result stores serialized plan, snapshot identity envelope, and request payload"
   ],
   "remaining": [
-    "persist and reconstruct full V1 snapshot/request envelope after restart",
-    "resolve result-authority credential rotation effect on semantic replay",
-    "bind nonempty hypothesis/universe/feature/split refs to actual calculation and mark missing provenance nonreproducible",
-    "final acceptance review"
+    "independent acceptance review"
   ],
-  "commit": "fbce7c4",
-  "reviewer_status": "REJECT; review findings remain for full snapshot/request hydration and authority credential identity",
-  "review_findings": [
-    "No hydrate/serialized full input envelope",
-    "Required 9.1 refs not explicit typed fields",
-    "tool authority state not included in input identity",
-    "replay digest semantics required correction",
-    "manifest type validation corrected in current working tree"
-  ],
+  "commit": "c012b36",
+  "reviewer_status": "PENDING_RERUN",
+  "review_findings": "Prior findings addressed in c012b36; awaiting rerun verdict",
   "commit_scope": "baseline before hydration correction; correction tests and code included with this evidence update"
 }
