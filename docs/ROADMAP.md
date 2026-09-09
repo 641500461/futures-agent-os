@@ -344,9 +344,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v3-exit/independent-review-2026-
   Status: COMPLETE（2026-09-09；确定性批量验证 runner、V1/V2 兼容重放和 fail-closed 晋升证据门禁已实现）。  
   Acceptance: V1/V2 基础证据可按兼容契约重放；每类验证产生独立 artifact、warnings 和可复现配置；不完整运行不能进入晋升证据。  
   Evidence: [`evidence/v4-003/implementation-2026-09-09.json`](../evidence/v4-003/implementation-2026-09-09.json)。
-- [ ] `V4-004` 实现年度/月度/品种/Regime/多空/成本归因、回撤事件、最差交易、参数稳健性和自动 warnings。  
+- [x] `V4-004` 实现年度/月度/品种/Regime/多空/成本归因、回撤事件、最差交易、参数稳健性和自动 warnings。  
+  Status: COMPLETE（2026-09-10；确定性 Decimal 归因、回撤、稳健性与告警报告已实现）。  
   Acceptance: 归因合计与总收益/成本在容差内一致；集中、样本不足和参数不稳定自动告警。  
-  Evidence: 待补。
+  Evidence: [`evidence/v4-004/implementation-2026-09-10.json`](../evidence/v4-004/implementation-2026-09-10.json)。
 - [ ] `V4-005` 扩展 Experiment Manager，支持规模化实验计划、优先级、预算、取消、父子运行、证据汇总和失败恢复。  
   Acceptance: Experiment Manager 不能交易、晋升策略或修改风险规则。  
   Evidence: 待补。

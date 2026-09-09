@@ -736,4 +736,23 @@ __all__ = [
     "render_chinese_report",
     "render_deterministic_template_chinese_report",
     "verify_agent_critic_outcome",
+    "AttributionAnalyzer",
+    "AttributionBucket",
+    "AttributionPolicy",
+    "AttributionReport",
+    "AttributionSource",
+    "AttributionTrade",
+    "AttributionWarning",
+    "DrawdownEvent",
 ]
+
+from .v4_004 import (
+    AttributionAnalyzer,
+    AttributionBucket,
+    AttributionPolicy,
+    AttributionReport,
+    AttributionSource,
+    AttributionTrade,
+    AttributionWarning,
+    DrawdownEvent,
+)
