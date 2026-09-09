@@ -419,6 +419,13 @@ def execute_backtest(plan: ExperimentPlan, inputs: object) -> BacktestRun:
         "missing_references": missing,
         "seed_policy": "V1_NO_PRNG",
         "plan": plan.to_dict(),
+        "snapshot": {
+            "snapshot_id": str(snapshot.snapshot_id),
+            "as_of": snapshot.as_of.to_dict()["recorded_at"],
+            "content_sha256": snapshot.expected_content_sha256,
+            "schema_version": str(snapshot.schema_version),
+        },
+        "request": cast(JsonValue, request.to_dict()),
         "results": tuple(result.to_dict() for result in results),
         "request_sha256": request.content_sha256,
         "toolset_version": "research-validation.v1",
