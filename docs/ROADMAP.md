@@ -356,9 +356,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v3-exit/independent-review-2026-
   Status: COMPLETE（2026-09-10；新增 market-path 质量与显式原因假设，保持源事件闭合校验）。  
   Acceptance: 每项评价引用 episode、行情、订单、账本和规则事实；原因解释默认仅为 Reflection。  
   Evidence: [`evidence/v4-006/implementation-2026-09-10.json`](../evidence/v4-006/implementation-2026-09-10.json)。
-- [ ] `V4-007` 实现 Memory Curator，将 Reflection 变为有验证计划的 `LessonCandidate`，不自行发布 Lesson。  
+- [x] `V4-007` 实现 Memory Curator，将 Reflection 变为有验证计划的 `LessonCandidate`，不自行发布 Lesson。  
+  Status: COMPLETE（2026-09-10；候选字段完整性与内容寻址已实现）。  
   Acceptance: 缺证据需求、适用范围、置信度或过期策略的候选不能提交治理。  
-  Evidence: 待补。
+  Evidence: [`evidence/v4-007/implementation-2026-09-10.json`](../evidence/v4-007/implementation-2026-09-10.json)。
 - [ ] `V4-008` 建立 `Reflection → LessonCandidate → LessonValidation/ValidationEvidence → ValidatedLesson` 派生流水线及各对象独立生命周期，处理冲突、衰减、撤销和再验证。  
   Acceptance: 未验证内容与决策检索隔离；LessonCandidate 与 ValidatedLesson 不共享状态写者；ValidatedLesson 的验证生命周期与 Governance Activation 分离；每次 Lesson 使用可追踪其影响。  
   Evidence: 待补。

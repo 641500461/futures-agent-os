@@ -13,4 +13,7 @@ __all__ = [
     "Reflection",
     "ReviewQuality",
     "TradeReview",
+    "LessonCandidate",
+    "MemoryCurator",
 ]
+from .memory_curator import LessonCandidate, MemoryCurator
