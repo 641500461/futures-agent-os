@@ -331,7 +331,8 @@ Exit：PASS（独立审查 Evidence：`evidence/v3-exit/independent-review-2026-
 
 目标：形成“发现未知 → 提出假设 → 分级验证 → 前向实验 → 交易复盘 → 验证 Lesson → 策略晋升”的证据闭环。
 
-- [ ] `V4-001` 定义统一 `ExperimentPlan`、`BacktestRun`、Dataset/Rule/Cost/Engine/Model/Prompt refs 和 artifact manifest。  
+- [ ] `V4-001` 定义统一 `ExperimentPlan`、`BacktestRun`、Dataset/Rule/Cost/Engine/Model/Prompt refs 和 artifact manifest。
+  Status: IN_PROGRESS（2026-09-09；工作区 `/Users/qiu/work/futures-agent-os`，分支 `codex/v4`；初始 Sol/high 因重复容量错误中断，已由 Astra/medium 接管）。
   Depends: V1–V3。  
   Acceptance: 固定所有 refs 与随机种子可复现实验；任一输入变化都会生成新 run/digest。  
   Evidence: 待补。

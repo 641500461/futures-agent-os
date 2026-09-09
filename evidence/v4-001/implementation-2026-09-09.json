@@ -1,0 +1,50 @@
+{
+  "task": "V4-001",
+  "status": "IN_PROGRESS",
+  "branch": "codex/v4",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "requested_initial_model": "gpt-5.6-sol/high",
+  "upgrade": {
+    "occurred": false,
+    "reason": "Repeated Sol capacity errors; Astra/medium dispatch also failed capacity, retry dispatched; successful execution is not yet proven",
+    "profile": "gpt-6-astra/medium",
+    "dispatch_attempted": true
+  },
+  "reviewer_model": "NOT_EXPOSED",
+  "validation": {
+    "command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+    "result": "PASS",
+    "contract": 793,
+    "property": 9,
+    "schema": 2,
+    "unit": 1,
+    "scope": "real V1 deterministic adapter, exact ref binding, replay, seed/model/prompt/strategy/cost sensitivity, reproducibility envelope"
+  },
+  "implemented": [
+    "typed refs and immutable plan config/seed/environment",
+    "engine fingerprint pinned to shipped V1 validation_tools and walk_forward source",
+    "exact V1 snapshot/request/tools adapter with real metrics",
+    "dataset/rule/cost/config/engine binding rejection",
+    "NON_REPRODUCIBLE status for missing code/image/resource/strategy refs",
+    "replay and sensitivity contract coverage",
+    "ExperimentPlan/BacktestRun/ArtifactManifest hydrate from canonical JSON with digest validation",
+    "explicit hypothesis/universe/feature_graph/split refs",
+    "toolset and authority identity included in input digest"
+  ],
+  "remaining": [
+    "implement ExperimentPlan/BacktestRun hydrate/full envelope",
+    "explicit hypothesis/universe/feature graph/split refs or documented config schema",
+    "capture tool authority identity in input envelope",
+    "rerun independent review"
+  ],
+  "commit": "f9ac14b",
+  "reviewer_status": "REJECT",
+  "review_findings": [
+    "No hydrate/serialized full input envelope",
+    "Required 9.1 refs not explicit typed fields",
+    "tool authority state not included in input identity",
+    "replay digest semantics required correction",
+    "manifest type validation corrected in current working tree"
+  ]
+}

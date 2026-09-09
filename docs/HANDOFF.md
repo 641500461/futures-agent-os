@@ -1,3 +1,15 @@
+## V4-001 最新验证（2026-09-09）
+
+真实 V1 run_snapshot_suite 适配已落地，采用真实 MarketSnapshot/ValidationRunRequest 的指标一致性与 hydrate 重放测试通过。执行前核对 dataset/rule/cost refs 和 config；manifest entries 脱离调用方可变列表。`make check` 通过（793 contract、9 property、2 schema、1 unit）。引擎 fingerprint、真实计算重放、引用/seed/model/prompt 敏感性与 NON_REPRODUCIBLE 信封状态已补齐；`make check` 通过（793 contract、9 property、2 schema、1 unit）。仍需独立 V4-001 review 后才能标记 COMPLETE；Sol reviewer dispatch 当前因 429 容量失败。实现已提交 `2944bc9`。旧容量错误不是当前开发阻塞。
+
+## V4 启动（2026-09-09）
+
+已创建工作分支 `codex/v4`，V3 Exit 已通过。当前启动任务为 `V4-001`，目标是统一 ExperimentPlan/BacktestRun 及不可变 artifact manifest。开发模型按 `DEVELOPMENT-MODEL-POLICY.md` 路由：统筹与最终整合 GPT-6 Astra/medium，V4-001 常规实现 GPT-5.6 Sol/high；宿主 telemetry 未暴露时 Evidence 记录 `NOT_EXPOSED`。
+
+## V4-001 验收进展（2026-09-09）
+
+现有基础契约及全量 `UV_CACHE_DIR=/tmp/fao-uv-cache make check` 通过（792 contract、9 property、2 schema、1 unit），但这些测试尚未证明冻结 refs/config 驱动真实实验计算，任务不得标记完成。Sol/high 执行任务重复因容量错误终止，已按用户授权路由至 `gpt-6-astra/medium` 执行身份 `/root/v4_001_astra`；继续补齐真实计算适配与 Evidence。Astra/medium 首次派发容量错误，重试已结束但未修改代码；当前没有运行中的开发执行身份。执行阻塞记录见 `evidence/v4-001/implementation-2026-09-09.json`。
+
 # 跨对话交接
 
 ## V3 当前开发状态（2026-09-09）
