@@ -4,6 +4,7 @@ import pytest
 
 from futures_agent_os.research_experiment.v4_001 import (
     BacktestRun,
+    PinnedRef,
     ArtifactEntry,
     ArtifactManifest,
     CostRef,
@@ -168,7 +169,16 @@ def test_real_v1_metrics_replay():
     )
     assert any(item["metrics"] for item in run.result["results"])
 
-    assert run.result["reproducibility"] == "REPRODUCIBLE"
+    assert run.result["reproducibility"] == "NON_REPRODUCIBLE"
+    complete_plan = replace(
+        plan,
+        hypothesis_ref=PinnedRef("hypothesis", "1", request.query_scope.hypothesis_sha256),
+        universe_ref=PinnedRef(str(frozen.rule_resolution.rule.instrument.reference_id), "1", "3" * 64),
+        feature_graph_ref=PinnedRef("feature", "1", config.content_sha256),
+        split_ref=PinnedRef("split", "1", config.content_sha256),
+    )
+    complete_run = execute_backtest(complete_plan, (frozen, request, tools))
+    assert complete_run.result["reproducibility"] == "REPRODUCIBLE"
     incomplete = execute_backtest(replace(plan, environment={}), (frozen, request, tools))
     assert incomplete.result["reproducibility"] == "NON_REPRODUCIBLE"
     for field in ("model_ref", "prompt_ref", "strategy_ref"):

@@ -427,8 +427,8 @@ def execute_backtest(plan: ExperimentPlan, inputs: object) -> BacktestRun:
     )
     required_environment = ("code_commit", "runtime_image", "resource_spec")
     missing = tuple(key for key in required_environment if not plan.environment.get(key))
-    if plan.strategy_ref is None:
-        missing += ("strategy_ref",)
+    required_refs = ("strategy_ref", "hypothesis_ref", "universe_ref", "feature_graph_ref", "split_ref")
+    missing += tuple(name for name in required_refs if getattr(plan, name) is None)
     payload: dict[str, JsonValue] = {
         "reproducibility": "NON_REPRODUCIBLE" if missing else "REPRODUCIBLE",
         "missing_references": missing,
