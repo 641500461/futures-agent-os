@@ -112,7 +112,7 @@ def current_engine_ref() -> EngineRef:
     root = Path(__file__).parent
     sources = {
         name: sha256((root / name).read_bytes()).hexdigest()
-        for name in ("validation_tools.py", "walk_forward.py", "v4_001.py")
+        for name in ("validation_tools.py", "walk_forward.py", "v4_001.py", "snapshot_envelope.py")
     }
     return EngineRef("v1-deterministic-research-suite", "1.5", canonical_sha256(sources))
 
@@ -378,6 +378,7 @@ def execute_backtest(plan: ExperimentPlan, inputs: object) -> BacktestRun:
     """
     from futures_agent_os.reference_market_data import MarketSnapshot
     from .validation_tools import DeterministicResearchTools, ValidationRunRequest
+    from .snapshot_envelope import snapshot_to_json
 
     if type(inputs) is not tuple or len(inputs) != 3:
         raise TypeError("inputs require (MarketSnapshot, ValidationRunRequest, DeterministicResearchTools)")
@@ -419,12 +420,7 @@ def execute_backtest(plan: ExperimentPlan, inputs: object) -> BacktestRun:
         "missing_references": missing,
         "seed_policy": "V1_NO_PRNG",
         "plan": plan.to_dict(),
-        "snapshot": {
-            "snapshot_id": str(snapshot.snapshot_id),
-            "as_of": snapshot.as_of.to_dict()["recorded_at"],
-            "content_sha256": snapshot.expected_content_sha256,
-            "schema_version": str(snapshot.schema_version),
-        },
+        "snapshot": snapshot_to_json(snapshot),
         "request": cast(JsonValue, request.to_dict()),
         "results": tuple(result.to_dict() for result in results),
         "request_sha256": request.content_sha256,
@@ -480,6 +476,18 @@ def replay_backtest(plan: ExperimentPlan, run: BacktestRun, inputs: object) -> B
         replayed.artifact_manifest,
         replay_count=run.replay_count + 1,
     )
+
+
+def replay_saved_run(value: Mapping[str, object], tools: object) -> BacktestRun:
+    """Rebuild the frozen domain inputs; credentials remain injected by the host."""
+    from .snapshot_envelope import snapshot_from_json
+    from .validation_tools import ValidationRunRequest
+
+    run = BacktestRun.hydrate(value)
+    plan = ExperimentPlan.hydrate(_object(run.result["plan"]))
+    snapshot = snapshot_from_json(_object(run.result["snapshot"]))
+    request = ValidationRunRequest.hydrate(_object(run.result["request"]))
+    return replay_backtest(plan, run, (snapshot, request, tools))
 
 
 UnifiedExperimentPlan = ExperimentPlan

@@ -217,6 +217,40 @@ def test_real_v1_metrics_replay():
     assert restored_run.content_sha256 == run.content_sha256
     assert replay_backtest(restored_plan, restored_run, (frozen, request, tools)).content_sha256 == run.content_sha256
 
+    from futures_agent_os.research_experiment.snapshot_envelope import snapshot_from_json
+
+    restored_snapshot = snapshot_from_json(restored_run.result["snapshot"])
+    restored_request = ValidationRunRequest.hydrate(restored_run.result["request"])
+    assert restored_snapshot == frozen
+    assert (
+        replay_backtest(restored_plan, restored_run, (restored_snapshot, restored_request, tools)).content_sha256
+        == run.content_sha256
+    )
+
+    import subprocess
+    import sys
+    import tempfile
+    from pathlib import Path
+
+    with tempfile.TemporaryDirectory() as directory:
+        saved = Path(directory) / "run.json"
+        saved.write_text(canonical_json_text(run.to_dict()))
+        code = """
+import json, sys
+from pathlib import Path
+from futures_agent_os.research_experiment.v4_001 import replay_saved_run
+from futures_agent_os.research_experiment.validation_tools import (DeterministicResearchTools,
+ TrustedFeatureEvidencePort, TrustedMemorySearchPort, TrustedExperimentSearchPort, TrustedResearchToolsPort)
+tools = DeterministicResearchTools(
+ TrustedFeatureEvidencePort(b'v4-test-feature-owner-01234567890123'),
+ TrustedMemorySearchPort(b'v4-test-memory-owner-012345678901234'),
+ TrustedExperimentSearchPort(b'v4-test-experiment-owner-0123456789'),
+ TrustedResearchToolsPort(b'v4-test-result-owner-01234567890123'))
+print(replay_saved_run(json.loads(Path(sys.argv[1]).read_text()), tools).content_sha256)
+"""
+        completed = subprocess.run([sys.executable, "-c", code, str(saved)], check=True, capture_output=True, text=True)
+        assert completed.stdout.strip() == run.content_sha256
+
 
 @pytest.mark.parametrize("name", ["hypothesis_ref", "universe_ref", "feature_graph_ref", "split_ref"])
 def test_explicit_research_refs_survive_json_roundtrip(name):
