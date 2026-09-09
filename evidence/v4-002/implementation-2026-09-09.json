@@ -1,0 +1,67 @@
+{
+  "task": "V4-002",
+  "status": "COMPLETE",
+  "date": "2026-09-09",
+  "implementation_commit": "66a4f4f",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "coordination_route": "GPT-6 Astra/medium per docs/DEVELOPMENT-MODEL-POLICY.md",
+  "reviewer_model": "NOT_APPLICABLE_TASK_LEVEL",
+  "reviewer_reasoning_effort": "NOT_APPLICABLE_TASK_LEVEL",
+  "model_escalation": {
+    "occurred": false,
+    "reason": null
+  },
+  "scope": {
+    "included": [
+      "standardized deterministic batch fan-out across candidates",
+      "strict sequential L0 to L1 to L2 promotion per candidate",
+      "auditable level input semantics, purpose, limitations, required artifacts, local checks and pinned gate refs",
+      "versioned connector identity with implementation and input/output schema digests",
+      "installed V1 L0/L1 and V2 L2 connector fingerprints",
+      "exact V3 StrategyAgentResult single-candidate compatibility with PIT source lineage",
+      "local LevelEvidence gate that ignores external promotion summaries"
+    ],
+    "excluded": [
+      "durable large-scale scheduler, priority, cancellation and failure recovery (V4-005)",
+      "Monte Carlo, scenario replay, parameter sweep and strategy comparison (V4-003)",
+      "strategy promotion or trading authority"
+    ]
+  },
+  "acceptance": [
+    {
+      "criterion": "V3 single-candidate evidence remains compatible",
+      "proof": "test_v3_single_candidate_preserves_digest_and_pit_lineage binds the exact StrategyAgentResult digest and converts its immutable sha256-prefixed PIT lineage without changing content. NO_TRADE and DEFER are rejected by the adapter."
+    },
+    {
+      "criterion": "Every level input, semantics, purpose, limitation and promotion gate is auditable",
+      "proof": "standard_level_contracts freezes L0/L1/L2 semantics, purposes, limitations, required artifact names, required local checks and content-addressed promotion gate refs; ValidationTask binds the contract digest, plan, candidate, connector and predecessor evidence."
+    },
+    {
+      "criterion": "Existing runnable V1/V2 funnel is extended through versioned connectors",
+      "proof": "installed_v1_v2_connectors fingerprints V1 validation_tools/walk_forward/V4 plan execution for L0/L1 and V2 strategy_replay for L2, together with versioned input/output schema digests."
+    },
+    {
+      "criterion": "External summaries cannot bypass local contracts",
+      "proof": "BatchResearchScheduler accepts only LevelEvidence returned by its configured local verifier; external_summary is retained in the connector-output digest but never consulted by the gate. A claimed external PASS with failed local checks produces FAIL and schedules no successor."
+    },
+    {
+      "criterion": "Batch scheduling enforces level order",
+      "proof": "All candidates fan out at L0; only locally passing evidence queues the exact next L1/L2 successor with predecessor evidence digest. Failed candidates stop independently."
+    }
+  ],
+  "verification": [
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v4_002_batch_funnel.py tests/contract/test_v4_001_experiment_contracts.py",
+      "result": "PASS: 17 passed"
+    },
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+      "result": "PASS: format, ruff, mypy (150 source files), secret scan, 2 schema, 1 unit, 9 property, 805 contract, health"
+    }
+  ],
+  "deterministic_boundary": {
+    "model_output_is_authority": false,
+    "connector": "Only exact connector/task/schema bindings and locally verified LevelEvidence can advance a candidate. Connector summaries, Agent proposals and external tools cannot qualify, promote, trade, or mutate risk rules."
+  }
+}

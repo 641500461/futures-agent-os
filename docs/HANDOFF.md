@@ -2,9 +2,9 @@
 
 ## V4 当前状态（2026-09-09）
 
-`codex/v4` 已创建，首个任务 `V4-001` COMPLETE。实现提交 `b8767aa`；独立 Sol/high 执行身份 `/root/v4_001_reviewer` 对 `d03427c` 给出 PASS，精确 runtime telemetry 为 `NOT_EXPOSED`。随后缺失显式研究引用统一标记 NON_REPRODUCIBLE 的收紧已通过完整门禁。验证：9 项 V4-001 定向测试，全量 797 contract、9 property、2 schema、1 unit，ruff/mypy/secret scan/health 通过。
+`codex/v4` 上 `V4-001`、`V4-002` 均 COMPLETE。V4-002 实现提交 `66a4f4f`：新增标准化批量 L0/L1/L2 漏斗、逐候选串行晋级、可审计 LevelContract、版本化 connector、本地 LevelEvidence 门禁，以及 V3 单候选 digest/PIT lineage 兼容适配；本地 connector 指纹绑定既有 V1 L0/L1 与 V2 L2 实现。外部摘要不会参与晋级裁决。验证：V4-002 定向 8 项、连同 V4-001 共 17 项通过；全量 805 contract、9 property、2 schema、1 unit，ruff/mypy/secret scan/health 通过。Evidence：`evidence/v4-002/implementation-2026-09-09.json`。
 
-已证明：完整 snapshot/request/plan/run JSON 重建、IANA 时区保留、独立进程重放 digest 一致、真实 V1 计算及成本数值敏感性、结果签名密钥轮换不改变语义结果、显式引用 roundtrip 与输入绑定。证据：`evidence/v4-001/implementation-2026-09-09.json`。V4-002 尚未开始；本轮仅完成已启动的 V4-001，V4 Exit 尚未通过。
+V4-001 已证明完整 snapshot/request/plan/run JSON 重建、IANA 时区保留、独立进程重放 digest 一致、真实 V1 计算及成本数值敏感性、结果签名密钥轮换不改变语义结果、显式引用 roundtrip 与输入绑定。证据：`evidence/v4-001/implementation-2026-09-09.json`。V4-003 尚未开始，V4 Exit 尚未通过。
 
 开发路由：统筹/最终整合和重复卡点接管为 GPT-6 Astra/medium；常规开发 Sol/high，交易/状态关键开发 Sol/xhigh；版本 Exit 独立 Sol 复核。开发路由不启用产品运行时 ModelProfile。研究与模拟边界保持。
 
