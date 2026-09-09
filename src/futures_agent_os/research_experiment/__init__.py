@@ -744,6 +744,10 @@ __all__ = [
     "AttributionTrade",
     "AttributionWarning",
     "DrawdownEvent",
+    "BatchRun",
+    "BatchStatus",
+    "ScaledExperimentManager",
+    "ScaledExperimentPlan",
 ]
 
 from .v4_004 import (
@@ -756,3 +760,5 @@ from .v4_004 import (
     AttributionWarning,
     DrawdownEvent,
 )
+
+from .v4_005 import BatchRun, BatchStatus, ScaledExperimentManager, ScaledExperimentPlan

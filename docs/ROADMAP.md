@@ -348,9 +348,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v3-exit/independent-review-2026-
   Status: COMPLETE（2026-09-10；确定性 Decimal 归因、回撤、稳健性与告警报告已实现）。  
   Acceptance: 归因合计与总收益/成本在容差内一致；集中、样本不足和参数不稳定自动告警。  
   Evidence: [`evidence/v4-004/implementation-2026-09-10.json`](../evidence/v4-004/implementation-2026-09-10.json)。
-- [ ] `V4-005` 扩展 Experiment Manager，支持规模化实验计划、优先级、预算、取消、父子运行、证据汇总和失败恢复。  
+- [x] `V4-005` 扩展 Experiment Manager，支持规模化实验计划、优先级、预算、取消、父子运行、证据汇总和失败恢复。  
+  Status: COMPLETE（2026-09-10；批量父子生命周期、预算门禁、取消、恢复与证据汇总已实现）。  
   Acceptance: Experiment Manager 不能交易、晋升策略或修改风险规则。  
-  Evidence: 待补。
+  Evidence: [`evidence/v4-005/implementation-2026-09-10.json`](../evidence/v4-005/implementation-2026-09-10.json)。
 - [ ] `V4-006` 扩展 Post-trade Reviewer，分别评价 Process Quality、Outcome Quality、执行质量、后续市场路径和可验证原因假设。  
   Acceptance: 每项评价引用 episode、行情、订单、账本和规则事实；原因解释默认仅为 Reflection。  
   Evidence: 待补。
