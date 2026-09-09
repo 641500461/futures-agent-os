@@ -340,9 +340,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v3-exit/independent-review-2026-
   Status: COMPLETE（2026-09-09；实现提交 `66a4f4f`）。批量计划对候选 fan-out，但每个候选只能按 L0→L1→L2 串行晋级；LevelContract 固定输入语义、用途、限制、必需 artifact、本地 checks 与 gate ref。Connector 固定实现和输入/输出 schema digest，本地已注册 V1 L0/L1 与 V2 L2 实现指纹；V3 StrategyAgentResult 以原始内容 digest 与 PIT lineage 兼容接入。外部摘要只作审计输入，不能产生 LevelEvidence 或推动晋级。
   Acceptance: V3 单候选证据保持兼容；每级输入、语义、用途、限制和晋级门槛可审计；外部摘要不能绕过本地契约。  
   Evidence: [`evidence/v4-002/implementation-2026-09-09.json`](../evidence/v4-002/implementation-2026-09-09.json)。
-- [ ] `V4-003` 将 V1 基础 walk-forward、成本/滑点 stress、counterfactual 扩展为规模化验证，并新增 Monte Carlo、scenario replay、parameter sweep 和 strategy compare。  
+- [x] `V4-003` 将 V1 基础 walk-forward、成本/滑点 stress、counterfactual 扩展为规模化验证，并新增 Monte Carlo、scenario replay、parameter sweep 和 strategy compare。  
+  Status: COMPLETE（2026-09-09；确定性批量验证 runner、V1/V2 兼容重放和 fail-closed 晋升证据门禁已实现）。  
   Acceptance: V1/V2 基础证据可按兼容契约重放；每类验证产生独立 artifact、warnings 和可复现配置；不完整运行不能进入晋升证据。  
-  Evidence: 待补。
+  Evidence: [`evidence/v4-003/implementation-2026-09-09.json`](../evidence/v4-003/implementation-2026-09-09.json)。
 - [ ] `V4-004` 实现年度/月度/品种/Regime/多空/成本归因、回撤事件、最差交易、参数稳健性和自动 warnings。  
   Acceptance: 归因合计与总收益/成本在容差内一致；集中、样本不足和参数不稳定自动告警。  
   Evidence: 待补。
