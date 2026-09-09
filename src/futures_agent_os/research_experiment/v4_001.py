@@ -401,6 +401,14 @@ def execute_backtest(plan: ExperimentPlan, inputs: object) -> BacktestRun:
         raise ValueError("engine reference does not match installed implementation")
     if plan.config != request.config.payload():
         raise ValueError("plan config must bind exact validation parameters")
+    if plan.hypothesis_ref is not None and plan.hypothesis_ref.content_sha256 != request.query_scope.hypothesis_sha256:
+        raise ValueError("hypothesis reference must bind query scope")
+    if plan.universe_ref is not None and plan.universe_ref.identity != request.query_scope.instrument_key:
+        raise ValueError("universe reference must bind instrument scope")
+    if plan.feature_graph_ref is not None and plan.feature_graph_ref.content_sha256 != request.config.content_sha256:
+        raise ValueError("feature graph reference must bind validation config")
+    if plan.split_ref is not None and plan.split_ref.content_sha256 != request.config.content_sha256:
+        raise ValueError("split reference must bind validation config")
     if plan.dataset_ref.content_sha256 != snapshot.expected_content_sha256:
         raise ValueError("dataset reference must bind exact snapshot")
     if plan.rule_ref.content_sha256 != snapshot.rule_resolution.rule_content_sha256:
