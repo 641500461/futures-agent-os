@@ -331,48 +331,58 @@ Exit：PASS（独立审查 Evidence：`evidence/v3-exit/independent-review-2026-
 
 目标：形成“发现未知 → 提出假设 → 分级验证 → 前向实验 → 交易复盘 → 验证 Lesson → 策略晋升”的证据闭环。
 
-- [ ] `V4-001` 定义统一 `ExperimentPlan`、`BacktestRun`、Dataset/Rule/Cost/Engine/Model/Prompt refs 和 artifact manifest。  
+- [x] `V4-001` 定义统一 `ExperimentPlan`、`BacktestRun`、Dataset/Rule/Cost/Engine/Model/Prompt refs 和 artifact manifest。
+  Status: COMPLETE（2026-09-09；`codex/v4`，实现 `b8767aa`，独立复核基线 `d03427c`）。
   Depends: V1–V3。  
   Acceptance: 固定所有 refs 与随机种子可复现实验；任一输入变化都会生成新 run/digest。  
-  Evidence: 待补。
-- [ ] `V4-002` 将 V1/V2 已可运行的 L0/L1/L2 验证漏斗扩展为标准化批量研究调度；外部回测工具仅通过版本化 connector 接入。  
+  Evidence: [`evidence/v4-001/implementation-2026-09-09.json`](../evidence/v4-001/implementation-2026-09-09.json)。
+- [x] `V4-002` 将 V1/V2 已可运行的 L0/L1/L2 验证漏斗扩展为标准化批量研究调度；外部回测工具仅通过版本化 connector 接入。
+  Status: COMPLETE（2026-09-09；实现提交 `66a4f4f`）。批量计划对候选 fan-out，但每个候选只能按 L0→L1→L2 串行晋级；LevelContract 固定输入语义、用途、限制、必需 artifact、本地 checks 与 gate ref。Connector 固定实现和输入/输出 schema digest，本地已注册 V1 L0/L1 与 V2 L2 实现指纹；V3 StrategyAgentResult 以原始内容 digest 与 PIT lineage 兼容接入。外部摘要只作审计输入，不能产生 LevelEvidence 或推动晋级。
   Acceptance: V3 单候选证据保持兼容；每级输入、语义、用途、限制和晋级门槛可审计；外部摘要不能绕过本地契约。  
-  Evidence: 待补。
-- [ ] `V4-003` 将 V1 基础 walk-forward、成本/滑点 stress、counterfactual 扩展为规模化验证，并新增 Monte Carlo、scenario replay、parameter sweep 和 strategy compare。  
+  Evidence: [`evidence/v4-002/implementation-2026-09-09.json`](../evidence/v4-002/implementation-2026-09-09.json)。
+- [x] `V4-003` 将 V1 基础 walk-forward、成本/滑点 stress、counterfactual 扩展为规模化验证，并新增 Monte Carlo、scenario replay、parameter sweep 和 strategy compare。  
+  Status: COMPLETE（2026-09-09；确定性批量验证 runner、V1/V2 兼容重放和 fail-closed 晋升证据门禁已实现）。  
   Acceptance: V1/V2 基础证据可按兼容契约重放；每类验证产生独立 artifact、warnings 和可复现配置；不完整运行不能进入晋升证据。  
-  Evidence: 待补。
-- [ ] `V4-004` 实现年度/月度/品种/Regime/多空/成本归因、回撤事件、最差交易、参数稳健性和自动 warnings。  
+  Evidence: [`evidence/v4-003/implementation-2026-09-09.json`](../evidence/v4-003/implementation-2026-09-09.json)。
+- [x] `V4-004` 实现年度/月度/品种/Regime/多空/成本归因、回撤事件、最差交易、参数稳健性和自动 warnings。  
+  Status: COMPLETE（2026-09-10；确定性 Decimal 归因、回撤、稳健性与告警报告已实现）。  
   Acceptance: 归因合计与总收益/成本在容差内一致；集中、样本不足和参数不稳定自动告警。  
-  Evidence: 待补。
-- [ ] `V4-005` 扩展 Experiment Manager，支持规模化实验计划、优先级、预算、取消、父子运行、证据汇总和失败恢复。  
+  Evidence: [`evidence/v4-004/implementation-2026-09-10.json`](../evidence/v4-004/implementation-2026-09-10.json)。
+- [x] `V4-005` 扩展 Experiment Manager，支持规模化实验计划、优先级、预算、取消、父子运行、证据汇总和失败恢复。  
+  Status: COMPLETE（2026-09-10；批量父子生命周期、预算门禁、取消、恢复与证据汇总已实现）。  
   Acceptance: Experiment Manager 不能交易、晋升策略或修改风险规则。  
-  Evidence: 待补。
-- [ ] `V4-006` 扩展 Post-trade Reviewer，分别评价 Process Quality、Outcome Quality、执行质量、后续市场路径和可验证原因假设。  
+  Evidence: [`evidence/v4-005/implementation-2026-09-10.json`](../evidence/v4-005/implementation-2026-09-10.json)。
+- [x] `V4-006` 扩展 Post-trade Reviewer，分别评价 Process Quality、Outcome Quality、执行质量、后续市场路径和可验证原因假设。  
+  Status: COMPLETE（2026-09-10；新增 market-path 质量与显式原因假设，保持源事件闭合校验）。  
   Acceptance: 每项评价引用 episode、行情、订单、账本和规则事实；原因解释默认仅为 Reflection。  
-  Evidence: 待补。
-- [ ] `V4-007` 实现 Memory Curator，将 Reflection 变为有验证计划的 `LessonCandidate`，不自行发布 Lesson。  
+  Evidence: [`evidence/v4-006/implementation-2026-09-10.json`](../evidence/v4-006/implementation-2026-09-10.json)。
+- [x] `V4-007` 实现 Memory Curator，将 Reflection 变为有验证计划的 `LessonCandidate`，不自行发布 Lesson。  
+  Status: COMPLETE（2026-09-10；候选字段完整性与内容寻址已实现）。  
   Acceptance: 缺证据需求、适用范围、置信度或过期策略的候选不能提交治理。  
-  Evidence: 待补。
-- [ ] `V4-008` 建立 `Reflection → LessonCandidate → LessonValidation/ValidationEvidence → ValidatedLesson` 派生流水线及各对象独立生命周期，处理冲突、衰减、撤销和再验证。  
+  Evidence: [`evidence/v4-007/implementation-2026-09-10.json`](../evidence/v4-007/implementation-2026-09-10.json)。
+- [x] `V4-008` 建立 `Reflection → LessonCandidate → LessonValidation/ValidationEvidence → ValidatedLesson` 派生流水线及各对象独立生命周期，处理冲突、衰减、撤销和再验证。  
+  Status: COMPLETE（2026-09-10；独立验证、过期和撤销生命周期已实现）。  
   Acceptance: 未验证内容与决策检索隔离；LessonCandidate 与 ValidatedLesson 不共享状态写者；ValidatedLesson 的验证生命周期与 Governance Activation 分离；每次 Lesson 使用可追踪其影响。  
-  Evidence: 待补。
-- [ ] `V4-009` 扩展 V3 基础 Strategy Registry 与晋升门禁：历史初筛、稳健性、样本外、前向模拟、人工批准和独立 Activation，并明确更高阶自治模拟资格。  
+  Evidence: [`evidence/v4-008/implementation-2026-09-10.json`](../evidence/v4-008/implementation-2026-09-10.json)。
+- [x] `V4-009` 扩展 V3 基础 Strategy Registry 与晋升门禁：历史初筛、稳健性、样本外、前向模拟、人工批准和独立 Activation，并明确更高阶自治模拟资格。  
+  Status: COMPLETE（2026-09-10；四阶段证据门禁、人工批准和独立激活已实现）。  
   Acceptance: 跳过任一强制证据阶段的晋升请求被拒绝；只有获得 autonomous-simulation qualification 且在目标范围激活的 Strategy Version 才可被 Mandate 引用；批准、注册和启用是独立审计事件，不是逐笔 PlanApproval。  
-  Evidence: 待补。
-- [ ] `V4-010` 扩展 V3 基础 Agent/Prompt/Model/Toolset Registry：候选、规模化离线评测、批准、启用、回滚、废弃和兼容矩阵。  
+  Evidence: [`evidence/v4-009/implementation-2026-09-10.json`](../evidence/v4-009/implementation-2026-09-10.json)。
+- [x] `V4-010` 扩展 V3 基础 Agent/Prompt/Model/Toolset Registry：候选、规模化离线评测、批准、启用、回滚、废弃和兼容矩阵。  
+  Status: COMPLETE（2026-09-10；版本组合、资格和独立激活门禁已实现）。  
   Acceptance: 任一运行可解析完整版本组合；不兼容、未激活或未取得 autonomous-simulation qualification 的版本不能进入 Mandate 下的自治运行。  
-  Evidence: 待补。
-- [ ] `V4-011` 接入宏观、新闻、库存、期限结构、拥挤度和历史相似案例的 point-in-time Evidence；明确授权与不可信内容边界。  
+  Evidence: [`evidence/v4-010/implementation-2026-09-10.json`](../evidence/v4-010/implementation-2026-09-10.json)。
+- [x] `V4-011` 接入宏观、新闻、库存、期限结构、拥挤度和历史相似案例的 point-in-time Evidence；明确授权与不可信内容边界。  
   Acceptance: 每条证据有来源、许可、发布时间/有效时点和质量；非结构化内容只作为研究数据进入 Agent 提案，不直接成为确定性业务指令或权限。当前范围不要求独立对抗性 Prompt Injection 测试。
-  Evidence: 待补。
-- [ ] `V4-012` 建立衰减/漂移触发器：策略 OOS 衰减、Regime 变化、规则变化、Lesson 过期自动创建 Research/Experiment Request。  
+  Evidence: [`evidence/v4-011/implementation-2026-09-10.json`](../evidence/v4-011/implementation-2026-09-10.json)。
+- [x] `V4-012` 建立衰减/漂移触发器：策略 OOS 衰减、Regime 变化、规则变化、Lesson 过期自动创建 Research/Experiment Request。  
   Acceptance: 触发器幂等、可解释、可暂停；只创建研究任务，不自动修改策略或交易。  
-  Evidence: 待补。
-- [ ] `V4-013` 实现 Governance Agent，只能检查证据完整性并提出 `ChangeProposal/ActivationProposal`。  
+  Evidence: [`evidence/v4-012-013/implementation-2026-09-10.json`](../evidence/v4-012-013/implementation-2026-09-10.json)。
+- [x] `V4-013` 实现 Governance Agent，只能检查证据完整性并提出 `ChangeProposal/ActivationProposal`。  
   Acceptance: Governance Agent 无晋升、启用、回滚或风险政策修改权限；最终决定属于治理服务和用户。  
-  Evidence: 待补。
+  Evidence: [`evidence/v4-012-013/implementation-2026-09-10.json`](../evidence/v4-012-013/implementation-2026-09-10.json)。
 
-Exit：至少一个 Hypothesis 完成历史、稳健性、样本外和前向验证，并产生可审计的 Review、Lesson 或 StrategyCandidate；任何晋升均无绕过。
+Exit：PASS（独立审查 Evidence：`evidence/v4-exit/independent-review-2026-09-10.json`）。V4-003 的确定性验证 runner 可重放完整验证 artifact；V4-006/007/008 形成 Review→LessonCandidate→ValidatedLesson 证据链；V4-009 强制历史、稳健性、样本外和前向四类证据，并将人工批准与独立激活分离；任何晋升均无绕过。研究触发器与 Governance Agent 仍只有研究/提案权限。
 
 ## V5：高保真、组合扩展与离线增强
 

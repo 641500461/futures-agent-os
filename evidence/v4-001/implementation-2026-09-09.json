@@ -1,0 +1,45 @@
+{
+  "task": "V4-001",
+  "status": "COMPLETE",
+  "branch": "codex/v4",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "requested_initial_model": "gpt-5.6-sol/high",
+  "upgrade": {
+    "occurred": true,
+    "profile": "gpt-6-astra/medium",
+    "reason": "Repeated Sol capacity failures; Astra worker implemented adapter, coordinator integrated remaining fixes. Actual telemetry NOT_EXPOSED."
+  },
+  "reviewer_model": "NOT_EXPOSED",
+  "validation": {
+    "command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+    "result": "PASS",
+    "contract": 797,
+    "property": 9,
+    "schema": 2,
+    "unit": 1,
+    "scope": "make check PASS; nine focused cases, including four initially failing JSON roundtrip cases now passing"
+  },
+  "implemented": [
+    "typed refs and immutable plan config/seed/environment",
+    "engine fingerprint pinned to shipped V1 validation_tools and walk_forward source",
+    "exact V1 snapshot/request/tools adapter with real metrics",
+    "dataset/rule/cost/config/engine binding rejection",
+    "NON_REPRODUCIBLE status for missing code/image/resource/strategy refs",
+    "replay and sensitivity contract coverage",
+    "ExperimentPlan/BacktestRun/ArtifactManifest hydrate from canonical JSON with digest validation",
+    "explicit hypothesis/universe/feature_graph/split refs",
+    "toolset and authority identity included in input digest",
+    "full snapshot/plan/request/run envelope, independent-process replay and verified semantic results stable under result-key rotation"
+  ],
+  "remaining": [],
+  "commit": "b8767aa",
+  "reviewer_status": "PASS",
+  "review_findings": "Five original findings resolved; independent review PASS on d03427c. Missing explicit refs subsequently fail reproducibility qualification.",
+  "commit_scope": "reviewed implementation plus missing-reference NON_REPRODUCIBLE tightening verified by full check",
+  "reviewer_reasoning_effort": "NOT_EXPOSED",
+  "acceptance": "PASS",
+  "review_commit": "d03427c",
+  "reviewer_requested_profile": "gpt-5.6-sol/high",
+  "reviewer_identity": "/root/v4_001_reviewer"
+}

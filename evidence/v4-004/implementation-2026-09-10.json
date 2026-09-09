@@ -1,0 +1,24 @@
+{
+  "task": "V4-004",
+  "status": "COMPLETE",
+  "implementation_model": "gpt-6-astra",
+  "implementation_reasoning_effort": "medium",
+  "reviewer_model": "gpt-6-astra",
+  "reviewer_reasoning_effort": "medium",
+  "worker_route": "gpt-5.6-sol/high requested; worker unavailable due model capacity, coordinator implemented and reviewed",
+  "upgrade": true,
+  "upgrade_reason": "default Sol/high execution route failed twice due capacity; coordinator took over to complete authorized task",
+  "implementation": "Added immutable attribution source/trade contracts and deterministic analyzer for UTC year/month, instrument, regime, side and cost attribution; closed-observation drawdown events; worst trades; parameter robustness bound to V4-003 PARAMETER_SWEEP; concentration, sample shortage, cost sensitivity, data gap, rollover and parameter instability warnings; JSON/HTML serialization. Added V4-003 FrozenValidationDataset adapter.",
+  "acceptance": {
+    "reconciliation": "gross - cost = net and every dimension/cost table reconciles within Decimal tolerance",
+    "warnings": "concentration, sample shortage, parameter instability and cost/data/rollover diagnostics covered by contract tests",
+    "research_boundary": "report is research evidence only and has no trading or promotion authority"
+  },
+  "tests": {
+    "targeted": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v4_004_attribution.py",
+    "targeted_result": "5 passed",
+    "full": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+    "full_result": "818 contract, 9 property, 2 schema, 1 unit passed; ruff, mypy, secret scan, health passed"
+  },
+  "model_output_not_authoritative": "Acceptance was decided by deterministic Decimal reconciliation, explicit source binding and reproducible tests."
+}
