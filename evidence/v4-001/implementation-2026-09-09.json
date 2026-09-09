@@ -6,12 +6,11 @@
   "implementation_reasoning_effort": "NOT_EXPOSED",
   "requested_initial_model": "gpt-5.6-sol/high",
   "upgrade": {
-    "occurred": false,
-    "reason": "Repeated Sol capacity errors; Astra/medium dispatch also failed capacity, retry dispatched; successful execution is not yet proven",
+    "occurred": true,
     "profile": "gpt-6-astra/medium",
-    "dispatch_attempted": true
+    "reason": "Repeated Sol capacity failures; Astra worker implemented adapter, coordinator integrated remaining fixes. Actual telemetry NOT_EXPOSED."
   },
-  "reviewer_model": "gpt-5.6-sol",
+  "reviewer_model": "NOT_EXPOSED",
   "validation": {
     "command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
     "result": "PASS",
@@ -31,13 +30,16 @@
     "ExperimentPlan/BacktestRun/ArtifactManifest hydrate from canonical JSON with digest validation",
     "explicit hypothesis/universe/feature_graph/split refs",
     "toolset and authority identity included in input digest",
-    "run result stores serialized plan, snapshot identity envelope, and request payload"
+    "full snapshot/plan/request/run envelope, independent-process replay and verified semantic results stable under result-key rotation"
   ],
   "remaining": [],
-  "commit": "d03427c",
+  "commit": "b8767aa",
   "reviewer_status": "PASS",
-  "review_findings": "Prior findings addressed in c012b36; awaiting rerun verdict",
-  "commit_scope": "baseline before hydration correction; correction tests and code included with this evidence update",
-  "reviewer_reasoning_effort": "high",
-  "acceptance": "PASS"
+  "review_findings": "Five original findings resolved; independent review PASS on d03427c. Missing explicit refs subsequently fail reproducibility qualification.",
+  "commit_scope": "reviewed implementation plus missing-reference NON_REPRODUCIBLE tightening verified by full check",
+  "reviewer_reasoning_effort": "NOT_EXPOSED",
+  "acceptance": "PASS",
+  "review_commit": "d03427c",
+  "reviewer_requested_profile": "gpt-5.6-sol/high",
+  "reviewer_identity": "/root/v4_001_reviewer"
 }

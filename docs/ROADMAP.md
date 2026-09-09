@@ -331,8 +331,8 @@ Exit：PASS（独立审查 Evidence：`evidence/v3-exit/independent-review-2026-
 
 目标：形成“发现未知 → 提出假设 → 分级验证 → 前向实验 → 交易复盘 → 验证 Lesson → 策略晋升”的证据闭环。
 
-- [ ] `V4-001` 定义统一 `ExperimentPlan`、`BacktestRun`、Dataset/Rule/Cost/Engine/Model/Prompt refs 和 artifact manifest。
-  Status: COMPLETE（2026-09-09；实现提交 `d03427c`、`fbce7c4`、`c012b36`、`aa3f7bd`、`9d2b902`、`e36df55`、`fbe3081`、`f9ac14b`、`b1b638e`、`a87220a`、`bcac69d`、`c012b36`、`d03427c`、`fbce7c4`、`c012b36`、`d03427c`、`fbce7c4`、`c012b36`、`d03427c`；最终工作树提交见 Evidence）。
+- [x] `V4-001` 定义统一 `ExperimentPlan`、`BacktestRun`、Dataset/Rule/Cost/Engine/Model/Prompt refs 和 artifact manifest。
+  Status: COMPLETE（2026-09-09；`codex/v4`，实现 `b8767aa`，独立复核基线 `d03427c`）。
   Depends: V1–V3。  
   Acceptance: 固定所有 refs 与随机种子可复现实验；任一输入变化都会生成新 run/digest。  
   Evidence: [`evidence/v4-001/implementation-2026-09-09.json`](../evidence/v4-001/implementation-2026-09-09.json)。

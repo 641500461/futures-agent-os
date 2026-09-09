@@ -1,20 +1,14 @@
-## V4-001 修正（2026-09-09）
-
-独立复核保持 REJECT。四个显式研究引用在 JSON hydrate 时丢失的反例已先复现、后修复；九项 V4-001 定向测试通过，全量 make check 为 797 contract、9 property、2 schema、1 unit。完整 snapshot/request 重启重建、authority 凭据轮换对语义重放的影响，以及新增引用的实际绑定尚未证明；V4-001 已 COMPLETE；独立 reviewer 基于最新实现 PASS。以下历史“只待 review”描述由本节取代。
-
-## V4-001 最新验证（2026-09-09）
-
-真实 V1 run_snapshot_suite 适配已落地，采用真实 MarketSnapshot/ValidationRunRequest 的指标一致性与 hydrate 重放测试通过。执行前核对 dataset/rule/cost refs 和 config；manifest entries 脱离调用方可变列表。`make check` 通过（793 contract、9 property、2 schema、1 unit）。引擎 fingerprint、真实计算重放、引用/seed/model/prompt 敏感性与 NON_REPRODUCIBLE 信封状态已补齐；`make check` 通过（793 contract、9 property、2 schema、1 unit）。仍需独立 V4-001 review 后才能标记 COMPLETE；Sol reviewer dispatch 当前因 429 容量失败。实现已提交 `2944bc9`。旧容量错误不是当前开发阻塞。
-
-## V4 启动（2026-09-09）
-
-已创建工作分支 `codex/v4`，V3 Exit 已通过。当前启动任务为 `V4-001`，目标是统一 ExperimentPlan/BacktestRun 及不可变 artifact manifest。开发模型按 `DEVELOPMENT-MODEL-POLICY.md` 路由：统筹与最终整合 GPT-6 Astra/medium，V4-001 常规实现 GPT-5.6 Sol/high；宿主 telemetry 未暴露时 Evidence 记录 `NOT_EXPOSED`。
-
-## V4-001 验收进展（2026-09-09）
-
-现有基础契约及全量 `UV_CACHE_DIR=/tmp/fao-uv-cache make check` 通过（792 contract、9 property、2 schema、1 unit），但这些测试尚未证明冻结 refs/config 驱动真实实验计算，任务不得标记完成。Sol/high 执行任务重复因容量错误终止，已按用户授权路由至 `gpt-6-astra/medium` 执行身份 `/root/v4_001_astra`；继续补齐真实计算适配与 Evidence。Astra/medium 首次派发容量错误，重试已结束但未修改代码；当前没有运行中的开发执行身份。执行阻塞记录见 `evidence/v4-001/implementation-2026-09-09.json`。
-
 # 跨对话交接
+
+## V4 当前状态（2026-09-09）
+
+`codex/v4` 已创建，首个任务 `V4-001` COMPLETE。实现提交 `b8767aa`；独立 Sol/high 执行身份 `/root/v4_001_reviewer` 对 `d03427c` 给出 PASS，精确 runtime telemetry 为 `NOT_EXPOSED`。随后缺失显式研究引用统一标记 NON_REPRODUCIBLE 的收紧已通过完整门禁。验证：9 项 V4-001 定向测试，全量 797 contract、9 property、2 schema、1 unit，ruff/mypy/secret scan/health 通过。
+
+已证明：完整 snapshot/request/plan/run JSON 重建、IANA 时区保留、独立进程重放 digest 一致、真实 V1 计算及成本数值敏感性、结果签名密钥轮换不改变语义结果、显式引用 roundtrip 与输入绑定。证据：`evidence/v4-001/implementation-2026-09-09.json`。V4-002 尚未开始；本轮仅完成已启动的 V4-001，V4 Exit 尚未通过。
+
+开发路由：统筹/最终整合和重复卡点接管为 GPT-6 Astra/medium；常规开发 Sol/high，交易/状态关键开发 Sol/xhigh；版本 Exit 独立 Sol 复核。开发路由不启用产品运行时 ModelProfile。研究与模拟边界保持。
+
+
 
 ## V3 当前开发状态（2026-09-09）
 
