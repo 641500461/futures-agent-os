@@ -411,6 +411,12 @@ def execute_backtest(plan: ExperimentPlan, inputs: object) -> BacktestRun:
     if plan.cost_ref.content_sha256 != canonical_sha256(costs):
         raise ValueError("cost reference must bind exact cost assumptions")
     results = tools.run_snapshot_suite(snapshot, request)
+    tools.verify_results(results)
+    # Signature material authenticates the owner response, not experimental facts.
+    # Verify it before recording stable scientific payloads; never freeze credentials.
+    semantic_results = tuple(
+        {key: value for key, value in result.to_dict().items() if key != "authority_proof"} for result in results
+    )
     required_environment = ("code_commit", "runtime_image", "resource_spec")
     missing = tuple(key for key in required_environment if not plan.environment.get(key))
     if plan.strategy_ref is None:
@@ -422,7 +428,7 @@ def execute_backtest(plan: ExperimentPlan, inputs: object) -> BacktestRun:
         "plan": plan.to_dict(),
         "snapshot": snapshot_to_json(snapshot),
         "request": cast(JsonValue, request.to_dict()),
-        "results": tuple(result.to_dict() for result in results),
+        "results": semantic_results,
         "request_sha256": request.content_sha256,
         "toolset_version": "research-validation.v1",
         "authority_ids": (

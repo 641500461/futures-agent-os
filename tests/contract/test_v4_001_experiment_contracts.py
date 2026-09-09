@@ -162,7 +162,10 @@ def test_real_v1_metrics_replay():
     replay = replay_backtest(plan, run, (frozen, ValidationRunRequest.hydrate(request.to_dict()), tools))
     assert replay.result == run.result
     assert replay.run_id == run.run_id
-    assert run.result["results"] == tuple(item.to_dict() for item in tools.run_snapshot_suite(frozen, request))
+    assert run.result["results"] == tuple(
+        {key: value for key, value in item.to_dict().items() if key != "authority_proof"}
+        for item in tools.run_snapshot_suite(frozen, request)
+    )
     assert any(item["metrics"] for item in run.result["results"])
 
     assert run.result["reproducibility"] == "REPRODUCIBLE"
@@ -181,6 +184,11 @@ def test_real_v1_metrics_replay():
     assert changed_seed.run_id != run.run_id
     assert changed_seed.result["results"] == run.result["results"]  # V1 has no random computation.
 
+    rotated_tools = DeterministicResearchTools(
+        feature, memory, experiment, TrustedResearchToolsPort(b"rotated-result-test-owner-0123456789")
+    )
+    rotated = replay_backtest(plan, run, (frozen, request, rotated_tools))
+    assert rotated.content_sha256 == run.content_sha256
     expensive = replace(config, round_trip_cost_bps=Decimal("0.25"))
     expensive_request = replace(
         request, config=expensive, query_scope=replace(scope, config_sha256=expensive.content_sha256)
