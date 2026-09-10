@@ -809,6 +809,18 @@ from .model_evaluation_pipeline import (
     TrainingMethod,
     assess_controlled_sft,
 )
+from .offline_rl_research import (
+    GovernanceApproval as OfflineRlGovernanceApproval,
+    OfflineRlActivation,
+    OfflineRlEvaluation,
+    OfflineRlModule,
+    OfflineRlPlan,
+    OfflineRlRecord,
+    OfflineRlResearchRegistry,
+    OfflineRlState,
+    ResearchReview as OfflineRlResearchReview,
+    RuntimeLane as OfflineRlRuntimeLane,
+)
 
 __all__ += [
     "ChangeProposal",
@@ -835,4 +847,14 @@ __all__ += [
     "TrainingDatasetEvidence",
     "TrainingMethod",
     "assess_controlled_sft",
+    "OfflineRlGovernanceApproval",
+    "OfflineRlActivation",
+    "OfflineRlEvaluation",
+    "OfflineRlModule",
+    "OfflineRlPlan",
+    "OfflineRlRecord",
+    "OfflineRlResearchRegistry",
+    "OfflineRlState",
+    "OfflineRlResearchReview",
+    "OfflineRlRuntimeLane",
 ]
