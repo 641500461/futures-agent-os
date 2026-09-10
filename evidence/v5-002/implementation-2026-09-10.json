@@ -1,0 +1,18 @@
+{
+  "task": "V5-002",
+  "status": "IN_PROGRESS",
+  "implementation_model": "gpt-6-astra",
+  "implementation_reasoning_effort": "medium",
+  "reviewer_model": "NOT_EXPOSED",
+  "reviewer_reasoning_effort": "NOT_EXPOSED",
+  "implementation": "Added immutable BookUpdate/BookSide with strict sequence and gap checks, queue-ahead deduction, depth-conserving partial fill and impact result.",
+  "tests": {
+    "targeted": "uv run pytest tests/contract/test_v5_002_order_book.py -q",
+    "result": "2 passed",
+    "mypy": "passed",
+    "ruff": "passed"
+  },
+  "limitations": [
+    "No truth-sample calibration or full Level-3 order lifecycle yet; V5-002 remains IN_PROGRESS."
+  ]
+}
