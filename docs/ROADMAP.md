@@ -424,9 +424,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v4-exit/independent-review-2026-
   Status: COMPLETE（2026-09-11；封闭三类低维模块、冻结研究计划、离线评测、独立研究评审、治理批准和人工 Activation 门禁已实现）。
   Acceptance: 未经单独研究评审和治理批准，不进入默认运行路径。  
   Evidence: [`evidence/v5-009/implementation-2026-09-11.json`](../evidence/v5-009/implementation-2026-09-11.json)。
-- [ ] `V5-010` 完成 SLO、容量、背压、限流、熔断、备份、恢复、灾难演练和 runbook；多用户权限审计与对抗性安全演练不在当前范围。
+- [x] `V5-010` 完成 SLO、容量、背压、限流、熔断、备份、恢复、灾难演练和 runbook；多用户权限审计与对抗性安全演练不在当前范围。
+  Status: COMPLETE（2026-09-11；正式 SLO/容量与恢复 policy、并发安全控制器、故障注入、真实隔离 PostgreSQL PITR 和主要故障 runbook 已完成）。
   Acceptance: 关键 SLO 有测量与告警；RTO/RPO、备份恢复和主要故障 runbook 均完成演练。  
-  Evidence: 待补。
+  Evidence: [`evidence/v5-010/implementation-2026-09-11.json`](../evidence/v5-010/implementation-2026-09-11.json)。
 - [ ] `V5-011` 完成 30 天稳定性运行和故障演练。  
   Acceptance: 无未解释重复交易、无无保护持仓、无审计链断点；全部事故可恢复并有报告。  
   Evidence: 待补。

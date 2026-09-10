@@ -1,0 +1,39 @@
+{
+  "task": "V5-010",
+  "status": "COMPLETE",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "reviewer_model": "NOT_EXPOSED",
+  "reviewer_reasoning_effort": "NOT_EXPOSED",
+  "independent_version_exit_review": false,
+  "upgrade": false,
+  "commit": "c5863b7",
+  "implementation": "Established typed SLO measurement windows and alerts, a concurrency-safe capacity controller with critical reserves/backpressure/rate limiting, a concurrency-safe dependency circuit breaker, fail-closed RPO/RTO recovery contracts, executable control/PITR drills, and the V5-010 operations runbook.",
+  "tests": {
+    "targeted": "uv run pytest -q tests/contract/test_v5_010_operational_reliability.py tests/property/test_v5_010_operational_properties.py tests/contract/test_v2_011_fault_injection.py tests/contract/test_v2_010_replay.py",
+    "targeted_result": "28 passed",
+    "v5_regression": "uv run pytest -q tests/contract/test_v5_001_tick_replay.py tests/contract/test_v5_002_order_book.py tests/contract/test_v5_003_paper_adapter.py tests/contract/test_v5_004_algorithms.py tests/contract/test_v5_005_exposure.py tests/contract/test_v5_006_calibration.py tests/contract/test_v5_007_governance_steward.py tests/contract/test_v5_008_model_evaluation_pipeline.py tests/contract/test_v5_009_offline_rl_research.py tests/contract/test_v5_010_operational_reliability.py",
+    "v5_regression_result": "90 passed",
+    "full_gate": "make check",
+    "full_gate_result": "lock, format, ruff, mypy over 170 source files, audited secret scan, 2 schema, 1 unit, 20 property, 918 contract, and health passed"
+  },
+  "drills": {
+    "control_drills": "control-drills-2026-09-11.json: PASS; 7/7 SLO breaches alerted, 48 background slots stopped at the critical reserve, 16 protection slots remained available, backlog shedding/rate limiting/circuit recovery passed.",
+    "postgresql_pitr": "postgresql-pitr-drill-2026-09-11.json: PASS on isolated PostgreSQL 17.11; full migration plus base backup/WAL archive restored the target command and excluded the post-target command; observed RPO 0 seconds and RTO 0.15122183365747333 seconds; restored mode PROTECT_ONLY.",
+    "non_empty_business_recovery": "V2 fault/replay contract tests restore file-backed orders, fills, protection and append-only accounting state and verify replay reconciliation; these tests prevent extrapolating the PITR drill's explicit EMPTY_TRADING_STATE scope."
+  },
+  "acceptance_mapping": {
+    "slo_measurement_and_alerts": "Seven critical objectives bind typed MetricSample windows, nearest-rank percentile or maximum thresholds, minimum sample counts, runbook references and impact scopes; insufficient and breached windows alert.",
+    "capacity_backpressure_rate_limit": "A versioned single-host profile enforces per-workload in-flight/backlog/rate/burst limits and reserves 16 of 64 slots for Protection/Settlement/Gateway/Outbox; concurrent admission cannot oversubscribe limits.",
+    "circuit_breaker": "Dependency failures deterministically open the circuit, deny calls during timeout, admit only bounded half-open probes and close only after success.",
+    "backup_restore_disaster_drill": "The executable isolated-cluster drill performs actual pg_basebackup, continuous WAL archive and transaction-target PITR, verifies manifest/schema/retained/excluded commands, performs explicit empty-state reconciliations and never touches an existing database.",
+    "rpo_rto": "Policy fixes accepted local command RPO=0, database disaster RPO<=300 seconds, restart RTO<=60 seconds and disaster RTO<=3600 seconds; recovery always begins PROTECT_ONLY and forbids old receipt reuse.",
+    "runbooks": "docs/V5-010-OPERATIONS-RUNBOOK.md defines SLOs, capacity, backup retention, five recovery gates and exercised response procedures for database loss, overload, connector failure, ledger/protection failure and missing/breached SLO data."
+  },
+  "limitations": [
+    "The PITR drill uses an explicit empty trading state; non-empty business recovery is separately proven by deterministic V2 fault/replay tests.",
+    "Synthetic breach samples prove alert behavior, not 30-day sim-prod SLO compliance. V5-011 must collect real continuous measurements and cannot reuse this drill as a substitute.",
+    "All runtime and recovery authority remains research/simulation-only; recovery never enables real order routing."
+  ],
+  "model_output_not_authoritative": "Capacity, circuit, SLO and recovery decisions are deterministic policy outcomes; human gates remain required to leave PROTECT_ONLY/HALTED."
+}

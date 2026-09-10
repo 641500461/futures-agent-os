@@ -1,8 +1,8 @@
 # V5 当前状态
 
-`codex/v5` 已从 V4 完成基线切出。V5-001～V5-009 已完成并有实现 Evidence；V5-010 为当前活动任务，其余 V5 项保持未验收。V5-009 在提交 `20b6f9b` 建立封闭的 Offline RL 研究边界：只允许执行、组合配置、仓位调整三类低维模块，冻结数据/行为策略/评测协议/代码/环境/种子；离线评测、研究评审、治理批准和人工 Activation 严格分离，且只解析到精确获批的模拟通道和作用域。Offline RL 产物没有 Order、TradePlan、RiskDecision 或高层 Agent 权限，确定性服务仍为真值所有者。实现宿主的精确 model/effort telemetry 未暴露，版本 Exit 仍需由未主导实现的独立 Sol 审查。
+`codex/v5` 已从 V4 完成基线切出。V5-001～V5-010 已完成并有实现 Evidence；V5-011 为当前活动任务，V5-012 尚未验收。V5-010 在提交 `c5863b7` 建立 typed SLO 窗口/告警、并发安全的容量保留/背压/限流和 dependency circuit breaker，并固化 RPO/RTO、PROTECT_ONLY 恢复门禁及可执行 runbook。真实隔离 PostgreSQL 17.11 演练执行 full migration、base backup、WAL archive 和 transaction-target PITR，保留目标事务、排除之后事务，观测 RPO=0 秒、RTO≈0.151 秒；范围明确为 EMPTY_TRADING_STATE，非空订单/账本/保护恢复另由 V2 fault/replay 契约证明。实现宿主的精确 model/effort telemetry 未暴露，版本 Exit 仍需由未主导实现的独立 Sol 审查。
 
-V5-009 收口时 `make check` 全绿（909 contract、19 property、2 schema、1 unit），V5-001～009 回归 81 项通过。定向契约证明高层 Agent 类型不可表示，维度上限、冻结数据摘要、失败评测、拒绝评审、非人工审批、跳步 Activation 和错误 runtime lane 均 fail closed。V5-010 需完成 SLO、容量/背压/限流/熔断以及备份恢复和灾难演练；V5-011 的 30 天稳定性运行必须以真实连续运行记录证明，当前尚未开始，不可用快速回放或缩短时间替代。
+V5-010 收口时 `make check` 全绿（918 contract、20 property、2 schema、1 unit），V5-001～010 回归 90 项通过；控制与业务恢复组合定向 28 项通过。control drill 的 7/7 SLO 越界均告警，48 个后台槽达到保留线后仍有 16 个 Protection 槽可用，backlog/rate/circuit 故障均按 policy 收口。V5-011 的 30 天稳定性运行必须从现在开始以真实连续运行记录证明；synthetic SLO breach、快速回放或缩短时间都不能替代。
 
 # 跨对话交接
 
