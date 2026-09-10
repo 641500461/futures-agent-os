@@ -1,18 +1,39 @@
 {
   "task": "V5-002",
-  "status": "IN_PROGRESS",
-  "implementation_model": "gpt-6-astra",
-  "implementation_reasoning_effort": "medium",
+  "status": "COMPLETE",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
   "reviewer_model": "NOT_EXPOSED",
   "reviewer_reasoning_effort": "NOT_EXPOSED",
-  "implementation": "Added immutable BookUpdate/BookSide with strict sequence and gap checks, queue-ahead deduction, depth-conserving partial fill and impact result.",
+  "independent_version_exit_review": false,
+  "upgrade": false,
+  "commit": "8a97190",
+  "implementation": "Implemented immutable L4 book snapshots and consecutive timestamped depth/trade events, price-priority aggressive depth walking, price-time resting queue replay, canonical deterministic Fill production, partial-order lifecycle updates, explicit fidelity/model identity, depth-walk market impact, and content-addressed replay results.",
+  "queue_model_assumptions": [
+    "A simulated resting order joins behind displayed quantity at its limit price.",
+    "New displayed quantity joins behind the simulated order.",
+    "Depth reductions remove queue-behind before queue-ahead; trade events consume queue-ahead, the simulated order, queue-behind, then unmatched quantity.",
+    "The model is L4 research/simulation evidence and does not claim actual exchange queue priority."
+  ],
   "tests": {
-    "targeted": "uv run pytest tests/contract/test_v5_002_order_book.py -q",
-    "result": "2 passed",
-    "mypy": "passed",
-    "ruff": "passed"
+    "targeted": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v5_002_order_book.py tests/property/test_v5_002_order_book_properties.py -q",
+    "targeted_result": "10 passed",
+    "v5_regression": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v5_001_tick_replay.py tests/contract/test_v5_002_order_book.py tests/contract/test_v5_003_paper_adapter.py tests/contract/test_v5_004_algorithms.py tests/contract/test_v5_005_exposure.py tests/contract/test_v5_006_calibration.py -q",
+    "v5_regression_result": "31 passed",
+    "full_gate": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+    "full_gate_result": "lock, format, ruff, mypy, secret scan, 2 schema, 1 unit, 11 property, 859 contract, and health passed"
+  },
+  "acceptance_mapping": {
+    "queue_conservation": "Every QueueTransition enforces trade = ahead-consumed + own-fill + behind-consumed + unmatched and ahead-before = ahead-consumed + ahead-after; randomized property tests cover queue sizes and trade volumes.",
+    "depth_conservation": "Every DepthConsumption enforces before = consumed + after; randomized property tests prove total aggressive fills never exceed eligible displayed depth.",
+    "partial_fill_truth": "tests/fixtures/v5_002_order_book_truth.json freezes a synthetic golden snapshot/event stream with expected queue-ahead path, two partial fills, and remaining quantity.",
+    "market_impact": "Aggressive replay records best-price-to-VWAP adverse impact and basis points while preserving per-level consumption.",
+    "determinism_and_anomalies": "Same sample/order/config yields identical replay digest and Fill IDs; sequence gaps/order and clock regression fail closed."
   },
   "limitations": [
-    "No truth-sample calibration or full Level-3 order lifecycle yet; V5-002 remains IN_PROGRESS."
-  ]
+    "The checked-in truth sample is a synthetic golden oracle for deterministic semantics, not a claim of exchange-specific queue calibration.",
+    "Exchange-specific calibration and paper-vs-replay error intervals remain V5-006.",
+    "Research and simulation only; no real order routing."
+  ],
+  "model_output_not_authoritative": "Roadmap Acceptance is decided by deterministic contracts, property tests, the frozen truth oracle, and the full repository gate."
 }
