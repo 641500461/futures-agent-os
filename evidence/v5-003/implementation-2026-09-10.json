@@ -1,0 +1,44 @@
+{
+  "task": "V5-003",
+  "status": "COMPLETE",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "reviewer_model": "NOT_EXPOSED",
+  "reviewer_reasoning_effort": "NOT_EXPOSED",
+  "independent_version_exit_review": false,
+  "upgrade": false,
+  "commit": "eabf3c6",
+  "implementation": "Implemented an L5 connector-neutral paper adapter with immutable versioned capability manifests, outbound canonical Order mapping, inbound external Fill normalization, exact local/external order and fill-set reconciliation, deterministic imported Fill identities, connector health outcomes, and fail-closed unsupported behavior.",
+  "tqsim_manifest": {
+    "runtime_version_policy": "must be supplied explicitly by deployment; never guessed",
+    "documentation_url": "https://doc.shinnytech.com/tqsdk/latest/reference/tqsdk.sim.html",
+    "verified_at": "2026-09-10",
+    "documented_limitations": [
+      "limit order requires an opposing price and does not fill without an opponent",
+      "market order auto-cancels without an opponent",
+      "simulated fills are all-or-none and do not support partial fills",
+      "TqSim evidence is L5 Paper and cannot be labeled L3/L4 high fidelity"
+    ]
+  },
+  "tests": {
+    "targeted": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v5_003_paper_adapter.py -q",
+    "targeted_result": "12 passed",
+    "v5_regression": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v5_001_tick_replay.py tests/contract/test_v5_002_order_book.py tests/contract/test_v5_003_paper_adapter.py tests/contract/test_v5_004_algorithms.py tests/contract/test_v5_005_exposure.py tests/contract/test_v5_006_calibration.py -q",
+    "v5_regression_result": "41 passed",
+    "full_gate": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+    "full_gate_result": "lock, format, ruff, mypy, secret scan, 2 schema, 1 unit, 11 property, 869 contract, and health passed"
+  },
+  "acceptance_mapping": {
+    "outbound_order": "PaperOrderIntent binds local typed order ID, external client order ID, instrument, direction, quantity, prices, idempotency key, and connector manifest digest without claiming venue acceptance.",
+    "inbound_fills": "External fills are validated for exact order/instrument/direction, quantity closure and unique IDs before deterministic conversion to canonical immutable Fill facts.",
+    "bidirectional_reconciliation": "Local Order plus complete local Fill set are compared against external Order plus complete external Fill set for mapping, quantity, lifecycle status, contract identity and cross-system totals.",
+    "fail_closed": "UNKNOWN state, UNKNOWN/DEGRADED connector health, missing order quantity, mismatches, duplicate fills, and unsupported TqSim partial-fill claims all set can_assume_success=false.",
+    "model_limitations": "Every adapter has a content-addressed L5 manifest; TqSim official limitations and explicit runtime version are retained."
+  },
+  "limitations": [
+    "No real-money or broker routing is present; this adapter is research/simulation only.",
+    "Live TqSdk connectivity requires deployment credentials and runtime package/version verification; local Acceptance covers the connector boundary, translations, and reconciliation semantics.",
+    "Paper-vs-replay calibration remains V5-006."
+  ],
+  "model_output_not_authoritative": "Completion is determined by typed contracts, fail-closed tests, full-set reconciliation checks, official capability evidence, and repository gates."
+}

@@ -396,9 +396,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v4-exit/independent-review-2026-
   Status: COMPLETE（2026-09-10；冻结订单簿快照/事件、价格时间队列模型、逐档深度消耗、规范 Fill、部分成交和可审计冲击已实现）。
   Acceptance: 队列/深度守恒、成交不超可用流动性，并用带真值样本验证队列与部分成交。  
   Evidence: [`evidence/v5-002/implementation-2026-09-10.json`](../evidence/v5-002/implementation-2026-09-10.json)。
-- [ ] `V5-003` 实现 L5 Paper Trading adapter，包括 TqSim/其他外部模拟源，并显式标注模型限制。  
+- [x] `V5-003` 实现 L5 Paper Trading adapter，包括 TqSim/其他外部模拟源，并显式标注模型限制。
+  Status: COMPLETE（2026-09-10；connector-neutral 出站映射、规范 Fill 转换、双向对账、健康降级和版本化 TqSim 能力清单已实现）。
   Acceptance: 外部订单/成交与本地状态可双向对账；未知或不支持行为不会伪装为成功。  
-  Evidence: 待补。
+  Evidence: [`evidence/v5-003/implementation-2026-09-10.json`](../evidence/v5-003/implementation-2026-09-10.json)。
 - [ ] `V5-004` 实现 TWAP、VWAP、Iceberg、分批建仓/退出和执行算法对比。  
   Acceptance: Agent 只选择或建议已注册算法；确定性系统执行。  
   Evidence: 待补。
