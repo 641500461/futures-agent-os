@@ -1,8 +1,8 @@
 # V5 当前状态
 
-`codex/v5` 已从 V4 完成基线切出。V5-001～V5-004 已于 2026-09-10 完成并有实现 Evidence；V5-005 为下一项活动任务，其余 V5 项保持未验收。早期提交在 V5-005～006 创建了孤立基础函数，未证明完整 Acceptance，不可据此声明组合/校准能力已完成。V5-004 在提交 `3613c1a` 完成 TWAP、VWAP、Iceberg、分批建仓/退出，版本化 Registry 与人工 Activation、proposal-only Agent 推荐和确定性 Planner；旧 V3 Market/Limit/Stop Advisor 边界保持不变。实现宿主的精确 model/effort telemetry 未暴露，版本 Exit 仍需由未主导实现的独立 Sol 审查。
+`codex/v5` 已从 V4 完成基线切出。V5-001～V5-005 已于 2026-09-10 完成并有实现 Evidence；V5-006 为下一项活动任务，其余 V5 项保持未验收。V5-006 的早期校准函数未证明完整 Acceptance，不可据此声明高保真偏差评估已完成。V5-005 在提交 `b4d8cb9` 完成多账户/策略/品种/板块/方向/期限/相关性簇的净额与 gross 汇总、跨期腿与换月成本、组合边界以及账户/策略资本分配；集中度以 gross 校验，不能用多空净额掩盖。实现宿主的精确 model/effort telemetry 未暴露，版本 Exit 仍需由未主导实现的独立 Sol 审查。
 
-V5-004 收口时 `make check` 全绿（874 contract、13 property、2 schema、1 unit）。高级算法以整手最大余数法精确守恒父数量；激活摘要或版本 stale、进出方向不适用、切片越界、Iceberg 容量不足均 fail closed。TqSim 仍只能标识为 L5 Paper。V5-011 的 30 天稳定性运行必须以真实连续运行记录证明，当前尚未开始，不可用快速回放或缩短时间替代。
+V5-005 收口时 `make check` 全绿（885 contract、17 property、2 schema、1 unit）。属性测试覆盖随机净/总额守恒、相关性簇 gross、换月成本闭合和相关性集中比例边界；资本超配、组合/账户/策略/板块/期限/相关性限额均 fail closed。V5-011 的 30 天稳定性运行必须以真实连续运行记录证明，当前尚未开始，不可用快速回放或缩短时间替代。
 
 # 跨对话交接
 

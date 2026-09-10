@@ -404,9 +404,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v4-exit/independent-review-2026-
   Status: COMPLETE（2026-09-10；版本化注册/人工激活、proposal-only 推荐和确定性整手子单计划已实现）。
   Acceptance: Agent 只选择或建议已注册算法；确定性系统执行。  
   Evidence: [`evidence/v5-004/implementation-2026-09-10.json`](../evidence/v5-004/implementation-2026-09-10.json)。
-- [ ] `V5-005` 实现多账户、多策略、相关性簇、板块/方向/期限暴露、跨期、换月成本和资本分配。  
+- [x] `V5-005` 实现多账户、多策略、相关性簇、板块/方向/期限暴露、跨期、换月成本和资本分配。
+  Status: COMPLETE（2026-09-10；多维净/总暴露、跨期腿、换月成本、组合边界和资本分配已实现）。
   Acceptance: 子账户/策略暴露可汇总到组合；净额、相关性、换月和集中度边界有属性测试。  
-  Evidence: 待补。
+  Evidence: [`evidence/v5-005/implementation-2026-09-10.json`](../evidence/v5-005/implementation-2026-09-10.json)。
 - [ ] `V5-006` 建立高保真校准：Backtest/Replay 与 Paper 的成交、滑点、PnL 和容量偏差评估。  
   Acceptance: 每个 FillModel 有校准数据、误差区间、适用范围和禁止外推范围。  
   Evidence: 待补。
