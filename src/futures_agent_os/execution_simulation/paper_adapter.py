@@ -1,4 +1,5 @@
 """Paper trading reconciliation adapter; never treats unknown states as success."""
+
 from dataclasses import dataclass
 from enum import StrEnum
 

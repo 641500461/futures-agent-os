@@ -389,6 +389,7 @@ Exit：PASS（独立审查 Evidence：`evidence/v4-exit/independent-review-2026-
 目标：在数据允许时提高成交与组合真实性，建设受控离线模型增强和长期运营能力；仍不接真实交易。
 
 - [ ] `V5-001` 实现 L3 Quote/Trade Tick 顺序回放、成交序列和可校准滑点模型。  
+  Status: IN_PROGRESS（codex/v5；当前唯一活动任务，基础类型尚不构成 Acceptance；Sol/xhigh 正在完成订单成交与异常处理链）。
   Acceptance: 相同 tick 序列和配置产生相同 Fill；乱序、缺口和时钟异常有明确处理结果。  
   Evidence: 待补。
 - [ ] `V5-002` 实现 L4（Level-2/Level-3 order book）回放、队列位置、流动性消耗、部分成交和市场冲击。  

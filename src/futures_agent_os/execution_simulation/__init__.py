@@ -72,4 +72,4 @@ __all__ = [
 from .l3_tick_replay import CalibratedSlippage, Tick, TickKind, TickReplay
 from .advanced_algorithms import ChildSlice, ExecutionAlgorithm, schedule
 
-__all__ = ["CalibratedSlippage", "Tick", "TickKind", "TickReplay", "ChildSlice", "ExecutionAlgorithm", "schedule"]
+__all__ += ["CalibratedSlippage", "Tick", "TickKind", "TickReplay", "ChildSlice", "ExecutionAlgorithm", "schedule"]
