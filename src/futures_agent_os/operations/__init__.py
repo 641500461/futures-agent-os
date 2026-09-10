@@ -21,6 +21,16 @@ from .reliability import (
     standard_capacity_profile,
     standard_slo_objectives,
 )
+from .stability import (
+    StabilityEvaluation,
+    StabilityHeartbeat,
+    StabilityIncident,
+    StabilityJournal,
+    StabilityProbeResult,
+    StabilityRunPlan,
+    evaluate_stability_run,
+    run_simulation_stability_probe,
+)
 
 __all__ = [
     "AdmissionDecision",
@@ -42,4 +52,12 @@ __all__ = [
     "standard_recovery_policy",
     "standard_capacity_profile",
     "standard_slo_objectives",
+    "StabilityEvaluation",
+    "StabilityHeartbeat",
+    "StabilityIncident",
+    "StabilityJournal",
+    "StabilityProbeResult",
+    "StabilityRunPlan",
+    "evaluate_stability_run",
+    "run_simulation_stability_probe",
 ]
