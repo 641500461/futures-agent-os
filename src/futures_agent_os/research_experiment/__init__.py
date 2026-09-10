@@ -793,6 +793,23 @@ from .governance_steward import (
     StewardTool,
 )
 
+from .model_evaluation_pipeline import (
+    CandidateState,
+    EvaluationEvidence as ModelEvaluationEvidence,
+    EvaluationPhase,
+    ModelActivation,
+    ModelCandidate,
+    ModelChangeApproval,
+    ModelEvaluationPipeline,
+    PipelineRecord,
+    RollbackEvidence,
+    RollbackDecision,
+    SftAssessment,
+    TrainingDatasetEvidence,
+    TrainingMethod,
+    assess_controlled_sft,
+)
+
 __all__ += [
     "ChangeProposal",
     "ChangeRisk",
@@ -804,4 +821,18 @@ __all__ += [
     "StewardRecommendation",
     "StewardSubjectKind",
     "StewardTool",
+    "CandidateState",
+    "ModelEvaluationEvidence",
+    "EvaluationPhase",
+    "ModelActivation",
+    "ModelCandidate",
+    "ModelChangeApproval",
+    "ModelEvaluationPipeline",
+    "PipelineRecord",
+    "RollbackEvidence",
+    "RollbackDecision",
+    "SftAssessment",
+    "TrainingDatasetEvidence",
+    "TrainingMethod",
+    "assess_controlled_sft",
 ]
