@@ -1,0 +1,33 @@
+{
+  "task": "V5-009",
+  "status": "COMPLETE",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "reviewer_model": "NOT_EXPOSED",
+  "reviewer_reasoning_effort": "NOT_EXPOSED",
+  "independent_version_exit_review": false,
+  "upgrade": false,
+  "commit": "20b6f9bfdd3d5b0d4f93650ab56b7373b8b2b64f",
+  "implementation": "Added a closed low-dimensional Offline RL research boundary for execution, portfolio allocation, and position adjustment. Plans freeze features, actions, reward, dataset digest, behavior policy, evaluation protocol, code revision, environment, and seed. Evaluation, independent research review, governance approval, and runtime activation are separate immutable gates.",
+  "tests": {
+    "targeted": "uv run mypy src/futures_agent_os/research_experiment/offline_rl_research.py tests/contract/test_v5_009_offline_rl_research.py tests/property/test_v5_009_offline_rl_properties.py && uv run pytest -q tests/contract/test_v5_009_offline_rl_research.py tests/property/test_v5_009_offline_rl_properties.py",
+    "targeted_result": "mypy passed; 8 tests passed",
+    "v5_regression": "uv run pytest -q tests/contract/test_v5_001_tick_replay.py tests/contract/test_v5_002_order_book.py tests/contract/test_v5_003_paper_adapter.py tests/contract/test_v5_004_algorithms.py tests/contract/test_v5_005_exposure.py tests/contract/test_v5_006_calibration.py tests/contract/test_v5_007_governance_steward.py tests/contract/test_v5_008_model_evaluation_pipeline.py tests/contract/test_v5_009_offline_rl_research.py",
+    "v5_regression_result": "81 passed",
+    "full_gate": "make check",
+    "full_gate_result": "lock, format, ruff, mypy over 168 source files, secret scan, 2 schema, 1 unit, 19 property, 909 contract, and health passed"
+  },
+  "acceptance_mapping": {
+    "low_dimensional_scope": "OfflineRlModule is a closed enum containing only EXECUTION, PORTFOLIO_ALLOCATION, and POSITION_ADJUSTMENT; plans allow at most 16 state features and 16 actions.",
+    "reproducibility": "The content-addressed plan binds the frozen dataset digest, behavior policy, evaluation protocol, code commit, environment, and seed; evaluation must use the exact frozen dataset digest.",
+    "separate_research_review": "A passing offline evaluation must be recorded before a human research review can approve the plan; failed evaluation or rejected review is retained and terminal.",
+    "governance_approval": "Governance approval is a later human-owned fact binding the exact plan, evaluation, research review, target runtime lane, deterministic override, and fallback.",
+    "default_runtime_gate": "The registry cannot resolve any policy until a separate human activation, and then resolves only the exact approved lane and explicit scope.",
+    "no_agent_replacement": "The plan and activation surfaces contain no Order, TradePlan, RiskDecision, prompt, profile, or submission authority; deterministic domain services remain authoritative."
+  },
+  "limitations": [
+    "This task defines and proves the research/governance boundary; it does not train or claim performance for an Offline RL policy.",
+    "Activation remains simulation-only and requires deterministic override and fallback references; real order routing remains out of scope."
+  ],
+  "model_output_not_authoritative": "Offline RL output is a module recommendation. Deterministic domain services and explicit human gates own runtime authority."
+}

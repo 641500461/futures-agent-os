@@ -420,9 +420,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v4-exit/independent-review-2026-
   Status: COMPLETE（2026-09-10；顺序评测、人工批准、受限 canary、独立 Activation/rollback 和 SFT 数据资格审查已实现）。
   Acceptance: 候选模型不能自动进入活动流量；评测、人工批准、canary 和回滚证据完整。  
   Evidence: [`evidence/v5-008/implementation-2026-09-10.json`](../evidence/v5-008/implementation-2026-09-10.json)。
-- [ ] `V5-009` 将 Offline RL 限定为低维、可重复模块的独立研究项，例如执行、组合配置或仓位调整；不得替代高层 Agent。  
+- [x] `V5-009` 将 Offline RL 限定为低维、可重复模块的独立研究项，例如执行、组合配置或仓位调整；不得替代高层 Agent。
+  Status: COMPLETE（2026-09-11；封闭三类低维模块、冻结研究计划、离线评测、独立研究评审、治理批准和人工 Activation 门禁已实现）。
   Acceptance: 未经单独研究评审和治理批准，不进入默认运行路径。  
-  Evidence: 待补。
+  Evidence: [`evidence/v5-009/implementation-2026-09-11.json`](../evidence/v5-009/implementation-2026-09-11.json)。
 - [ ] `V5-010` 完成 SLO、容量、背压、限流、熔断、备份、恢复、灾难演练和 runbook；多用户权限审计与对抗性安全演练不在当前范围。
   Acceptance: 关键 SLO 有测量与告警；RTO/RPO、备份恢复和主要故障 runbook 均完成演练。  
   Evidence: 待补。

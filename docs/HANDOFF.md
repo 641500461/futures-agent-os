@@ -1,8 +1,8 @@
 # V5 当前状态
 
-`codex/v5` 已从 V4 完成基线切出。V5-001～V5-008 已于 2026-09-10 完成并有实现 Evidence；V5-009 为下一项活动任务，其余 V5 项保持未验收。V5-008 在提交 `e989240` 完成 Candidate→Offline→Shadow→Approval→Canary→Activation→Rollback 顺序状态机：offline/shadow 零活动流量，canary 必须有人类批准及回滚 runbook/兼容测试/演练证据，Activation 是后续独立动作，失败证据保留。受控 SFT 只接受已授权、去敏、验证并留有 held-out eval 的数据资格，训练产物不能自启用。实现宿主的精确 model/effort telemetry 未暴露，版本 Exit 仍需由未主导实现的独立 Sol 审查。
+`codex/v5` 已从 V4 完成基线切出。V5-001～V5-009 已完成并有实现 Evidence；V5-010 为当前活动任务，其余 V5 项保持未验收。V5-009 在提交 `20b6f9b` 建立封闭的 Offline RL 研究边界：只允许执行、组合配置、仓位调整三类低维模块，冻结数据/行为策略/评测协议/代码/环境/种子；离线评测、研究评审、治理批准和人工 Activation 严格分离，且只解析到精确获批的模拟通道和作用域。Offline RL 产物没有 Order、TradePlan、RiskDecision 或高层 Agent 权限，确定性服务仍为真值所有者。实现宿主的精确 model/effort telemetry 未暴露，版本 Exit 仍需由未主导实现的独立 Sol 审查。
 
-V5-008 收口时 `make check` 全绿（902 contract、18 property、2 schema、1 unit）。定向契约证明候选不能跳过阶段或自行激活，非人类审批失败，shadow/canary 流量边界严格，canary 失败保留证据并阻断 Activation，实际 rollback 记录 actor/time/target/evidence。V5-011 的 30 天稳定性运行必须以真实连续运行记录证明，当前尚未开始，不可用快速回放或缩短时间替代。
+V5-009 收口时 `make check` 全绿（909 contract、19 property、2 schema、1 unit），V5-001～009 回归 81 项通过。定向契约证明高层 Agent 类型不可表示，维度上限、冻结数据摘要、失败评测、拒绝评审、非人工审批、跳步 Activation 和错误 runtime lane 均 fail closed。V5-010 需完成 SLO、容量/背压/限流/熔断以及备份恢复和灾难演练；V5-011 的 30 天稳定性运行必须以真实连续运行记录证明，当前尚未开始，不可用快速回放或缩短时间替代。
 
 # 跨对话交接
 
