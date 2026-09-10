@@ -69,7 +69,23 @@ __all__ = [
     "OrderProcessorSnapshot",
     "DurableOrderCommandProcessor",
 ]
-from .l3_tick_replay import CalibratedSlippage, Tick, TickKind, TickReplay
+from .l3_tick_replay import (
+    CalibratedSlippage,
+    ReplayAnomaly,
+    ReplayAnomalyCode,
+    ReplayStatus,
+    SlippageStatistic,
+    Tick,
+    TickKind,
+    TickReplay,
+    TickReplayConfig,
+    TickReplayError,
+    TickReplayResult,
+)
 from .advanced_algorithms import ChildSlice, ExecutionAlgorithm, schedule
 
-__all__ += ["CalibratedSlippage", "Tick", "TickKind", "TickReplay", "ChildSlice", "ExecutionAlgorithm", "schedule"]
+__all__ += [
+    "CalibratedSlippage", "ReplayAnomaly", "ReplayAnomalyCode", "ReplayStatus", "SlippageStatistic",
+    "Tick", "TickKind", "TickReplay", "TickReplayConfig", "TickReplayError", "TickReplayResult",
+    "ChildSlice", "ExecutionAlgorithm", "schedule",
+]
