@@ -408,9 +408,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v4-exit/independent-review-2026-
   Status: COMPLETE（2026-09-10；多维净/总暴露、跨期腿、换月成本、组合边界和资本分配已实现）。
   Acceptance: 子账户/策略暴露可汇总到组合；净额、相关性、换月和集中度边界有属性测试。  
   Evidence: [`evidence/v5-005/implementation-2026-09-10.json`](../evidence/v5-005/implementation-2026-09-10.json)。
-- [ ] `V5-006` 建立高保真校准：Backtest/Replay 与 Paper 的成交、滑点、PnL 和容量偏差评估。  
+- [x] `V5-006` 建立高保真校准：Backtest/Replay 与 Paper 的成交、滑点、PnL 和容量偏差评估。
+  Status: COMPLETE（2026-09-10；FillModel/版本/范围绑定的四指标成对校准、误差区间、证据摘要和禁止外推 Registry 已实现）。
   Acceptance: 每个 FillModel 有校准数据、误差区间、适用范围和禁止外推范围。  
-  Evidence: 待补。
+  Evidence: [`evidence/v5-006/implementation-2026-09-10.json`](../evidence/v5-006/implementation-2026-09-10.json)。
 - [ ] `V5-007` 扩展 Governance Agent 的 Model/Policy Steward 工作模式，只能基于评测提出 Prompt/Model/Strategy `ChangeProposal`。  
   Acceptance: Steward 无合并、晋升、启用或风险规则修改权限。  
   Evidence: 待补。

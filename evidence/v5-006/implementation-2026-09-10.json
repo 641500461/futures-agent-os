@@ -1,0 +1,33 @@
+{
+  "task": "V5-006",
+  "status": "COMPLETE",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "reviewer_model": "NOT_EXPOSED",
+  "reviewer_reasoning_effort": "NOT_EXPOSED",
+  "independent_version_exit_review": false,
+  "upgrade": false,
+  "commit": "2f8d252",
+  "implementation": "Implemented paired Replay/Backtest versus Paper calibration for fill quantity, slippage basis points, PnL and capacity, bound to exact FillModel, model version, applicable scope and source evidence. Reports include bias, MAE, RMSE, empirical error interval, dataset/calibration digests and explicit prohibited extrapolation.",
+  "tests": {
+    "targeted": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v5_006_calibration.py tests/property/test_v5_006_calibration_properties.py -q",
+    "targeted_result": "7 passed",
+    "v5_regression": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v5_001_tick_replay.py tests/contract/test_v5_002_order_book.py tests/contract/test_v5_003_paper_adapter.py tests/contract/test_v5_004_algorithms.py tests/contract/test_v5_005_exposure.py tests/contract/test_v5_006_calibration.py -q",
+    "v5_regression_result": "61 passed",
+    "full_gate": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+    "full_gate_result": "lock, format, ruff, mypy, secret scan, 2 schema, 1 unit, 18 property, 889 contract, and health passed"
+  },
+  "acceptance_mapping": {
+    "calibration_data": "Every CalibrationSample binds replay and paper evidence references and exactly four canonical paired metrics.",
+    "error_intervals": "Each metric reports mean bias, mean absolute error, root mean square error and empirical low/high error bounds.",
+    "applicable_scope": "All samples in a report must bind one exact FillModel, version and scope; mixed data is rejected.",
+    "prohibited_extrapolation": "Every report requires a non-empty explicit prohibition list; registry lookup is exact by model/version/scope and rejects missing or extrapolated use.",
+    "every_fill_model": "FillModelCalibrationRegistry.require_all fails unless every requested model/version/scope has a registered report.",
+    "reproducibility": "Frozen samples produce deterministic dataset and calibration SHA-256 digests; property tests prove scalar interval and error-statistic closure."
+  },
+  "limitations": [
+    "Synthetic contract fixtures prove calibration semantics; deployment calibration quality depends on authorized representative Paper observations.",
+    "Calibration quantifies bias and never authorizes a strategy, model activation, or real trading."
+  ],
+  "model_output_not_authoritative": "FillModel applicability is resolved only through exact deterministic registry lookup and paired evidence."
+}
