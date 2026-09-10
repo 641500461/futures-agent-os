@@ -1,8 +1,8 @@
 # V5 当前状态
 
-`codex/v5` 已从 V4 完成基线切出。V5-001～V5-003 已于 2026-09-10 完成并有实现 Evidence；V5-004 为下一项活动任务，其余 V5 项保持未验收。早期提交在 V5-004～006 创建了孤立基础函数，未证明完整 Acceptance，不可据此声明高级执行/组合/校准能力已完成。V5-003 在提交 `eabf3c6` 完成 connector-neutral 出站 Order 映射、外部 Fill 规范化、订单/成交双向对账、UNKNOWN/DEGRADED/UNSUPPORTED fail-closed 结果，以及版本化 TqSim manifest；实现宿主的精确 model/effort telemetry 未暴露，版本 Exit 仍需由未主导实现的独立 Sol 审查。
+`codex/v5` 已从 V4 完成基线切出。V5-001～V5-004 已于 2026-09-10 完成并有实现 Evidence；V5-005 为下一项活动任务，其余 V5 项保持未验收。早期提交在 V5-005～006 创建了孤立基础函数，未证明完整 Acceptance，不可据此声明组合/校准能力已完成。V5-004 在提交 `3613c1a` 完成 TWAP、VWAP、Iceberg、分批建仓/退出，版本化 Registry 与人工 Activation、proposal-only Agent 推荐和确定性 Planner；旧 V3 Market/Limit/Stop Advisor 边界保持不变。实现宿主的精确 model/effort telemetry 未暴露，版本 Exit 仍需由未主导实现的独立 Sol 审查。
 
-V5-003 收口时 `make check` 全绿（869 contract、11 property、2 schema、1 unit）。TqSim manifest 依据 2026-09-10 复核的官方文档明确记录：无对手盘限价不成交、市价自动撤单、模拟成交不支持部分成交，因此只能标识为 L5 Paper，不能充当 L3/L4 高保真证据。V5-011 的 30 天稳定性运行必须以真实连续运行记录证明，当前尚未开始，不可用快速回放或缩短时间替代。
+V5-004 收口时 `make check` 全绿（874 contract、13 property、2 schema、1 unit）。高级算法以整手最大余数法精确守恒父数量；激活摘要或版本 stale、进出方向不适用、切片越界、Iceberg 容量不足均 fail closed。TqSim 仍只能标识为 L5 Paper。V5-011 的 30 天稳定性运行必须以真实连续运行记录证明，当前尚未开始，不可用快速回放或缩短时间替代。
 
 # 跨对话交接
 

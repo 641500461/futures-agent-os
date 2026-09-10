@@ -400,9 +400,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v4-exit/independent-review-2026-
   Status: COMPLETE（2026-09-10；connector-neutral 出站映射、规范 Fill 转换、双向对账、健康降级和版本化 TqSim 能力清单已实现）。
   Acceptance: 外部订单/成交与本地状态可双向对账；未知或不支持行为不会伪装为成功。  
   Evidence: [`evidence/v5-003/implementation-2026-09-10.json`](../evidence/v5-003/implementation-2026-09-10.json)。
-- [ ] `V5-004` 实现 TWAP、VWAP、Iceberg、分批建仓/退出和执行算法对比。  
+- [x] `V5-004` 实现 TWAP、VWAP、Iceberg、分批建仓/退出和执行算法对比。
+  Status: COMPLETE（2026-09-10；版本化注册/人工激活、proposal-only 推荐和确定性整手子单计划已实现）。
   Acceptance: Agent 只选择或建议已注册算法；确定性系统执行。  
-  Evidence: 待补。
+  Evidence: [`evidence/v5-004/implementation-2026-09-10.json`](../evidence/v5-004/implementation-2026-09-10.json)。
 - [ ] `V5-005` 实现多账户、多策略、相关性簇、板块/方向/期限暴露、跨期、换月成本和资本分配。  
   Acceptance: 子账户/策略暴露可汇总到组合；净额、相关性、换月和集中度边界有属性测试。  
   Evidence: 待补。
