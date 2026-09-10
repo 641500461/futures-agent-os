@@ -780,3 +780,28 @@ from .strategy_promotion import PromotionStage, StrategyActivation, StrategyProm
 from .runtime_version_registry import RuntimeVersionRegistry, RuntimeVersionSet
 from .external_evidence import EvidenceCatalog, EvidenceFormat, ExternalEvidence
 from .v4_012_013 import DriftKind, DriftTriggerEngine, GovernanceAgent, GovernanceProposal, ResearchTrigger
+from .governance_steward import (
+    ChangeProposal,
+    ChangeRisk,
+    EvaluationOutcome,
+    EvaluationResult,
+    GovernanceSteward,
+    StewardEvaluationBundle,
+    StewardEvaluationDimension,
+    StewardRecommendation,
+    StewardSubjectKind,
+    StewardTool,
+)
+
+__all__ += [
+    "ChangeProposal",
+    "ChangeRisk",
+    "EvaluationOutcome",
+    "EvaluationResult",
+    "GovernanceSteward",
+    "StewardEvaluationBundle",
+    "StewardEvaluationDimension",
+    "StewardRecommendation",
+    "StewardSubjectKind",
+    "StewardTool",
+]
