@@ -119,6 +119,17 @@ from .paper_adapter import (
     Reconciliation,
     ReconciliationOutcome,
 )
+from .calibration import (
+    CalibrationMetric,
+    CalibrationSample,
+    FillCalibration,
+    FillModelCalibration,
+    FillModelCalibrationRegistry,
+    MetricCalibration,
+    MetricPair,
+    calibrate,
+    calibrate_fill_model,
+)
 
 __all__ += [
     "CalibratedSlippage",
@@ -163,4 +174,13 @@ __all__ += [
     "PaperTradingAdapter",
     "Reconciliation",
     "ReconciliationOutcome",
+    "CalibrationMetric",
+    "CalibrationSample",
+    "FillCalibration",
+    "FillModelCalibration",
+    "FillModelCalibrationRegistry",
+    "MetricCalibration",
+    "MetricPair",
+    "calibrate",
+    "calibrate_fill_model",
 ]
