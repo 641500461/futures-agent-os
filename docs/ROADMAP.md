@@ -412,9 +412,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v4-exit/independent-review-2026-
   Status: COMPLETE（2026-09-10；FillModel/版本/范围绑定的四指标成对校准、误差区间、证据摘要和禁止外推 Registry 已实现）。
   Acceptance: 每个 FillModel 有校准数据、误差区间、适用范围和禁止外推范围。  
   Evidence: [`evidence/v5-006/implementation-2026-09-10.json`](../evidence/v5-006/implementation-2026-09-10.json)。
-- [ ] `V5-007` 扩展 Governance Agent 的 Model/Policy Steward 工作模式，只能基于评测提出 Prompt/Model/Strategy `ChangeProposal`。  
+- [x] `V5-007` 扩展 Governance Agent 的 Model/Policy Steward 工作模式，只能基于评测提出 Prompt/Model/Strategy `ChangeProposal`。
+  Status: COMPLETE（2026-09-10；五维评测门禁、封闭变更目标、proposal-only 产物和只读工具面已实现）。
   Acceptance: Steward 无合并、晋升、启用或风险规则修改权限。  
-  Evidence: 待补。
+  Evidence: [`evidence/v5-007/implementation-2026-09-10.json`](../evidence/v5-007/implementation-2026-09-10.json)。
 - [ ] `V5-008` 建立 shadow/canary/offline evaluation 流水线，并评估受控监督微调；模型变更与 Activation 分离。  
   Acceptance: 候选模型不能自动进入活动流量；评测、人工批准、canary 和回滚证据完整。  
   Evidence: 待补。

@@ -1,8 +1,8 @@
 # V5 当前状态
 
-`codex/v5` 已从 V4 完成基线切出。V5-001～V5-006 已于 2026-09-10 完成并有实现 Evidence；V5-007 为下一项活动任务，其余 V5 项保持未验收。V5-006 在提交 `2f8d252` 完成 FillModel/精确版本/适用范围绑定的 Replay↔Paper 成交量、滑点、PnL、容量四指标成对校准，保留原始证据引用、偏差/MAE/RMSE/经验区间、禁止外推范围和内容摘要；Registry 对缺报告、错版本和跨范围使用 fail closed。实现宿主的精确 model/effort telemetry 未暴露，版本 Exit 仍需由未主导实现的独立 Sol 审查。
+`codex/v5` 已从 V4 完成基线切出。V5-001～V5-007 已于 2026-09-10 完成并有实现 Evidence；V5-008 为下一项活动任务，其余 V5 项保持未验收。V5-007 在提交 `bc74c36` 完成 Governance Steward：Prompt/Model/Strategy 封闭目标、质量/边界/回归/成本延迟/回滚准备五维完整评测、内容寻址 ChangeProposal 和只读工具面；采用/拒绝/追加评测/回滚建议与 PASS/FAIL/UNKNOWN 证据严格对应。实现宿主的精确 model/effort telemetry 未暴露，版本 Exit 仍需由未主导实现的独立 Sol 审查。
 
-V5-006 收口时 `make check` 全绿（889 contract、18 property、2 schema、1 unit）。定向契约覆盖四指标完整性、确定性摘要、多 FillModel 完整资格、范围/版本外推和异常数据；属性测试覆盖任意成对误差的均值、最大绝对误差与区间闭合。V5-011 的 30 天稳定性运行必须以真实连续运行记录证明，当前尚未开始，不可用快速回放或缩短时间替代。
+V5-007 收口时 `make check` 全绿（895 contract、18 property、2 schema、1 unit）。Steward 无 merge/promote/activate/rollback/write-registry/risk-policy target 或方法；提案强制列出人工变更批准、独立 Registry 操作、独立 Activation 和回滚计划。V5-011 的 30 天稳定性运行必须以真实连续运行记录证明，当前尚未开始，不可用快速回放或缩短时间替代。
 
 # 跨对话交接
 
