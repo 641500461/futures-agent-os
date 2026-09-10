@@ -96,6 +96,17 @@ from .order_book_replay import (
     OrderBookReplay,
     QueueTransition,
 )
+from .paper_adapter import (
+    AdapterCapabilities,
+    ConnectorHealth,
+    ExternalExecution,
+    ExternalFill,
+    ExternalStatus,
+    PaperOrderIntent,
+    PaperTradingAdapter,
+    Reconciliation,
+    ReconciliationOutcome,
+)
 
 __all__ += [
     "CalibratedSlippage",
@@ -123,4 +134,13 @@ __all__ += [
     "L4ReplayStatus",
     "OrderBookReplay",
     "QueueTransition",
+    "AdapterCapabilities",
+    "ConnectorHealth",
+    "ExternalExecution",
+    "ExternalFill",
+    "ExternalStatus",
+    "PaperOrderIntent",
+    "PaperTradingAdapter",
+    "Reconciliation",
+    "ReconciliationOutcome",
 ]
