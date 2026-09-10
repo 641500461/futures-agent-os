@@ -82,7 +82,19 @@ from .l3_tick_replay import (
     TickReplayError,
     TickReplayResult,
 )
-from .advanced_algorithms import ChildSlice, ExecutionAlgorithm, schedule
+from .advanced_algorithms import (
+    AdvancedExecutionPlanner,
+    AdvancedExecutionRecommendation,
+    AlgorithmActivation,
+    AlgorithmSpec,
+    ChildSlice,
+    DeterministicExecutionPlan,
+    ExecutionAlgorithm,
+    ExecutionAlgorithmRegistry,
+    ExecutionIntent,
+    recommend,
+    schedule,
+)
 from .order_book_replay import (
     BookEventKind,
     BookLevel,
@@ -121,7 +133,15 @@ __all__ += [
     "TickReplayError",
     "TickReplayResult",
     "ChildSlice",
+    "AdvancedExecutionPlanner",
+    "AdvancedExecutionRecommendation",
+    "AlgorithmActivation",
+    "AlgorithmSpec",
+    "DeterministicExecutionPlan",
     "ExecutionAlgorithm",
+    "ExecutionAlgorithmRegistry",
+    "ExecutionIntent",
+    "recommend",
     "schedule",
     "BookEventKind",
     "BookLevel",
