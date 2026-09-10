@@ -10,6 +10,7 @@ class ExternalStatus(StrEnum):
     CANCELED = "CANCELED"
     UNKNOWN = "UNKNOWN"
 
+
 @dataclass(frozen=True, slots=True)
 class AdapterCapabilities:
     name: str
