@@ -416,9 +416,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v4-exit/independent-review-2026-
   Status: COMPLETE（2026-09-10；五维评测门禁、封闭变更目标、proposal-only 产物和只读工具面已实现）。
   Acceptance: Steward 无合并、晋升、启用或风险规则修改权限。  
   Evidence: [`evidence/v5-007/implementation-2026-09-10.json`](../evidence/v5-007/implementation-2026-09-10.json)。
-- [ ] `V5-008` 建立 shadow/canary/offline evaluation 流水线，并评估受控监督微调；模型变更与 Activation 分离。  
+- [x] `V5-008` 建立 shadow/canary/offline evaluation 流水线，并评估受控监督微调；模型变更与 Activation 分离。
+  Status: COMPLETE（2026-09-10；顺序评测、人工批准、受限 canary、独立 Activation/rollback 和 SFT 数据资格审查已实现）。
   Acceptance: 候选模型不能自动进入活动流量；评测、人工批准、canary 和回滚证据完整。  
-  Evidence: 待补。
+  Evidence: [`evidence/v5-008/implementation-2026-09-10.json`](../evidence/v5-008/implementation-2026-09-10.json)。
 - [ ] `V5-009` 将 Offline RL 限定为低维、可重复模块的独立研究项，例如执行、组合配置或仓位调整；不得替代高层 Agent。  
   Acceptance: 未经单独研究评审和治理批准，不进入默认运行路径。  
   Evidence: 待补。
