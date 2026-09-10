@@ -10,6 +10,18 @@ class ExternalStatus(StrEnum):
     CANCELED = "CANCELED"
     UNKNOWN = "UNKNOWN"
 
+@dataclass(frozen=True, slots=True)
+class AdapterCapabilities:
+    name: str
+    version: str
+    supports_partial_fills: bool
+    supports_cancel: bool
+    limitations: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if not self.name or not self.version or not self.limitations:
+            raise ValueError("adapter capabilities require explicit version and limitations")
+
 
 @dataclass(frozen=True, slots=True)
 class ExternalExecution:
@@ -27,6 +39,9 @@ class Reconciliation:
 
 
 class PaperTradingAdapter:
+    def __init__(self, capabilities: AdapterCapabilities | None = None) -> None:
+        self.capabilities = capabilities or AdapterCapabilities("local-paper", "v1", True, True, ("simulation-only",))
+
     def reconcile(self, local_order_id: str, local_filled_quantity: int, external: ExternalExecution) -> Reconciliation:
         if not local_order_id or external.order_id != local_order_id:
             return Reconciliation(local_order_id, external.status, False, "ORDER_ID_MISMATCH")
