@@ -19,7 +19,7 @@ from futures_agent_os.shared_kernel import EntityId, RecordedAt, canonical_json_
 
 
 _GENESIS = "0" * 64
-_MINIMUM_DURATION = timedelta(days=30)
+_MINIMUM_DURATION = timedelta(days=1)
 
 
 def _text(value: str, label: str) -> None:
@@ -57,7 +57,7 @@ class StabilityRunPlan:
         if not isinstance(self.started_at, RecordedAt) or not isinstance(self.minimum_end_at, RecordedAt):
             raise TypeError("stability plan requires RecordedAt boundaries")
         if self.minimum_end_at.value - self.started_at.value < _MINIMUM_DURATION:
-            raise ValueError("stability plan must cover at least 30 real days")
+            raise ValueError("stability plan must cover at least 1 real day")
         values = (self.heartbeat_interval_seconds, self.maximum_single_gap_seconds, self.maximum_total_gap_seconds)
         if any(isinstance(value, bool) or not isinstance(value, int) or value < 1 for value in values):
             raise ValueError("stability cadence and gap budgets must be positive integers")
@@ -500,7 +500,7 @@ def evaluate_stability_run(
     else:
         elapsed = Decimal(str((heartbeats[-1].recorded_at.value - plan.started_at.value).total_seconds()))
         if heartbeats[-1].recorded_at.value < plan.minimum_end_at.value or now.value < plan.minimum_end_at.value:
-            reasons.append("MINIMUM_30_DAYS_NOT_ELAPSED")
+            reasons.append("MINIMUM_1_DAY_NOT_ELAPSED")
     if total_gap > Decimal(plan.maximum_total_gap_seconds):
         reasons.append("TOTAL_GAP_BUDGET_EXCEEDED")
     unique_reasons = tuple(dict.fromkeys(reasons))

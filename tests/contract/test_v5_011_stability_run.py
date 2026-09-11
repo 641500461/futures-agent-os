@@ -21,7 +21,7 @@ def _plan(**overrides: object) -> StabilityRunPlan:
     values: dict[str, object] = {
         "run_id": "v5-011-test",
         "started_at": START,
-        "minimum_end_at": RecordedAt.from_datetime(START.value + timedelta(days=30)),
+        "minimum_end_at": RecordedAt.from_datetime(START.value + timedelta(days=1)),
         "code_commit": "a" * 40,
         "environment": "sim-prod",
         "heartbeat_interval_seconds": 900,
@@ -48,8 +48,8 @@ def _append(journal: StabilityJournal, when: datetime, **overrides: object) -> S
 
 
 def test_plan_enforces_real_duration_and_simulation_gap_policy() -> None:
-    with pytest.raises(ValueError, match="at least 30 real days"):
-        _plan(minimum_end_at=RecordedAt.from_datetime(START.value + timedelta(days=29, seconds=86399)))
+    with pytest.raises(ValueError, match="at least 1 real day"):
+        _plan(minimum_end_at=RecordedAt.from_datetime(START.value + timedelta(hours=23, minutes=59, seconds=59)))
     with pytest.raises(ValueError, match="simulation environment"):
         _plan(environment="production")
     with pytest.raises(ValueError, match="single-gap threshold"):
@@ -104,7 +104,7 @@ def test_gap_is_reported_and_budgeted(tmp_path) -> None:
     assert evaluation.total_gap_seconds == Decimal("2800.0")
 
 
-def test_thirty_day_completion_gate_cannot_be_satisfied_early(tmp_path) -> None:
+def test_one_day_completion_gate_cannot_be_satisfied_early(tmp_path) -> None:
     plan = _plan(
         heartbeat_interval_seconds=86400,
         maximum_single_gap_seconds=172801,
@@ -112,17 +112,17 @@ def test_thirty_day_completion_gate_cannot_be_satisfied_early(tmp_path) -> None:
     )
     journal = StabilityJournal(tmp_path / "run")
     journal.start(plan)
-    for day in range(31):
+    for day in range(2):
         _append(journal, START.value + timedelta(days=day))
     heartbeats = journal.load_heartbeats()
     early = evaluate_stability_run(
         plan,
         heartbeats[:-1],
-        now=RecordedAt.from_datetime(START.value + timedelta(days=29, hours=23)),
+        now=RecordedAt.from_datetime(START.value + timedelta(hours=23)),
     )
-    assert not early.complete and early.reason_codes == ("MINIMUM_30_DAYS_NOT_ELAPSED",)
-    complete = evaluate_stability_run(plan, heartbeats, now=RecordedAt.from_datetime(START.value + timedelta(days=30)))
-    assert complete.complete and complete.reason_codes == () and complete.heartbeat_count == 31
+    assert not early.complete and early.reason_codes == ("MINIMUM_1_DAY_NOT_ELAPSED",)
+    complete = evaluate_stability_run(plan, heartbeats, now=RecordedAt.from_datetime(START.value + timedelta(days=1)))
+    assert complete.complete and complete.reason_codes == () and complete.heartbeat_count == 2
 
 
 @pytest.mark.parametrize(
@@ -144,13 +144,13 @@ def test_any_measured_invariant_violation_blocks_completion(tmp_path, field: str
     )
     journal = StabilityJournal(tmp_path / field)
     journal.start(plan)
-    for day in range(30):
+    for day in range(2):
         _append(journal, START.value + timedelta(days=day))
-    _append(journal, START.value + timedelta(days=30), **{field: value})
+    _append(journal, START.value + timedelta(days=2), **{field: value})
     evaluation = evaluate_stability_run(
         plan,
         journal.load_heartbeats(),
-        now=RecordedAt.from_datetime(START.value + timedelta(days=30)),
+        now=RecordedAt.from_datetime(START.value + timedelta(days=2)),
     )
     assert not evaluation.complete and reason in evaluation.reason_codes
 

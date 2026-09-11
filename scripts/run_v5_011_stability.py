@@ -88,7 +88,7 @@ def start(directory: Path) -> dict[str, object]:
     plan = StabilityRunPlan(
         run_id,
         now,
-        RecordedAt.from_datetime(now.value + timedelta(days=30)),
+        RecordedAt.from_datetime(now.value + timedelta(days=1)),
         _git_commit(),
         "sim-prod",
     )
