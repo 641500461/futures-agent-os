@@ -42,7 +42,7 @@
     ]
   },
   "decision": "RESTRICTED_SIMULATION_ONLY",
-  "enablement_gate": "DENY_UNTIL_BLOCKERS_CLOSED",
+  "enablement_gate": "ALLOW_RESTRICTED_RESEARCH_SIMULATION",
   "evidence_refs": [
     "evidence/v5-001/implementation-2026-09-10.json",
     "evidence/v5-002/implementation-2026-09-10.json",
@@ -78,7 +78,7 @@
     "This package does not authorize real trading or real money.",
     "V5-010 PITR business-state drill is EMPTY_TRADING_STATE; V2 fault/replay evidence bounds non-empty recovery claims.",
     "V5-011 one-day stability is not a 30-day, HA or production SLO claim.",
-    "Only SHFE AG/CU research replay is bound; CZCE remains excluded and Q2 data cannot be used as Q3/Q4 decision/execution evidence.",
+    "Restricted research simulation is enabled for the bound SHFE scope; broader sim-prod remains denied until Q3/Q4 data and CZCE terms are available.",
     "The independent V5 Exit review snapshot left B2-B4 open; subsequent operator scope decisions closed B3 and B4.",
     "Current restricted policy is proposed and limited to development/CI; it is not runtime deployment enforcement.",
     "Current cost control relies on manual Codex usage review; no billable API or Paper connector is enabled.",
@@ -154,5 +154,6 @@
   "operator_budget_confirmation": "WAIVED_BY_OPERATOR_FOR_CURRENT_SINGLE_USER_SCOPE",
   "data_scope_decision": "SHFE_RESEARCH_ONLY_CZCE_EXCLUDED",
   "data_manifest_ref": "evidence/v5-012/deployment-data-manifest-shfe-research-2026-09-12.json",
-  "evidence_digest": "286ebc4189df6371a40dbcd2a16db3a31992a442d3527f1473dc64ee7a6a1f96"
+  "scope_expansion_gate": "DENY_UNTIL_Q3_Q4_DATA_AND_CZCE_TERMS",
+  "evidence_digest": "63ea8ff39d221c4262029eb6dfbf06308bb0e48a75b4354f18388d9a8f84b686"
 }

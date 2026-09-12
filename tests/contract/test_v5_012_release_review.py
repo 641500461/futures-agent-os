@@ -31,7 +31,7 @@ def test_release_review_package_is_complete_and_blocks_unrestricted_enablement()
     assert package["task"] == "V5-012"
     assert package["status"] == "COMPLETE"
     assert package["decision"] == "RESTRICTED_SIMULATION_ONLY"
-    assert package["enablement_gate"] == "DENY_UNTIL_BLOCKERS_CLOSED"
+    assert package["enablement_gate"] == "ALLOW_RESTRICTED_RESEARCH_SIMULATION"
     assert package["research_and_simulation_only"] is True
     assert package["independent_version_exit_review"] is True
     assert package["reviewer_model"] == "gpt-5.6-sol"
@@ -108,5 +108,5 @@ def test_paper_scope_closure_does_not_claim_calibration_or_enablement() -> None:
     assert scope["representative_observations_present"] is False
     assert scope["calibration_status"] == "NOT_APPLICABLE_WHILE_DISABLED"
     assert "L5_paper_realism" in scope["claims_forbidden"]
-    assert package["enablement_gate"] == "DENY_UNTIL_BLOCKERS_CLOSED"
+    assert package["enablement_gate"] == "ALLOW_RESTRICTED_RESEARCH_SIMULATION"
     assert next(item for item in package["realism_levels"] if item["level"] == "L5")["status"] == "NOT_ENABLED"

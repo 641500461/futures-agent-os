@@ -17,7 +17,7 @@ V5-012 的评审包已经形成，覆盖产品、架构、风险、数据和运�
 3. `V5-012-B3 CLOSED`：当前开发/CI 受限部署已明确关闭 Paper connector、凭据和 Paper/L5 真实性宣传；若未来要启用，必须取得有授权且具有代表性的 Paper 观测并完成 V5-006 校准。Evidence：`evidence/v5-012/paper-scope-decision-2026-09-12.json`。
 4. `V5-012-B4 CLOSED`：操作者决定直接查看 Codex 用量，不建设单独计费账本；Paper 已禁用，因此没有 Paper 费用。现有本机资源基线继续保留作诊断，不解释为货币成本。
 
-这些门禁未关闭时，系统仍可用于本地和测试环境的研究与确定性模拟验收；不产生真实订单或真实资金副作用。
+当前范围允许 SHFE 研究专用的受限模拟；更广泛 sim-prod 仍被数据范围门禁拒绝。系统不产生真实订单或真实资金副作用。
 
 ## 产品评审
 
@@ -82,4 +82,4 @@ V5-010 已演练七项关键 SLO 告警、关键容量保留、backlog/rate/circ
 - 风险：PASS（硬门禁通过）；扩大启用仍受剩余风险门禁约束。
 - 数据：PASS（SHFE 研究范围）；CZCE 和 Q3/Q4 决策/执行数据仍未授权。
 - 运营：PASS（受限模拟）；V5 Exit 已独立复核，B4 采用操作者手动查看 Codex 用量。
-- 总决定：`RESTRICTED_SIMULATION_ONLY`；`enablement_gate=DENY_UNTIL_BLOCKERS_CLOSED`。
+- 总决定：`RESTRICTED_SIMULATION_ONLY`；`enablement_gate=ALLOW_RESTRICTED_RESEARCH_SIMULATION`；范围扩展门：`DENY_UNTIL_Q3_Q4_DATA_AND_CZCE_TERMS`。
