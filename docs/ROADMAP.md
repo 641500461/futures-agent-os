@@ -428,10 +428,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v4-exit/independent-review-2026-
   Status: COMPLETE（2026-09-11；正式 SLO/容量与恢复 policy、并发安全控制器、故障注入、真实隔离 PostgreSQL PITR 和主要故障 runbook 已完成）。
   Acceptance: 关键 SLO 有测量与告警；RTO/RPO、备份恢复和主要故障 runbook 均完成演练。  
   Evidence: [`evidence/v5-010/implementation-2026-09-11.json`](../evidence/v5-010/implementation-2026-09-11.json)。
-- [ ] `V5-011` 完成 1 天稳定性运行和故障演练。  
-  Status: RUNNING（2026-09-11；冻结代码、15 分钟 hash-chain 心跳和每次真实模拟不变量探针已建立，必须等待实际 `minimum_end_at`，不得提前完成）。
+- [x] `V5-011` 完成 1 天稳定性运行和故障演练。
+  Status: COMPLETE（2026-09-12；冻结提交上的真实墙钟运行已达到 `minimum_end_at`，85 次 hash-chain 心跳和每次隔离模拟不变量探针均通过；6 个超过 cadence 的间隔均有内联事故报告，累计 gap 6465.484496 秒未超过 21600 秒预算）。
   Acceptance: 无未解释重复交易、无无保护持仓、无审计链断点；全部事故可恢复并有报告。  
-  Evidence: 运行中；操作与失败门禁见 [`V5-011-STABILITY-RUNBOOK.md`](./V5-011-STABILITY-RUNBOOK.md)，最终 Evidence 只能在真实 1 天结束后生成。
+  Evidence: [`evidence/v5-011/stability-run-2026-09-12.json`](../evidence/v5-011/stability-run-2026-09-12.json)；操作与失败门禁见 [`V5-011-STABILITY-RUNBOOK.md`](./V5-011-STABILITY-RUNBOOK.md)。
 - [ ] `V5-012` 形成模拟系统上线评审包：能力边界、真实性级别、剩余风险、数据授权、运行成本、回滚和 Kill Switch 演练。  
   Acceptance: 产品、架构、风险、数据和运营评审结论已记录；未解决阻断项不得启用。  
   Evidence: 待补。
