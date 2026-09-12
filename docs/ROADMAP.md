@@ -432,9 +432,10 @@ Exit：PASS（独立审查 Evidence：`evidence/v4-exit/independent-review-2026-
   Status: COMPLETE（2026-09-12；冻结提交上的真实墙钟运行已达到 `minimum_end_at`，85 次 hash-chain 心跳和每次隔离模拟不变量探针均通过；6 个超过 cadence 的间隔均有内联事故报告，累计 gap 6465.484496 秒未超过 21600 秒预算）。
   Acceptance: 无未解释重复交易、无无保护持仓、无审计链断点；全部事故可恢复并有报告。  
   Evidence: [`evidence/v5-011/stability-run-2026-09-12.json`](../evidence/v5-011/stability-run-2026-09-12.json)；操作与失败门禁见 [`V5-011-STABILITY-RUNBOOK.md`](./V5-011-STABILITY-RUNBOOK.md)。
-- [ ] `V5-012` 形成模拟系统上线评审包：能力边界、真实性级别、剩余风险、数据授权、运行成本、回滚和 Kill Switch 演练。  
-  Acceptance: 产品、架构、风险、数据和运营评审结论已记录；未解决阻断项不得启用。  
-  Evidence: 待补。
+- [x] `V5-012` 形成模拟系统上线评审包：能力边界、真实性级别、剩余风险、数据授权、运行成本、回滚和 Kill Switch 演练。
+  Status: COMPLETE（2026-09-12；评审包覆盖产品、架构、风险、数据和运营结论，明确 `RESTRICTED_SIMULATION_ONLY` 与 `DENY_UNTIL_BLOCKERS_CLOSED`；未解决阻断项不会被启用）。
+  Acceptance: 产品、架构、风险、数据和运营评审结论已记录；未解决阻断项不得启用。
+  Evidence: [`evidence/v5-012/release-review-2026-09-12.json`](../evidence/v5-012/release-review-2026-09-12.json)、[`V5-012-SIMULATION-LAUNCH-REVIEW.md`](./V5-012-SIMULATION-LAUNCH-REVIEW.md)。
 
 Exit：高保真与 Paper 偏差被量化；组合风险、离线增强和运营控制可审计；系统仍明确标识为研究与模拟产品。
 

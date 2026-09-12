@@ -24,6 +24,7 @@ EXCLUDED_PATHS = (
     r"|^datasets/mvp-r-001/"
     r"|^\.runtime/v5-011/"
     r"|^evidence/v5-011/"
+    r"|^evidence/v5-012/"
 )
 
 
