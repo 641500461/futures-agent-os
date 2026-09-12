@@ -1,0 +1,181 @@
+{
+  "schema": "v5-exit.independent-review.v1",
+  "version": "V5",
+  "review": "independent_exit",
+  "review_date": "2026-09-12",
+  "reviewer_model": "gpt-5.6-sol",
+  "reviewer_reasoning_effort": "high",
+  "reviewer_identity": "/root/v5_exit_independent_sol",
+  "reviewer_role": "NON_IMPLEMENTING_INDEPENDENT_REVIEWER",
+  "source_commit": "3a99e32\u006409f3547\u003770e3fb5\u00359dacd54\u0037d2a78ea\u0037",
+  "scope": "V5-001 through V5-012 Roadmap Acceptance and the V5 Exit claim",
+  "model_upgrade": false,
+  "commands": [
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v5_*.py tests/property/test_v5_*.py",
+      "result": "PASS: 117 passed (106 contract, 11 property)"
+    },
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v2_002_risk_budget_ledger.py tests/contract/test_v2_002_risk_engine.py tests/contract/test_v2_004_order_processor.py tests/contract/test_v2_005_fill_model.py tests/contract/test_v2_006_accounting.py tests/contract/test_v2_007_protection.py tests/contract/test_v2_010_replay.py tests/contract/test_v2_011_fault_injection.py tests/contract/test_v3_009_autonomy_mandate.py tests/contract/test_v3_remaining_contracts.py",
+      "result": "PASS: 98 passed"
+    },
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+      "result": "PASS: uv lock; 382 files format-checked; ruff passed; mypy passed over 171 source files; audited secret scan passed; 2 schema, 1 unit, 20 property and 934 contract tests passed; health returned status=ok and legacy_runtime_dependency=false"
+    },
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest -q tests/contract/test_v5_*.py tests/property/test_v5_*.py",
+      "result": "PASS after review-record updates: 118 passed (107 contract, 11 property)"
+    },
+    {
+      "command": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+      "result": "PASS after review-record updates: uv lock; 382 files format-checked; ruff passed; mypy passed over 171 source files; audited secret scan passed; 2 schema, 1 unit, 20 property and 935 contract tests passed; health returned status=ok and legacy_runtime_dependency=false"
+    }
+  ],
+  "acceptance_matrix": [
+    {
+      "task": "V5-001",
+      "verdict": "PASS",
+      "basis": "Identical ordered Quote/Trade ticks plus immutable configuration produce identical canonical Fill IDs and replay digest; latency, partial liquidity, limit/stop handling and scoped calibrated slippage are deterministic; sequence disorder/gaps and clock anomalies are typed fail-closed outcomes.",
+      "limitations": "No external representative market dataset is claimed; capability is L3 replay semantics for research."
+    },
+    {
+      "task": "V5-002",
+      "verdict": "PASS",
+      "basis": "Depth and queue transitions enforce conservation, aggressive and resting fills cannot exceed eligible liquidity, partial fills and price-time queue behavior match the frozen truth sample, and randomized properties cover depth and queue boundaries.",
+      "limitations": "The truth sample is a synthetic golden oracle and is not exchange-specific queue calibration."
+    },
+    {
+      "task": "V5-003",
+      "verdict": "PASS",
+      "basis": "The connector-neutral Paper boundary maps local orders without claiming venue acceptance, normalizes canonical external fills, reconciles complete local/external order and fill sets, and treats unknown health/state, mismatch and unsupported TqSim behavior as failure rather than success.",
+      "limitations": "No deployment credentials or live TqSim/Paper observation were available; L5 remains disabled."
+    },
+    {
+      "task": "V5-004",
+      "verdict": "PASS",
+      "basis": "TWAP, VWAP, Iceberg and batched entry/exit are versioned and human-activated; Agent output is recommendation-only; the deterministic planner revalidates activation and conserves whole-lot parent quantity in contract and property tests.",
+      "limitations": "Fill quality remains bounded by the selected FillModel and calibration scope."
+    },
+    {
+      "task": "V5-005",
+      "verdict": "PASS",
+      "basis": "Account and strategy exposures reconcile to portfolio net while gross exposure remains explicit across sector, direction, maturity and correlation clusters; spread legs and rollover costs remain visible; capital/risk allocation and gross/net/concentration boundaries fail closed with randomized properties.",
+      "limitations": "Inputs must share the declared reporting currency; currency conversion is not inferred."
+    },
+    {
+      "task": "V5-006",
+      "verdict": "PASS",
+      "basis": "Each registered FillModel calibration binds model, version, exact scope, paired Replay/Backtest and Paper evidence for fill, slippage, PnL and capacity, empirical error intervals, deterministic digests and explicit prohibited extrapolation; exact registry lookup rejects missing scope.",
+      "limitations": "Checked fixtures prove calibration mechanics, not representative deployment calibration; Paper/L5 calibration remains open."
+    },
+    {
+      "task": "V5-007",
+      "verdict": "PASS",
+      "basis": "The Steward accepts complete five-dimensional evaluation evidence and can produce only Prompt, Model or Strategy ChangeProposal facts; it has no merge, promotion, activation, rollback execution, registry mutation or Risk Constitution authority.",
+      "limitations": "Proposals require independent human-governed downstream actions."
+    },
+    {
+      "task": "V5-008",
+      "verdict": "PASS",
+      "basis": "Candidate, offline, shadow, human approval, bounded canary, independent activation and rollback remain separate ordered facts; candidates cannot self-activate; controlled SFT is only an eligibility assessment over authorized, deidentified, validated data with held-out evidence.",
+      "limitations": "No SFT performance or benefit is claimed."
+    },
+    {
+      "task": "V5-009",
+      "verdict": "PASS",
+      "basis": "Offline RL is a closed low-dimensional research boundary for execution, portfolio allocation and position adjustment with frozen dataset/code/environment/seed; evaluation, independent research review, governance approval and human activation are separate exact-scope gates.",
+      "limitations": "No trained policy performance is claimed and no policy can replace the high-level Agent or deterministic owner."
+    },
+    {
+      "task": "V5-010",
+      "verdict": "PASS",
+      "basis": "Seven typed SLOs alert on breach or missing windows; concurrent capacity reserves critical work, backpressure/rate limits and circuit behavior fail closed; the isolated PostgreSQL 17.11 PITR drill retained the target transaction, excluded the later transaction, observed RPO=0 and RTO=0.15122183365747333 seconds, and recovered into PROTECT_ONLY; executable runbooks cover major failures.",
+      "limitations": "The PITR drill has EMPTY_TRADING_STATE scope; V2 fault/replay contracts separately bound non-empty state recovery. It is not HA or 30-day SLO evidence."
+    },
+    {
+      "task": "V5-011",
+      "verdict": "PASS",
+      "basis": "The content-addressed final record covers 86699.342557 seconds, 85 heartbeats and 6 incident reports with total gap 6465.484496 seconds inside the fixed budget; its evaluation is complete with zero reason codes, and contract tests prove real probe execution, idempotent append-only hashing, drift/tamper rejection, gap reporting and invariant failure gates.",
+      "limitations": "The ignored raw runtime plan and heartbeat journal are not retained in Git, so this review cannot independently re-open all 85 payloads; the claim remains limited to the final content-addressed summary and one-day single-host run."
+    },
+    {
+      "task": "V5-012",
+      "verdict": "PASS",
+      "basis": "The launch package records product, architecture, risk, data and operations conclusions, capability boundaries, realism levels, rollback/Kill Switch procedure and four explicit enablement blockers; open blockers preserve DENY rather than being converted into success.",
+      "limitations": "Passing the review-package Acceptance is not unrestricted deployment approval."
+    }
+  ],
+  "exit_claim": {
+    "realism_and_calibration_limits": {
+      "verdict": "PASS_BOUNDED",
+      "finding": "L3/L4 deterministic semantics and exact-scope calibration governance are proven; synthetic L4 data and absent representative Paper observations prohibit exchange/Paper realism extrapolation."
+    },
+    "portfolio_risk_aggregation": {
+      "verdict": "PASS",
+      "finding": "Multi-account, multi-strategy net/gross aggregation, correlation-cluster concentration, maturity/spread, rollover and capital allocation boundaries are deterministic and property tested."
+    },
+    "offline_enhancement_governance": {
+      "verdict": "PASS",
+      "finding": "Steward, model evaluation/SFT and Offline RL paths remain evidence-bound proposals or separately human-approved activations with exact scope, deterministic fallback and rollback."
+    },
+    "operational_reliability_and_stability": {
+      "verdict": "PASS_RESTRICTED",
+      "finding": "SLO, capacity, fault and recovery controls plus the one-day single-host stability summary support restricted simulation; they do not prove HA, 30-day compliance, representative Paper operations or non-empty PostgreSQL PITR."
+    },
+    "research_and_simulation_only_boundary": {
+      "verdict": "PASS",
+      "finding": "No real-money or broker order-routing authority was added; fail-closed ownership remains in deterministic Risk, Execution, Accounting and Protection services; Agents and offline models remain proposal-only."
+    }
+  },
+  "findings": [
+    {
+      "severity": "NONE_BLOCKING",
+      "summary": "No defect was found that violates a V5 Roadmap Acceptance or the bounded V5 Exit claim."
+    },
+    {
+      "severity": "LIMITATION",
+      "summary": "Representative deployment data and Paper observations are absent, so L4 exchange queue realism and L5/Paper bias cannot be claimed."
+    },
+    {
+      "severity": "LIMITATION",
+      "summary": "The raw V5-011 runtime journal is not a tracked artifact; only its content-addressed final summary, file hashes and executable failure gates are reviewable from the repository."
+    }
+  ],
+  "limitations": [
+    "V5 Exit PASS is a bounded engineering acceptance and does not authorize unrestricted sim-prod enablement.",
+    "One-day, single-host stability is not high availability, long-term SLO compliance or a production capacity commitment.",
+    "The PostgreSQL PITR drill is EMPTY_TRADING_STATE; non-empty business recovery relies on separately passing deterministic V2 contracts.",
+    "No deployment-specific data authorization manifest is present.",
+    "No authorized representative Paper/L5 calibration dataset is present.",
+    "Billable model/token/Paper costs and operator budget/alert confirmation remain unavailable."
+  ],
+  "remaining_release_blockers": [
+    {
+      "id": "V5-012-B1",
+      "status": "CLOSED",
+      "basis": "This independent non-implementing gpt-5.6-sol/high review passed."
+    },
+    {
+      "id": "V5-012-B2",
+      "status": "OPEN",
+      "basis": "Deployment data license, allowed-use, retention, provenance, schema, coverage and PIT-quality manifest is absent."
+    },
+    {
+      "id": "V5-012-B3",
+      "status": "OPEN",
+      "basis": "Authorized representative Paper observations and exact-scope V5-006 calibration are absent; Paper/L5 remains disabled."
+    },
+    {
+      "id": "V5-012-B4",
+      "status": "OPEN",
+      "basis": "Local control/runtime resource observations exist, but billable model/token/Paper cost and operator budget/alert confirmation remain unavailable."
+    }
+  ],
+  "release_decision": "RESTRICTED_SIMULATION_ONLY",
+  "enablement_gate": "DENY_UNTIL_BLOCKERS_CLOSED",
+  "research_and_simulation_only": true,
+  "verdict": "PASS",
+  "model_output_not_authoritative": "The verdict is based on Roadmap Acceptance, implementation evidence, deterministic contract/property tests and repository gates; it does not grant trading authority or close deployment blockers B2-B4.",
+  "evidence_digest": "964e7cf\u0030722b048\u0062bdaf4a1\u00652d50be5\u00337b130bf\u003327a46d8\u003854bb94e\u0032b012891\u0034"
+}

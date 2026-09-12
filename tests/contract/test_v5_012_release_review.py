@@ -8,6 +8,7 @@ from futures_agent_os.shared_kernel import canonical_sha256
 
 ROOT = Path(__file__).resolve().parents[2]
 EVIDENCE = ROOT / "evidence/v5-012/release-review-2026-09-12.json"
+EXIT_EVIDENCE = ROOT / "evidence/v5-exit/independent-review-2026-09-12.json"
 
 
 def _load() -> dict[str, object]:
@@ -32,13 +33,20 @@ def test_release_review_package_is_complete_and_blocks_unrestricted_enablement()
     assert package["decision"] == "RESTRICTED_SIMULATION_ONLY"
     assert package["enablement_gate"] == "DENY_UNTIL_BLOCKERS_CLOSED"
     assert package["research_and_simulation_only"] is True
-    assert package["independent_version_exit_review"] is False
+    assert package["independent_version_exit_review"] is True
+    assert package["reviewer_model"] == "gpt-5.6-sol"
+    assert package["reviewer_reasoning_effort"] == "high"
     domains = package["review_domains"]
     assert isinstance(domains, dict)
     assert set(domains) == {"product", "architecture", "risk", "data", "operations"}
     blockers = package["blocking_items"]
     assert isinstance(blockers, list) and len(blockers) == 4
-    assert {item["status"] for item in blockers} == {"OPEN"}
+    assert {item["id"]: item["status"] for item in blockers} == {
+        "V5-012-B1": "CLOSED",
+        "V5-012-B2": "OPEN",
+        "V5-012-B3": "OPEN",
+        "V5-012-B4": "OPEN",
+    }
     assert (ROOT / "docs/V5-012-SIMULATION-LAUNCH-REVIEW.md").exists()
 
 
@@ -51,6 +59,28 @@ def test_release_review_digest_is_content_addressed_and_references_prior_evidenc
     assert "evidence/v5-010/implementation-2026-09-11.json" in refs
     assert "evidence/v5-011/stability-run-2026-09-12.json" in refs
     assert "evidence/v5-012/runtime-cost-baseline-2026-09-12.json" in refs
+    assert "evidence/v5-exit/independent-review-2026-09-12.json" in refs
+
+
+def test_independent_v5_exit_review_is_content_addressed_and_keeps_release_blockers_open() -> None:
+    review = json.loads(EXIT_EVIDENCE.read_text(encoding="utf-8"))
+    digest = review.pop("evidence_digest")
+    assert digest == canonical_sha256(_immutable(review))
+    assert review["reviewer_model"] == "gpt-5.6-sol"
+    assert review["reviewer_reasoning_effort"] == "high"
+    assert review["reviewer_identity"] == "/root/v5_exit_independent_sol"
+    expected_source_commit = "".join(("3a99e32d", "09f35477", "70e3fb55", "9dacd547", "d2a78ea7"))
+    assert review["source_commit"] == expected_source_commit
+    assert review["verdict"] == "PASS"
+    assert review["enablement_gate"] == "DENY_UNTIL_BLOCKERS_CLOSED"
+    blockers = review["remaining_release_blockers"]
+    assert isinstance(blockers, list)
+    assert {item["id"]: item["status"] for item in blockers} == {
+        "V5-012-B1": "CLOSED",
+        "V5-012-B2": "OPEN",
+        "V5-012-B3": "OPEN",
+        "V5-012-B4": "OPEN",
+    }
 
 
 def test_runtime_cost_baseline_does_not_turn_unavailable_pricing_into_zero() -> None:
