@@ -50,3 +50,15 @@ def test_release_review_digest_is_content_addressed_and_references_prior_evidenc
     assert isinstance(refs, list)
     assert "evidence/v5-010/implementation-2026-09-11.json" in refs
     assert "evidence/v5-011/stability-run-2026-09-12.json" in refs
+    assert "evidence/v5-012/runtime-cost-baseline-2026-09-12.json" in refs
+
+
+def test_runtime_cost_baseline_does_not_turn_unavailable_pricing_into_zero() -> None:
+    value = json.loads((ROOT / "evidence/v5-012/runtime-cost-baseline-2026-09-12.json").read_text(encoding="utf-8"))
+    digest = value.pop("evidence_digest")
+    assert digest == canonical_sha256(_immutable(value))  # type: ignore[arg-type]
+    pricing = value["pricing"]
+    assert isinstance(pricing, dict)
+    assert pricing["model_provider_cost"] == "SUBSCRIPTION_UNAVAILABLE"
+    assert pricing["token_cost"] == "SUBSCRIPTION_UNAVAILABLE"
+    assert pricing["local_compute_currency_cost"] == "NOT_MEASURED"
