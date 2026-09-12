@@ -1,0 +1,27 @@
+{
+  "calibration_status": "NOT_APPLICABLE_WHILE_DISABLED",
+  "claims_allowed": [
+    "L1_L2_deterministic_simulation",
+    "synthetic_research_fixture_replay"
+  ],
+  "claims_forbidden": [
+    "L5_paper_realism",
+    "paper_fill_bias",
+    "external_venue_reconciliation"
+  ],
+  "credentials_configured": false,
+  "decision": "PAPER_DISABLED_BY_SCOPE",
+  "operator_action": "No Paper connector or Paper credentials may be enabled under this deployment policy.",
+  "recorded_at": "2026-09-12T00:00:00Z",
+  "reopen_conditions": [
+    "explicit_operator_reauthorization",
+    "authorized_representative_paper_observations",
+    "v5_006_exact_scope_calibration",
+    "external_state_reconciliation"
+  ],
+  "representative_observations_present": false,
+  "schema": "v5-012.paper-scope-decision.v1",
+  "status": "DISABLED",
+  "task": "V5-012",
+  "evidence_digest": "c833769d4ecfd2d270a67f33cc4f950c9422395cdcc64f82e7afcea35f127a0b"
+}

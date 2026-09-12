@@ -1,0 +1,194 @@
+{
+  "schema": "v5-012.deployment-data-inventory.v1",
+  "task": "V5-012",
+  "recorded_at": "2026-09-12",
+  "status": "B2_OPEN",
+  "decision": "RESTRICTED_INTERNAL_RESEARCH_SIMULATION_ONLY",
+  "enablement_effect": "This inventory does not authorize unrestricted deployment, Paper/L5, real trading, redistribution, or commercial use.",
+  "implementation_model": "gpt-5.6-sol",
+  "implementation_reasoning_effort": "high",
+  "reviewer_model": "PENDING_PARENT_INTEGRATION",
+  "reviewer_reasoning_effort": "PENDING_PARENT_INTEGRATION",
+  "source_commit": "cd80bd9ccd04300a84dc853044c0d5ebe13a4d44",
+  "evidence_refs": [
+    "docs/V5-012-SIMULATION-LAUNCH-REVIEW.md",
+    "docs/MVP-R-001-DATA-SOURCE-EVIDENCE.md",
+    "datasets/README.md",
+    "datasets/mvp-r-001/collection-summary.json",
+    "datasets/mvp-r-001/normalized/manifests/normalized_pit/dataset_99333755-26e7-762e-9378-722d74c08001.json",
+    "datasets/mvp-r-001/normalized/manifests/normalized_pit/dataset_6728b330-08ae-716c-ac06-f3a9b2a29d70.json",
+    "datasets/mvp-r-001/pivot-retrospective-2025/collection-summary.json",
+    "datasets/v0-012/golden_market_events.manifest.json",
+    "evidence/v5-012/source-terms-observation-2026-09-12.json"
+  ],
+  "inventory": {
+    "current_2026_ignored_local_lake": {
+      "root": "datasets/mvp-r-001",
+      "storage_status": "ignored_local_dataset_not_in_git",
+      "collection_summary": {
+        "requested_range": {
+          "start": "2026-01-05",
+          "end": "2026-08-27"
+        },
+        "acquired_at": "2026-08-28T04:01:01.279125Z",
+        "mode": "RETROSPECTIVE_SEALED_REPLAY",
+        "task": "MVP-R-001",
+        "summary_sha256": "sha256:71e112e9259988674fa7e3753870414450ee5a901c64eb6c4216149790cfce76"
+      },
+      "raw": {
+        "manifest_count": 316,
+        "object_count": 316,
+        "source_counts": {
+          "SHFE official daily futures": 158,
+          "CZCE official daily futures": 158
+        },
+        "schema": "official_exchange_daily_raw@1.0",
+        "coverage": "2026-01-05T07:00:00Z..2026-08-27T07:00:00Z",
+        "manifest_field_check": {
+          "dataset_id": "present_in_316_of_316",
+          "content_hash_and_object_uri": "present_in_316_of_316",
+          "source_uri_and_source_revision": "present_in_316_of_316",
+          "schema": "present_in_316_of_316",
+          "coverage": "present_in_316_of_316",
+          "as_of_ingested_at_acquired_at": "present_and_equal_in_316_of_316",
+          "quality_and_revision": "present_in_316_of_316",
+          "license_block": "present_in_316_of_316_but_project_governance_text_only"
+        }
+      },
+      "normalized_pit": [
+        {
+          "path": "datasets/mvp-r-001/normalized/manifests/normalized_pit/dataset_99333755-26e7-762e-9378-722d74c08001.json",
+          "dataset_id": "dataset_99333755-26e7-762e-9378-722d74c08001",
+          "source": "SHFE official daily futures archive",
+          "instrument_universe": ["SHFE.AG.DOMINANT_OI", "SHFE.CU.DOMINANT_OI"],
+          "content_hash": "sha256:be629ed4311ecc3a5a733c8d87985a0b7a987f9d45ccaf469c0e82b1a97ed91e",
+          "record_count": 316,
+          "trading_days": 158,
+          "coverage": "2026-01-05T07:00:00Z..2026-08-27T07:00:00Z",
+          "as_of": "2026-08-28T04:01:01.279125Z",
+          "quality": "Q2_RESEARCH",
+          "quality_issues": ["retrospective sealed replay only", "not execution data", "roll discontinuities are unadjusted"],
+          "content_hash_verified": true,
+          "available_time_le_as_of_verified": true
+        },
+        {
+          "path": "datasets/mvp-r-001/normalized/manifests/normalized_pit/dataset_6728b330-08ae-716c-ac06-f3a9b2a29d70.json",
+          "dataset_id": "dataset_6728b330-08ae-716c-ac06-f3a9b2a29d70",
+          "source": "CZCE official daily futures archive",
+          "instrument_universe": ["CZCE.MA.DOMINANT_OI", "CZCE.SR.DOMINANT_OI"],
+          "content_hash": "sha256:625ac498c7418893dc73e94f32380d2c6e192d42fd08c63b20571a924bc5a93a",
+          "record_count": 316,
+          "trading_days": 158,
+          "coverage": "2026-01-05T07:00:00Z..2026-08-27T07:00:00Z",
+          "as_of": "2026-08-28T04:01:01.279125Z",
+          "quality": "Q2_RESEARCH",
+          "quality_issues": ["retrospective sealed replay only", "not execution data", "roll discontinuities are unadjusted"],
+          "content_hash_verified": true,
+          "available_time_le_as_of_verified": true
+        }
+      ]
+    },
+    "prior_2025_ignored_local_lake": {
+      "root": "datasets/mvp-r-001/pivot-retrospective-2025",
+      "storage_status": "ignored_local_dataset_not_in_git",
+      "acquired_at": "2026-08-30T16:15:25.612949Z",
+      "coverage": "2025-01-02T07:00:00Z..2025-06-30T07:00:00Z",
+      "raw_manifest_count": 234,
+      "raw_object_count": 234,
+      "source_counts": {
+        "SHFE official daily futures": 117,
+        "CZCE official daily futures": 117
+      },
+      "normalized_manifests": [
+        {
+          "dataset_id": "dataset_a1bc9eba-e905-7e58-a8cd-4b1dcad55df1",
+          "content_hash": "sha256:cf80a5404567a02c011c62bc6145b97d9aa4053a6d76dfeb37d3f77c2515bbf5",
+          "record_count": 234,
+          "trading_days": 117,
+          "source": "SHFE official daily futures archive"
+        },
+        {
+          "dataset_id": "dataset_1b8a3039-3292-79fa-9403-5260c9783f08",
+          "content_hash": "sha256:a84066316364cf71278c925c3129a22e94dfd6f7a13436f9d80ce7bd4f121d29",
+          "record_count": 234,
+          "trading_days": 117,
+          "source": "CZCE official daily futures archive"
+        }
+      ],
+      "quality": "Q2_RESEARCH; retrospective sealed replay only; not execution data; unadjusted rolls"
+    },
+    "synthetic_v0_012": {
+      "path": "datasets/v0-012/golden_market_events.manifest.json",
+      "storage_status": "committed_in_git",
+      "dataset_id": "dataset_018f9b16-9a00-7abd-8000-000000000013",
+      "content_hash": "sha256:ccf9ac425a0f052b41c0ffdbad498b0856f4f8b2d5e61a17215596d157f14ed6",
+      "record_count": 16,
+      "coverage": "2026-01-05T13:01:00Z..2026-02-20T07:00:00Z",
+      "license": {
+        "license_name": "CC0-1.0",
+        "allowed_use": "research and simulation",
+        "retention_policy": "repository lifetime",
+        "redistribution_policy": "redistribution permitted",
+        "environment_restriction": "development and CI only"
+      },
+      "quality": "Q2_RESEARCH; intentional edge cases; not execution-fidelity data",
+      "qualification": "only fully qualified CC0 manifest found, but its development/CI restriction prevents treating it as a deployment market-data authorization"
+    }
+  },
+  "governance_and_gap_assessment": {
+    "recorded_user_authorization": {
+      "path": "docs/MVP-R-001-DATA-SOURCE-EVIDENCE.md",
+      "date": "2026-08-28",
+      "scope": "personal, non-commercial, internal research and simulation; local retention; no redistribution, commercial use, or real trading",
+      "authority_type": "project governance authorization",
+      "provider_license_claim": false
+    },
+    "provider_provenance_present": true,
+    "provider_license_evidence_present": false,
+    "provider_terms_observation_partial": true,
+    "provider_allowed_use_evidence_partial": {
+      "SHFE": "observed_noncommercial_browse_download_statement",
+      "CZCE": "not_observed_http_412"
+    },
+    "official_site_terms_observation": {
+      "shfe": {
+        "terms_url": "https://www.shfe.com.cn/disclaimer/",
+        "http_status": 200,
+        "observed_scope": "non-commercial browsing/download is stated; SHFE ownership of site materials including market/statistical information is stated",
+        "limitations": ["no explicit retention/deletion period", "no broad redistribution grant", "statement reserves modification rights"]
+      },
+      "czce": {
+        "site_url": "https://www.czce.com.cn/",
+        "http_status": 412,
+        "terms_url": null,
+        "observation": "official homepage returned a challenge page; no bypass attempted"
+      }
+    },
+    "provider_allowed_use_evidence_present": false,
+    "provider_retention_evidence_present": false,
+    "provider_redistribution_evidence_present": false,
+    "source_terms_or_license_snapshot_present": false,
+    "pit_and_lineage_evidence": "present for the local artifacts: exact raw bytes, source URI, ETag/content revision, acquired/as_of times, normalized upstream IDs, hashes, coverage, Q2 quality, and available_time <= as_of checks",
+    "missing_facts_before_b2_close": [
+      "provider/source terms or an explicit provider authorization artifact for each deployed source",
+      "CZCE official terms/authorization artifact; the homepage returned HTTP 412 during the bounded read-only check",
+      "provider-approved allowed-use boundary including simulation/decision use",
+      "provider retention and deletion terms",
+      "provider redistribution or no-redistribution terms",
+      "deployment dataset freeze/manifest registration that binds the above facts to exact dataset IDs and hashes",
+      "operator acceptance that Q2 retrospective dominant-open-interest data is not Q3/Q4 decision/execution data"
+    ],
+    "not_found_or_not_claimed": [
+      "No Paper observations or Paper connector credentials",
+      "No tick/order-book/queue calibration dataset",
+      "No provider license inferred from source URL, ETag, or adapter code",
+      "No real-money or real-order authorization"
+    ]
+  },
+  "reproducibility_notes": {
+    "raw_and_normalized_counts_checked": true,
+    "normalized_content_hashes_checked": true,
+    "point_in_time_check": "all 316 current and 468 prior normalized rows have available_time equal to their recorded acquisition/as_of and therefore satisfy available_time <= as_of",
+    "scope_boundary": "ignored local data was inspected in this repository only; /Users/qiu/futures_workflow was not read or used"
+  }
+}

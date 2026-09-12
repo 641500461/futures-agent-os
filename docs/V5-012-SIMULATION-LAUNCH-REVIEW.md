@@ -8,14 +8,14 @@
 
 ## 决策
 
-V5-012 的评审包已经形成，覆盖产品、架构、风险、数据和运营结论。当前只允许在已授权数据、隔离模拟账户和明确的 `OBSERVE`、`SHADOW` 或受控 `AUTONOMOUS_SIMULATION` 范围内运行。任何 Paper connector、真实资金、真实订单路由或未登记的数据来源都不在启用范围内。
+V5-012 的评审包已经形成，覆盖产品、架构、风险、数据和运营结论。当前只允许在已授权数据、隔离模拟账户和明确的 `OBSERVE`、`SHADOW` 或受控 `AUTONOMOUS_SIMULATION` 范围内运行。任何 Paper connector、真实资金、真实订单路由或未登记的数据来源都不在启用范围内。当前受限策略仅适用于本次开发/CI 范围，尚未扩大为常驻 Paper 或真实行情部署。
 
 评审包不批准无条件的 `sim-prod` 扩大启用。以下事项全部关闭并取得独立证据前，启用门保持 `DENY`：
 
 1. `V5-012-B1 CLOSED`：由未主导 V5 实现的独立 `gpt-5.6-sol/high` 身份在源提交 `3a99e32d09f3547770e3fb559dacd547d2a78ea7` 上完成 V5 Exit 复核；Evidence 见 `evidence/v5-exit/independent-review-2026-09-12.json`。
 2. `V5-012-B2 OPEN`：为部署实际使用的数据集登记 license、allowed use、retention、来源、schema、覆盖范围和 `as_of` 证据。
-3. `V5-012-B3 OPEN`：若要宣称 Paper/L5 真实性，取得有授权且具有代表性的 Paper 观测并完成 V5-006 校准；否则明确关闭 Paper 模式和相关宣传。
-4. `V5-012-B4 OPEN`：本机控制门的工具、存储和运行时资源基线已记录于 `evidence/v5-012/runtime-cost-baseline-2026-09-12.json`；仍需记录 billable model/token/Paper 成本，并由运营负责人确认预算与告警阈值。不可将不可用的计费数据解释为零成本。
+3. `V5-012-B3 CLOSED`：当前开发/CI 受限部署已明确关闭 Paper connector、凭据和 Paper/L5 真实性宣传；若未来要启用，必须取得有授权且具有代表性的 Paper 观测并完成 V5-006 校准。Evidence：`evidence/v5-012/paper-scope-decision-2026-09-12.json`。
+4. `V5-012-B4 CLOSED`：操作者决定直接查看 Codex 用量，不建设单独计费账本；Paper 已禁用，因此没有 Paper 费用。现有本机资源基线继续保留作诊断，不解释为货币成本。
 
 这些门禁未关闭时，系统仍可用于本地和测试环境的研究与确定性模拟验收；不产生真实订单或真实资金副作用。
 
@@ -50,11 +50,11 @@ V5-012 的评审包已经形成，覆盖产品、架构、风险、数据和运�
 
 已验证的硬门禁包括：无保护暴露、重复 Fill/记账、reservation 超卖、越过风险 ceiling、账本差异和旧授权复用均被确定性测试阻断；Kill Switch、保护退出、撤销 Mandate、模式暂停和恢复均保留审计。模型不可用时不产生新的 Agent 交易提案，已有暴露仍由确定性保护、结算和 Kill Switch 处理。
 
-剩余风险必须在扩大启用前处理：Paper 状态可能未知、数据代表性和授权可能不足、单机故障域仍有限、V5-010 PITR 演练的业务状态范围是 `EMPTY_TRADING_STATE`，以及 billable model/token/Paper 成本与预算告警尚未形成部署确认。上述风险均不允许通过文字假设关闭。
+剩余风险必须在扩大启用前处理：Paper 状态可能未知、数据代表性和授权可能不足、单机故障域仍有限、V5-010 PITR 演练的业务状态范围是 `EMPTY_TRADING_STATE`，以及当前真实行情数据授权仍未形成部署确认。上述风险均不允许通过文字假设关闭。
 
 ## 数据评审
 
-数据进入决策前必须有来源、license、allowed use、retention、schema、coverage、质量等级、revision、ingested time 和 `available_time <= as_of` 证据。Q0/Q1 数据不得进入决策或模拟执行；Q3/Q4 才可作为决策/执行输入。当前代码和契约支持这些门禁，但本评审包没有替部署生成新的第三方授权，因此部署数据 manifest 是启用前的 ACTION_REQUIRED 项。
+数据进入决策前必须有来源、license、allowed use、retention、schema、coverage、质量等级、revision、ingested time 和 `available_time <= as_of` 证据。Q0/Q1 数据不得进入决策或模拟执行；Q3/Q4 才可作为决策/执行输入。当前代码和契约支持这些门禁，但本评审包没有替部署生成新的第三方授权；真实行情部署数据 manifest 仍是 B2 的 ACTION_REQUIRED 项。synthetic v0-012 仍只限开发/CI，不能代表真实市场数据授权。
 
 ## 运营评审
 
@@ -81,5 +81,5 @@ V5-010 已演练七项关键 SLO 告警、关键容量保留、backlog/rate/circ
 - 架构：PASS（确定性 owner 与恢复边界满足要求）。
 - 风险：PASS（硬门禁通过）；扩大启用仍受剩余风险门禁约束。
 - 数据：ACTION_REQUIRED（部署授权 manifest 尚待绑定）。
-- 运营：PASS（受限模拟）；V5 Exit 已独立复核，但 billable 成本/预算确认和长期/高可用证据尚待补齐。
+- 运营：PASS（受限模拟）；V5 Exit 已独立复核，B4 采用操作者手动查看 Codex 用量。
 - 总决定：`RESTRICTED_SIMULATION_ONLY`；`enablement_gate=DENY_UNTIL_BLOCKERS_CLOSED`。

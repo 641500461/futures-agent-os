@@ -44,8 +44,8 @@ def test_release_review_package_is_complete_and_blocks_unrestricted_enablement()
     assert {item["id"]: item["status"] for item in blockers} == {
         "V5-012-B1": "CLOSED",
         "V5-012-B2": "OPEN",
-        "V5-012-B3": "OPEN",
-        "V5-012-B4": "OPEN",
+        "V5-012-B3": "CLOSED",
+        "V5-012-B4": "CLOSED",
     }
     assert (ROOT / "docs/V5-012-SIMULATION-LAUNCH-REVIEW.md").exists()
 
@@ -59,6 +59,9 @@ def test_release_review_digest_is_content_addressed_and_references_prior_evidenc
     assert "evidence/v5-010/implementation-2026-09-11.json" in refs
     assert "evidence/v5-011/stability-run-2026-09-12.json" in refs
     assert "evidence/v5-012/runtime-cost-baseline-2026-09-12.json" in refs
+    assert "evidence/v5-012/deployment-data-inventory-2026-09-12.json" in refs
+    assert "evidence/v5-012/source-terms-observation-2026-09-12.json" in refs
+    assert "evidence/v5-012/paper-scope-decision-2026-09-12.json" in refs
     assert "evidence/v5-exit/independent-review-2026-09-12.json" in refs
 
 
@@ -92,3 +95,17 @@ def test_runtime_cost_baseline_does_not_turn_unavailable_pricing_into_zero() -> 
     assert pricing["model_provider_cost"] == "SUBSCRIPTION_UNAVAILABLE"
     assert pricing["token_cost"] == "SUBSCRIPTION_UNAVAILABLE"
     assert pricing["local_compute_currency_cost"] == "NOT_MEASURED"
+
+
+def test_paper_scope_closure_does_not_claim_calibration_or_enablement() -> None:
+    package = _load()
+    scope = json.loads((ROOT / "evidence/v5-012/paper-scope-decision-2026-09-12.json").read_text())
+    digest = scope.pop("evidence_digest")
+    assert digest == canonical_sha256(_immutable(scope))
+    assert package["paper_scope_decision"] == scope["decision"] == "PAPER_DISABLED_BY_SCOPE"
+    assert scope["status"] == "DISABLED"
+    assert scope["representative_observations_present"] is False
+    assert scope["calibration_status"] == "NOT_APPLICABLE_WHILE_DISABLED"
+    assert "L5_paper_realism" in scope["claims_forbidden"]
+    assert package["enablement_gate"] == "DENY_UNTIL_BLOCKERS_CLOSED"
+    assert next(item for item in package["realism_levels"] if item["level"] == "L5")["status"] == "NOT_ENABLED"

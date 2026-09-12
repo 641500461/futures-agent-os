@@ -12,14 +12,14 @@
       "status": "OPEN"
     },
     {
-      "description": "Paper/L5 remains disabled until authorized representative observations are calibrated",
+      "description": "Paper/L5 is explicitly disabled for the current development-and-CI-only deployment; no Paper realism claim is made.",
       "id": "V5-012-B3",
-      "status": "OPEN"
+      "status": "CLOSED"
     },
     {
-      "description": "Billable model/token/Paper cost and operator budget/alert confirmation; local control/runtime resource baseline is recorded",
+      "description": "Operator waives separate billable cost accounting for this single-user subscription deployment and will inspect Codex usage manually; Paper is disabled, so no Paper cost is incurred.",
       "id": "V5-012-B4",
-      "status": "OPEN"
+      "status": "CLOSED"
     }
   ],
   "capability_boundary": {
@@ -43,7 +43,6 @@
   },
   "decision": "RESTRICTED_SIMULATION_ONLY",
   "enablement_gate": "DENY_UNTIL_BLOCKERS_CLOSED",
-  "evidence_digest": "baa540c93b48ad2221284c8f4af2a9d6c9a0bf8940ad97b316a20b88a4a70818",
   "evidence_refs": [
     "evidence/v5-001/implementation-2026-09-10.json",
     "evidence/v5-002/implementation-2026-09-10.json",
@@ -55,7 +54,10 @@
     "evidence/v5-011/stability-run-2026-09-12.json",
     "evidence/v5-exit/independent-review-2026-09-12.json",
     "docs/V5-012-SIMULATION-LAUNCH-REVIEW.md",
-    "evidence/v5-012/runtime-cost-baseline-2026-09-12.json"
+    "evidence/v5-012/runtime-cost-baseline-2026-09-12.json",
+    "evidence/v5-012/deployment-data-inventory-2026-09-12.json",
+    "evidence/v5-012/paper-scope-decision-2026-09-12.json",
+    "evidence/v5-012/source-terms-observation-2026-09-12.json"
   ],
   "implementation_model": "NOT_EXPOSED",
   "implementation_reasoning_effort": "NOT_EXPOSED",
@@ -75,8 +77,10 @@
     "This package does not authorize real trading or real money.",
     "V5-010 PITR business-state drill is EMPTY_TRADING_STATE; V2 fault/replay evidence bounds non-empty recovery claims.",
     "V5-011 one-day stability is not a 30-day, HA or production SLO claim.",
-    "Open blockers B2, B3 and B4 prevent unrestricted enablement.",
-    "The independent V5 Exit review closes only B1 and does not widen any realism, recovery, stability or cost claim."
+    "Only B2 remains an open blocker to this restricted deployment.",
+    "The independent V5 Exit review snapshot left B2-B4 open; subsequent operator scope decisions closed B3 and B4.",
+    "Current restricted policy is proposed and limited to development/CI; it is not runtime deployment enforcement.",
+    "Current cost control relies on manual Codex usage review; no billable API or Paper connector is enabled."
   ],
   "model_output_not_authoritative": "All review conclusions are bounded by deterministic evidence and human gates; Agent proposals cannot close blockers or activate versions.",
   "realism_levels": [
@@ -109,11 +113,11 @@
       "scope": "deterministic_truth_owners_and_protect_only_recovery"
     },
     "data": {
-      "conclusion": "ACTION_REQUIRED",
+      "conclusion": "ACTION_REQUIRED_FOR_REAL_DATA; SYNTHETIC_DEV_CI_BOUNDED",
       "scope": "deployment_authorization_manifest"
     },
     "operations": {
-      "conclusion": "PASS_RESTRICTED",
+      "conclusion": "PASS_RESTRICTED_MANUAL_USAGE_REVIEW",
       "scope": "one_day_single_host_simulation"
     },
     "product": {
@@ -135,10 +139,15 @@
     "cost_baseline": "evidence/v5-012/runtime-cost-baseline-2026-09-12.json: local make check wall=18.34s, user=41.94s, sys=4.09s; billable model/token/Paper cost unavailable.",
     "full_gate": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
     "full_gate_result": "lock, format, ruff, mypy over 171 source files, audited secret scan, 2 schema, 1 unit, 20 property, 934 contract, and health passed",
-    "independent_exit_review": "evidence/v5-exit/independent-review-2026-09-12.json: PASS by /root/v5_exit_independent_sol using gpt-5.6-sol/high; B1 CLOSED; B2, B3 and B4 remain OPEN.",
-    "post_review_full_gate_result": "lock, format, ruff, mypy over 171 source files, audited secret scan, 2 schema, 1 unit, 20 property, 935 contract, and health passed",
+    "independent_exit_review": "evidence/v5-exit/independent-review-2026-09-12.json: historical PASS by /root/v5_exit_independent_sol using gpt-5.6-sol/high; B1 CLOSED at review time; subsequent scope decisions closed B3 and B4.",
+    "post_review_full_gate_result": "lock, format, ruff, mypy over 171 source files, audited secret scan, 2 schema, 1 unit, 20 property, 936 contract, and health passed",
     "review_mapping": "Kill Switch, Mandate pause/revoke, rollback, recovery gates, operations reliability, one-day stability and package structure all passed.",
     "targeted_command": "uv run pytest -q tests/contract/test_v2_002_risk_engine.py tests/contract/test_v2_007_protection.py tests/contract/test_v3_009_autonomy_mandate.py tests/contract/test_v5_008_model_evaluation_pipeline.py tests/contract/test_v5_010_operational_reliability.py tests/contract/test_v5_011_stability_run.py tests/contract/test_v5_012_release_review.py",
     "targeted_result": "71 passed"
-  }
+  },
+  "paper_scope_decision": "PAPER_DISABLED_BY_SCOPE",
+  "data_inventory_ref": "evidence/v5-012/deployment-data-inventory-2026-09-12.json",
+  "cost_control_decision": "MANUAL_CODEX_USAGE_REVIEW",
+  "operator_budget_confirmation": "WAIVED_BY_OPERATOR_FOR_CURRENT_SINGLE_USER_SCOPE",
+  "evidence_digest": "5f7c09f51270eb4ad7262c5a053a86d17e9a0f8e61f7db16816b91baf9cd47f0"
 }

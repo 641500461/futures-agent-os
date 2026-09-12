@@ -1,0 +1,54 @@
+{
+  "schema": "v5-012.source-terms-observation.v1",
+  "task": "V5-012",
+  "recorded_at": "2026-09-12T08:24:47Z",
+  "status": "PARTIAL_PROVIDER_TERMS_OBSERVATION",
+  "method": "read_only_curl_get_and_head; no authentication, bypass, scraping workaround, or data download",
+  "implementation_model": "gpt-5.6-sol",
+  "implementation_reasoning_effort": "high",
+  "observations": [
+    {
+      "provider": "SHFE",
+      "site": "https://www.shfe.com.cn/",
+      "terms_url": "https://www.shfe.com.cn/disclaimer/",
+      "legal_guide_url": "https://www.shfe.com.cn/services/law/guideline_legal/",
+      "http_status": 200,
+      "observed_title": "版权声明",
+      "retrieved_at": "2026-09-12T08:24:47Z",
+      "exact_excerpts_zh": [
+        "本网站的内容由上海期货交易所提供，受中国知识产权法及相关法律保护。除法律另有规定或者上海期货交易所与有关当事人另有约定外，本网站提供的所有资料（包括但不限于行情信息、市场统计信息等）以及相关软件程序的知识产权均归属上海期货交易所。",
+        "在遵守中国有关法律与本声明的前提下，任何机构或者个人可基于非商业目的浏览、下载本网站的内容。未经上海期货交易所书面许可，任何机构或者个人不得以向他人出售牟利为目的，使用本网站的任何内容，此种使用包括但不限于拷贝、下载、存贮、通过硬拷贝或电子抓取系统、发送、转换、出租、演示、转载、复制、修改、销售、传播、出版或任何其它形式的散发。",
+        "本声明在本网站首页及相关页面发布。任何机构或者个人进入本网站，即被视为已完全知悉、理解并接受本声明的全部内容。上海期货交易所保留对本声明的修改、解释权。"
+      ],
+      "truthful_effect": {
+        "supports": "A non-commercial internal download/research use reading is consistent with the observed public-site statement, subject to Chinese law and the statement.",
+        "does_not_establish": [
+          "a broad or perpetual data license",
+          "a provider-granted right to redistribute raw or derived files",
+          "a retention or deletion period",
+          "permission for commercial, resale, publication, or external dissemination",
+          "Q3/Q4 decision or execution quality"
+        ]
+      }
+    },
+    {
+      "provider": "CZCE",
+      "site": "https://www.czce.com.cn/",
+      "terms_url": null,
+      "http_status": 412,
+      "retrieved_at": "2026-09-12T08:24:47Z",
+      "response_observation": "Official homepage returned HTTP 412 Precondition Failed with an anti-automation challenge page. No terms/copyright/retention page was read or bypassed.",
+      "truthful_effect": {
+        "supports": "The official source endpoint remains recorded in each raw manifest for provenance.",
+        "does_not_establish": [
+          "CZCE license or allowed-use terms",
+          "CZCE retention/deletion policy",
+          "CZCE redistribution policy",
+          "CZCE authorization for this deployment"
+        ]
+      }
+    }
+  ],
+  "b2_conclusion": "B2 remains OPEN. SHFE public-site language is useful source-terms evidence for the existing project-authorized personal/non-commercial internal research scope, but it is not a complete deployment license/retention manifest. CZCE terms remain unobserved because the official homepage returned 412 without a permitted read path.",
+  "minimal_required_next_fact": "For SHFE, bind this exact statement URL and a user/operator acceptance of local-only retention and no external redistribution, then record a review/expiry date because SHFE reserves modification rights. For CZCE, obtain an official terms/authorization artifact or keep CZCE data out of deployment decision inputs."
+}
