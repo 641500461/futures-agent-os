@@ -7,9 +7,9 @@
       "status": "CLOSED"
     },
     {
-      "description": "Deployment data manifests must bind license, allowed use, retention, provenance and PIT quality",
+      "description": "SHFE AG/CU is bound to a research-only manifest with observed non-commercial terms, local retention/no redistribution policy and exact dataset lineage; CZCE remains excluded.",
       "id": "V5-012-B2",
-      "status": "OPEN"
+      "status": "CLOSED"
     },
     {
       "description": "Paper/L5 is explicitly disabled for the current development-and-CI-only deployment; no Paper realism claim is made.",
@@ -57,7 +57,8 @@
     "evidence/v5-012/runtime-cost-baseline-2026-09-12.json",
     "evidence/v5-012/deployment-data-inventory-2026-09-12.json",
     "evidence/v5-012/paper-scope-decision-2026-09-12.json",
-    "evidence/v5-012/source-terms-observation-2026-09-12.json"
+    "evidence/v5-012/source-terms-observation-2026-09-12.json",
+    "evidence/v5-012/deployment-data-manifest-shfe-research-2026-09-12.json"
   ],
   "implementation_model": "NOT_EXPOSED",
   "implementation_reasoning_effort": "NOT_EXPOSED",
@@ -77,10 +78,11 @@
     "This package does not authorize real trading or real money.",
     "V5-010 PITR business-state drill is EMPTY_TRADING_STATE; V2 fault/replay evidence bounds non-empty recovery claims.",
     "V5-011 one-day stability is not a 30-day, HA or production SLO claim.",
-    "Only B2 remains an open blocker to this restricted deployment.",
+    "Only SHFE AG/CU research replay is bound; CZCE remains excluded and Q2 data cannot be used as Q3/Q4 decision/execution evidence.",
     "The independent V5 Exit review snapshot left B2-B4 open; subsequent operator scope decisions closed B3 and B4.",
     "Current restricted policy is proposed and limited to development/CI; it is not runtime deployment enforcement.",
-    "Current cost control relies on manual Codex usage review; no billable API or Paper connector is enabled."
+    "Current cost control relies on manual Codex usage review; no billable API or Paper connector is enabled.",
+    "The current data manifest does not authorize Q3/Q4 decision or execution use."
   ],
   "model_output_not_authoritative": "All review conclusions are bounded by deterministic evidence and human gates; Agent proposals cannot close blockers or activate versions.",
   "realism_levels": [
@@ -113,7 +115,7 @@
       "scope": "deterministic_truth_owners_and_protect_only_recovery"
     },
     "data": {
-      "conclusion": "ACTION_REQUIRED_FOR_REAL_DATA; SYNTHETIC_DEV_CI_BOUNDED",
+      "conclusion": "PASS_RESEARCH_ONLY_CZCE_EXCLUDED",
       "scope": "deployment_authorization_manifest"
     },
     "operations": {
@@ -143,11 +145,14 @@
     "post_review_full_gate_result": "lock, format, ruff, mypy over 171 source files, audited secret scan, 2 schema, 1 unit, 20 property, 936 contract, and health passed",
     "review_mapping": "Kill Switch, Mandate pause/revoke, rollback, recovery gates, operations reliability, one-day stability and package structure all passed.",
     "targeted_command": "uv run pytest -q tests/contract/test_v2_002_risk_engine.py tests/contract/test_v2_007_protection.py tests/contract/test_v3_009_autonomy_mandate.py tests/contract/test_v5_008_model_evaluation_pipeline.py tests/contract/test_v5_010_operational_reliability.py tests/contract/test_v5_011_stability_run.py tests/contract/test_v5_012_release_review.py",
-    "targeted_result": "71 passed"
+    "targeted_result": "71 passed",
+    "data_manifest": "SHFE research-only manifest bound to exact dataset ID/hash; CZCE excluded pending official terms."
   },
   "paper_scope_decision": "PAPER_DISABLED_BY_SCOPE",
   "data_inventory_ref": "evidence/v5-012/deployment-data-inventory-2026-09-12.json",
   "cost_control_decision": "MANUAL_CODEX_USAGE_REVIEW",
   "operator_budget_confirmation": "WAIVED_BY_OPERATOR_FOR_CURRENT_SINGLE_USER_SCOPE",
-  "evidence_digest": "5f7c09f51270eb4ad7262c5a053a86d17e9a0f8e61f7db16816b91baf9cd47f0"
+  "data_scope_decision": "SHFE_RESEARCH_ONLY_CZCE_EXCLUDED",
+  "data_manifest_ref": "evidence/v5-012/deployment-data-manifest-shfe-research-2026-09-12.json",
+  "evidence_digest": "286ebc4189df6371a40dbcd2a16db3a31992a442d3527f1473dc64ee7a6a1f96"
 }

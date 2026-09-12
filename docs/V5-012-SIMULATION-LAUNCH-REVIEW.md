@@ -10,10 +10,10 @@
 
 V5-012 的评审包已经形成，覆盖产品、架构、风险、数据和运营结论。当前只允许在已授权数据、隔离模拟账户和明确的 `OBSERVE`、`SHADOW` 或受控 `AUTONOMOUS_SIMULATION` 范围内运行。任何 Paper connector、真实资金、真实订单路由或未登记的数据来源都不在启用范围内。当前受限策略仅适用于本次开发/CI 范围，尚未扩大为常驻 Paper 或真实行情部署。
 
-评审包不批准无条件的 `sim-prod` 扩大启用。以下事项全部关闭并取得独立证据前，启用门保持 `DENY`：
+评审包不批准无条件的 `sim-prod` 扩大启用。当前四个原始阻断项均已按范围处理，但更广泛启用仍保持 `DENY`，因为 CZCE 未纳入授权清单且当前 SHFE 数据为 Q2 研究质量。
 
 1. `V5-012-B1 CLOSED`：由未主导 V5 实现的独立 `gpt-5.6-sol/high` 身份在源提交 `3a99e32d09f3547770e3fb559dacd547d2a78ea7` 上完成 V5 Exit 复核；Evidence 见 `evidence/v5-exit/independent-review-2026-09-12.json`。
-2. `V5-012-B2 OPEN`：为部署实际使用的数据集登记 license、allowed use、retention、来源、schema、覆盖范围和 `as_of` 证据。
+2. `V5-012-B2 CLOSED_FOR_SHFE_RESEARCH_ONLY`：SHFE AG/CU 研究回放已绑定观察到的非商业条款、仅本机保留/禁止再分发政策、精确数据集 ID/hash、来源、schema、覆盖范围和 `as_of`。CZCE MA/SR 被排除。Evidence：`evidence/v5-012/deployment-data-manifest-shfe-research-2026-09-12.json`。
 3. `V5-012-B3 CLOSED`：当前开发/CI 受限部署已明确关闭 Paper connector、凭据和 Paper/L5 真实性宣传；若未来要启用，必须取得有授权且具有代表性的 Paper 观测并完成 V5-006 校准。Evidence：`evidence/v5-012/paper-scope-decision-2026-09-12.json`。
 4. `V5-012-B4 CLOSED`：操作者决定直接查看 Codex 用量，不建设单独计费账本；Paper 已禁用，因此没有 Paper 费用。现有本机资源基线继续保留作诊断，不解释为货币成本。
 
@@ -54,7 +54,7 @@ V5-012 的评审包已经形成，覆盖产品、架构、风险、数据和运�
 
 ## 数据评审
 
-数据进入决策前必须有来源、license、allowed use、retention、schema、coverage、质量等级、revision、ingested time 和 `available_time <= as_of` 证据。Q0/Q1 数据不得进入决策或模拟执行；Q3/Q4 才可作为决策/执行输入。当前代码和契约支持这些门禁，但本评审包没有替部署生成新的第三方授权；真实行情部署数据 manifest 仍是 B2 的 ACTION_REQUIRED 项。synthetic v0-012 仍只限开发/CI，不能代表真实市场数据授权。
+数据进入决策前必须有来源、license、allowed use、retention、schema、coverage、质量等级、revision、ingested time 和 `available_time <= as_of` 证据。Q0/Q1 数据不得进入决策或模拟执行；Q3/Q4 才可作为决策/执行输入。当前 SHFE 研究范围已绑定完整的研究-only manifest；CZCE 和 Q3/Q4 决策/执行用途仍被排除。synthetic v0-012 仍只限开发/CI，不能代表真实市场数据授权。
 
 ## 运营评审
 
@@ -80,6 +80,6 @@ V5-010 已演练七项关键 SLO 告警、关键容量保留、backlog/rate/circ
 - 产品：PASS（受限模拟）。
 - 架构：PASS（确定性 owner 与恢复边界满足要求）。
 - 风险：PASS（硬门禁通过）；扩大启用仍受剩余风险门禁约束。
-- 数据：ACTION_REQUIRED（部署授权 manifest 尚待绑定）。
+- 数据：PASS（SHFE 研究范围）；CZCE 和 Q3/Q4 决策/执行数据仍未授权。
 - 运营：PASS（受限模拟）；V5 Exit 已独立复核，B4 采用操作者手动查看 Codex 用量。
 - 总决定：`RESTRICTED_SIMULATION_ONLY`；`enablement_gate=DENY_UNTIL_BLOCKERS_CLOSED`。

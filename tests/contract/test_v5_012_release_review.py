@@ -43,7 +43,7 @@ def test_release_review_package_is_complete_and_blocks_unrestricted_enablement()
     assert isinstance(blockers, list) and len(blockers) == 4
     assert {item["id"]: item["status"] for item in blockers} == {
         "V5-012-B1": "CLOSED",
-        "V5-012-B2": "OPEN",
+        "V5-012-B2": "CLOSED",
         "V5-012-B3": "CLOSED",
         "V5-012-B4": "CLOSED",
     }
@@ -62,6 +62,7 @@ def test_release_review_digest_is_content_addressed_and_references_prior_evidenc
     assert "evidence/v5-012/deployment-data-inventory-2026-09-12.json" in refs
     assert "evidence/v5-012/source-terms-observation-2026-09-12.json" in refs
     assert "evidence/v5-012/paper-scope-decision-2026-09-12.json" in refs
+    assert "evidence/v5-012/deployment-data-manifest-shfe-research-2026-09-12.json" in refs
     assert "evidence/v5-exit/independent-review-2026-09-12.json" in refs
 
 

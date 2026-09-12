@@ -60,14 +60,21 @@
           "path": "datasets/mvp-r-001/normalized/manifests/normalized_pit/dataset_99333755-26e7-762e-9378-722d74c08001.json",
           "dataset_id": "dataset_99333755-26e7-762e-9378-722d74c08001",
           "source": "SHFE official daily futures archive",
-          "instrument_universe": ["SHFE.AG.DOMINANT_OI", "SHFE.CU.DOMINANT_OI"],
+          "instrument_universe": [
+            "SHFE.AG.DOMINANT_OI",
+            "SHFE.CU.DOMINANT_OI"
+          ],
           "content_hash": "sha256:be629ed4311ecc3a5a733c8d87985a0b7a987f9d45ccaf469c0e82b1a97ed91e",
           "record_count": 316,
           "trading_days": 158,
           "coverage": "2026-01-05T07:00:00Z..2026-08-27T07:00:00Z",
           "as_of": "2026-08-28T04:01:01.279125Z",
           "quality": "Q2_RESEARCH",
-          "quality_issues": ["retrospective sealed replay only", "not execution data", "roll discontinuities are unadjusted"],
+          "quality_issues": [
+            "retrospective sealed replay only",
+            "not execution data",
+            "roll discontinuities are unadjusted"
+          ],
           "content_hash_verified": true,
           "available_time_le_as_of_verified": true
         },
@@ -75,14 +82,21 @@
           "path": "datasets/mvp-r-001/normalized/manifests/normalized_pit/dataset_6728b330-08ae-716c-ac06-f3a9b2a29d70.json",
           "dataset_id": "dataset_6728b330-08ae-716c-ac06-f3a9b2a29d70",
           "source": "CZCE official daily futures archive",
-          "instrument_universe": ["CZCE.MA.DOMINANT_OI", "CZCE.SR.DOMINANT_OI"],
+          "instrument_universe": [
+            "CZCE.MA.DOMINANT_OI",
+            "CZCE.SR.DOMINANT_OI"
+          ],
           "content_hash": "sha256:625ac498c7418893dc73e94f32380d2c6e192d42fd08c63b20571a924bc5a93a",
           "record_count": 316,
           "trading_days": 158,
           "coverage": "2026-01-05T07:00:00Z..2026-08-27T07:00:00Z",
           "as_of": "2026-08-28T04:01:01.279125Z",
           "quality": "Q2_RESEARCH",
-          "quality_issues": ["retrospective sealed replay only", "not execution data", "roll discontinuities are unadjusted"],
+          "quality_issues": [
+            "retrospective sealed replay only",
+            "not execution data",
+            "roll discontinuities are unadjusted"
+          ],
           "content_hash_verified": true,
           "available_time_le_as_of_verified": true
         }
@@ -155,7 +169,11 @@
         "terms_url": "https://www.shfe.com.cn/disclaimer/",
         "http_status": 200,
         "observed_scope": "non-commercial browsing/download is stated; SHFE ownership of site materials including market/statistical information is stated",
-        "limitations": ["no explicit retention/deletion period", "no broad redistribution grant", "statement reserves modification rights"]
+        "limitations": [
+          "no explicit retention/deletion period",
+          "no broad redistribution grant",
+          "statement reserves modification rights"
+        ]
       },
       "czce": {
         "site_url": "https://www.czce.com.cn/",
@@ -164,31 +182,30 @@
         "observation": "official homepage returned a challenge page; no bypass attempted"
       }
     },
-    "provider_allowed_use_evidence_present": false,
-    "provider_retention_evidence_present": false,
-    "provider_redistribution_evidence_present": false,
+    "provider_allowed_use_evidence_present": "SHFE_NONCOMMERCIAL_STATEMENT_BOUND_TO_RESEARCH_ONLY_MANIFEST",
+    "provider_retention_evidence_present": "OPERATOR_LOCAL_RETENTION_POLICY",
+    "provider_redistribution_evidence_present": "NO_REDISTRIBUTION_OPERATOR_POLICY",
     "source_terms_or_license_snapshot_present": false,
     "pit_and_lineage_evidence": "present for the local artifacts: exact raw bytes, source URI, ETag/content revision, acquired/as_of times, normalized upstream IDs, hashes, coverage, Q2 quality, and available_time <= as_of checks",
     "missing_facts_before_b2_close": [
-      "provider/source terms or an explicit provider authorization artifact for each deployed source",
-      "CZCE official terms/authorization artifact; the homepage returned HTTP 412 during the bounded read-only check",
-      "provider-approved allowed-use boundary including simulation/decision use",
-      "provider retention and deletion terms",
-      "provider redistribution or no-redistribution terms",
-      "deployment dataset freeze/manifest registration that binds the above facts to exact dataset IDs and hashes",
-      "operator acceptance that Q2 retrospective dominant-open-interest data is not Q3/Q4 decision/execution data"
+      "CZCE official terms/authorization artifact if CZCE is reintroduced",
+      "Q3/Q4 quality evidence if any decision or execution input is proposed"
     ],
     "not_found_or_not_claimed": [
       "No Paper observations or Paper connector credentials",
       "No tick/order-book/queue calibration dataset",
       "No provider license inferred from source URL, ETag, or adapter code",
       "No real-money or real-order authorization"
-    ]
+    ],
+    "deployment_binding": "SHFE exact dataset ID/hash bound by evidence/v5-012/deployment-data-manifest-shfe-research-2026-09-12.json; review expiry 2027-09-12"
   },
   "reproducibility_notes": {
     "raw_and_normalized_counts_checked": true,
     "normalized_content_hashes_checked": true,
     "point_in_time_check": "all 316 current and 468 prior normalized rows have available_time equal to their recorded acquisition/as_of and therefore satisfy available_time <= as_of",
     "scope_boundary": "ignored local data was inspected in this repository only; /Users/qiu/futures_workflow was not read or used"
-  }
+  },
+  "deployment_manifest_ref": "evidence/v5-012/deployment-data-manifest-shfe-research-2026-09-12.json",
+  "b2_conclusion": "B2 CLOSED_FOR_SHFE_RESEARCH_ONLY; CZCE and any Q3/Q4 decision or execution use remain excluded.",
+  "evidence_digest": "7248a89ba72e99496b1f56454ab4e5595fdceeacf4b2bf5a2bccb6fcc1fff499"
 }

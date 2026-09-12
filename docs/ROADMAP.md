@@ -437,7 +437,7 @@ Exit：PASS（独立审查 Evidence：`evidence/v4-exit/independent-review-2026-
   Acceptance: 产品、架构、风险、数据和运营评审结论已记录；未解决阻断项不得启用。
   Evidence: [`evidence/v5-012/release-review-2026-09-12.json`](../evidence/v5-012/release-review-2026-09-12.json)、[`V5-012-SIMULATION-LAUNCH-REVIEW.md`](./V5-012-SIMULATION-LAUNCH-REVIEW.md)。
 
-Exit：PASS（独立 `gpt-5.6-sol/high` 审查 Evidence：[`evidence/v5-exit/independent-review-2026-09-12.json`](../evidence/v5-exit/independent-review-2026-09-12.json)）。高保真语义及校准边界、组合风险、离线增强和运营控制已按 Roadmap Acceptance 通过复核；系统仍明确标识为研究与模拟产品。当前开发/CI 受限部署已明确关闭 Paper/L5，B4 由操作者决定改为手动查看 Codex 用量（`evidence/v5-012/paper-scope-decision-2026-09-12.json`）；真实行情部署授权 manifest（B2）仍未具备，`enablement_gate=DENY_UNTIL_BLOCKERS_CLOSED` 仅由 B2 保持。
+Exit：PASS（独立 `gpt-5.6-sol/high` 审查 Evidence：[`evidence/v5-exit/independent-review-2026-09-12.json`](../evidence/v5-exit/independent-review-2026-09-12.json)）。高保真语义及校准边界、组合风险、离线增强和运营控制已按 Roadmap Acceptance 通过复核；系统仍明确标识为研究与模拟产品。SHFE AG/CU 研究范围已绑定数据 manifest，CZCE 被排除；Paper/L5 已关闭，B4 改为手动查看 Codex 用量。更广泛 `sim-prod` 仍保持 `DENY`，因为 Q2 数据不能作为 Q3/Q4 决策/执行证据。
 
 ## 明确不在本路线图内
 
