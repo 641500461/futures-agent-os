@@ -13,7 +13,13 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-010`；`MVP-R-001` 与 `MVP-R-002` 均已在 Gate 停止。`MVP-R-003` v1 记为测量方案失败，Evidence 不得改写成通过。`MVP-R-004` 已 `STOP/PIVOT`。`MVP-R-005` Research Decision Brief 已通过 correction-v5 独立功能复核并完成。正式 MVP-R eval v1 与 v2 均保留 `FORMAL_DIAGNOSTIC_FAIL`，holdout/shadow 未启动；v2 采用产品模型 `gpt-5.6-sol/high`，诊断 13/30 完成后因 3 条失败达到停止条件。2026-09-04 最小 MVP Closure Acceptance 得出 `MVP_ACCEPTED`：核心 end-to-end 闭环成立，关键安全边界成立，没有明确产品 blocker。Formal Eval 不再阻塞 MVP 结束；formal evaluation reliability / quality improvement 转入后续 backlog。没有 `MVP-R-006`；`V1-011` 是下一项 Roadmap 任务，但等待用户确认后开始。
+当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1–V5 Exit 均已通过；`MVP-R-001` 至 `MVP-R-004` 的停止/Pivot 与历史 Evidence 均保留，`MVP-R-005` Research Decision Brief 已通过 correction-v5 独立功能复核。2026-09-04 最小 MVP Closure Acceptance 得出 `MVP_ACCEPTED`：核心 end-to-end 闭环成立，关键安全边界成立，没有明确产品 blocker。Formal Eval v1/v2 的失败记录转入质量 backlog，不再阻塞产品结束。2026-09-14 的 `LOCAL-001` 已完成：新增 `futures-agent-os trial` 本地完整研究到模拟交易试运行入口，复用现有确定性 owner、保护、结算和 Journal 边界；证据见 `evidence/local-001/local-trial-2026-09-14.json`。当前下一步是按已批准 SHFE AG/CU 研究范围试运行，不是重做 MVP。HA/DR、30 天稳定运行和完整非空业务状态 PITR 按操作者决定保留为后续扩展，不阻塞本地试运行。
+
+## LOCAL-001：本地完整试运行（2026-09-14）
+
+- [x] 新增 `uv run futures-agent-os trial [--at <UTC>] [--output <path>]`，串联 Snapshot、Opportunity、Strategy、Critic、Authorization Basis、Risk Decision、模拟成交、Position Protection、Notification、Review 和 Decision Journal。
+  Acceptance：固定时间输入可重复；输出明确为 `RESEARCH_AND_SIMULATION_ONLY`；完整周期必须有保护退出、结算和 9 条去重 Journal 记录；不连接交易所、不发送真实订单。
+  Evidence：[`evidence/local-001/local-trial-2026-09-14.json`](../evidence/local-001/local-trial-2026-09-14.json)。
 
 当前 V3 状态：`V3-003` 至 `V3-015` 的 Acceptance 已完成并各自具备实现 Evidence；V3 Exit 尚未通过，下一步按 `DEVELOPMENT-MODEL-POLICY.md` 由未主导 V3 实现的独立执行身份进行审查。
 

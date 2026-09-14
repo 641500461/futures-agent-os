@@ -23,12 +23,16 @@ from futures_agent_os.execution_simulation import L1Bar, run_manual_shadow_episo
 from futures_agent_os.shared_kernel import EntityId, RecordedAt, canonical_sha256
 from futures_agent_os.channel_gateway.config import GatewayConfig
 from futures_agent_os.channel_gateway.runtime import GatewayRuntime
+from futures_agent_os.local_trial import run_local_trial
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="futures-agent-os")
     subcommands = parser.add_subparsers(dest="command", required=True)
     subcommands.add_parser("health", help="print the local health contract")
+    trial = subcommands.add_parser("trial", help="run a complete local simulation-only trial")
+    trial.add_argument("--at", default=None, help="UTC ISO-8601 timestamp for a repeatable run")
+    trial.add_argument("--output", default=None, help="optional JSON output path")
     gateway = subcommands.add_parser("gateway", help="run the channel gateway")
     gateway_subcommands = gateway.add_subparsers(dest="gateway_action", required=True)
     gateway_run = gateway_subcommands.add_parser("run", help="run the Feishu long-connection gateway")
@@ -313,6 +317,16 @@ def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.command == "health":
         print(json.dumps(get_health_status().as_dict(), ensure_ascii=False, sort_keys=True))
+        return 0
+    if args.command == "trial":
+        trial_at = RecordedAt.parse(args.at).value if args.at else None
+        payload = run_local_trial(trial_at).as_dict()
+        encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2)
+        if args.output:
+            output = Path(args.output)
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(encoded + "\n", encoding="utf-8")
+        print(encoded)
         return 0
     if args.command == "gateway":
         config = GatewayConfig.from_file(args.config) if args.config else GatewayConfig.from_env()
