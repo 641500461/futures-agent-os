@@ -21,6 +21,14 @@
   Acceptance：固定时间输入可重复；输出明确为 `RESEARCH_AND_SIMULATION_ONLY`；完整周期必须有保护退出、结算和 9 条去重 Journal 记录；不连接交易所、不发送真实订单。
   Evidence：[`evidence/local-001/local-trial-2026-09-14.json`](../evidence/local-001/local-trial-2026-09-14.json)。
 
+## LOCAL-002：飞书操作者命令纵切（2026-09-16）
+
+- [ ] 将已验证的飞书长连接、durable inbox/outbox 与本地受限模拟入口组装成仓库内可复现的操作者命令纵切。
+  Status: IN_PROGRESS；负责人：Codex；工作区：`codex/v5`；开始日期：2026-09-16；实现模型/推理强度：当前宿主未暴露，Evidence 记录 `NOT_EXPOSED`。
+  Scope：只支持状态、运行一次合成确定性模拟、查看最近一次模拟复盘和帮助；文本命令不能执行 pause/revoke/Kill Switch，控制动作继续要求预签发、对象/version/hash/expiry 绑定的一次性回调。本任务不接入真实交易，不扩大 SHFE AG/CU 研究 manifest，不启用 CZCE、Paper/L5 或真实行情决策。
+  Acceptance：飞书事件先经 PostgreSQL inbox 去重并由带 fencing 的 `gateway.inbound` worker 领取；同一事件最多产生一个模拟 artifact 和一个 outbox 回复；进程重启后可从本地 artifact 查看最近复盘；未知/畸形命令安全返回帮助；操作者命令处理失败显式 fail closed；`gateway run` 正式装配该 worker；SHFE 受限研究 CLI 的双品种 scope 保持显式且具有回归测试；定向测试与完整 `make check` 通过并形成可复核 Evidence。
+  Design：[`TECHNICAL-DESIGN.md` §2.2、§5、§11.1、§16](./TECHNICAL-DESIGN.md)，[`PRD.md` §11.13、§11.14、§14、§16.7](./PRD.md)。
+
 当前 V3 状态：`V3-003` 至 `V3-015` 的 Acceptance 已完成并各自具备实现 Evidence；V3 Exit 尚未通过，下一步按 `DEVELOPMENT-MODEL-POLICY.md` 由未主导 V3 实现的独立执行身份进行审查。
 
 ## MVP Closure：`MVP_ACCEPTED`（2026-09-04）

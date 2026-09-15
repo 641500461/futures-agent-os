@@ -25,6 +25,7 @@ EXCLUDED_PATHS = (
     r"|^\.runtime/v5-011/"
     r"|^evidence/v5-011/"
     r"|^evidence/v5-012/"
+    r"|^evidence/restricted-shfe/"
 )
 
 

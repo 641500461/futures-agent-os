@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import threading
+from pathlib import Path
 from typing import Callable, Any
 
 from sqlalchemy import create_engine
@@ -12,12 +13,20 @@ from .contracts import ControlCallback
 from .feishu import FeishuLongConnectionAdapter
 from .gateway import ChannelGateway
 from .durable import OutboxWorker, PostgresGatewayStore
+from .operator_commands import GatewayInboundWorker, LocalOperatorCommandHandler
 
 
 class GatewayRuntime:
     """Run SDK callbacks and durable inbox ingestion in separate loops."""
 
-    def __init__(self, config: GatewayConfig, *, sleep_seconds: float = 0.05, control_handler: Any = None) -> None:
+    def __init__(
+        self,
+        config: GatewayConfig,
+        *,
+        sleep_seconds: float = 0.05,
+        control_handler: Any = None,
+        operator_state_directory: Path | None = None,
+    ) -> None:
         config.validate()
         self.config = config
         self.adapter = FeishuLongConnectionAdapter(
@@ -39,6 +48,11 @@ class GatewayRuntime:
             control_sink=self._dispatch_control if control_handler is not None else None,
         )
         self.outbox_worker = OutboxWorker(self.store, {self.adapter.channel: self.adapter}, "gateway-outbox")
+        self.inbound_worker = (
+            GatewayInboundWorker(self.store, LocalOperatorCommandHandler(operator_state_directory))
+            if operator_state_directory is not None
+            else None
+        )
         self.sleep_seconds = sleep_seconds
         self._stop = threading.Event()
 
@@ -75,6 +89,8 @@ class GatewayRuntime:
                 self.store.dispatch_control(callback, self.control_handler)
             processed += 1
         self.store.recover_expired()
+        if self.inbound_worker is not None:
+            processed += self.inbound_worker.run_once()
         processed += len(self.outbox_worker.run_once())
         return processed
 

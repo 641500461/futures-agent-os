@@ -22,8 +22,10 @@ from sqlalchemy import create_engine, text
 
 from futures_agent_os.channel_gateway import (
     ControlCallback,
+    GatewayInboundWorker,
     IdentityMapping,
     InboundEvent,
+    LocalOperatorCommandHandler,
     OutboundNotification,
     PostgresGatewayStore,
     OutboxWorker,
@@ -67,6 +69,39 @@ def test_concurrent_ingest_enqueues_one_task_and_restart_reclaims_lease() -> Non
     assert store.recover_expired()[0] >= 1
     second = next(item for item in store.claim_tasks("worker-two", limit=1000) if item.task_id == first.task_id)
     assert second.task_id == first.task_id and second.fencing_token > first.fencing_token
+
+
+def test_local_operator_command_flows_from_durable_inbox_to_outbox(tmp_path: Path) -> None:
+    _upgrade()
+    engine = create_engine(DATABASE_URL or "")
+    store = PostgresGatewayStore(engine, require_identity_mapping=True)
+    actor = f"operator-{uuid4()}"
+    conversation = f"chat-{uuid4()}"
+    event_id = f"local-operator-{uuid4()}"
+    store.register_mapping(IdentityMapping("feishu", actor, conversation, "user:owner", "account:simulation"))
+    event = InboundEvent(
+        "feishu",
+        event_id,
+        actor,
+        conversation,
+        "message",
+        {"content": '{"text":"状态"}'},
+        datetime.now(UTC),
+    )
+    ingested = store.ingest(event)
+
+    worker = GatewayInboundWorker(store, LocalOperatorCommandHandler(tmp_path), worker_id="operator-integration")
+    assert worker.run_once() == 1
+    with engine.connect() as connection:
+        state = connection.execute(
+            text("SELECT task_state FROM fao.agent_task WHERE task_id=:task"), {"task": ingested.task_id}
+        ).scalar_one()
+        reply = connection.execute(
+            text("SELECT payload FROM fao.outbox WHERE idempotency_key=:key"),
+            {"key": f"operator-command:feishu:{event_id}"},
+        ).scalar_one()
+    assert state == "COMPLETED"
+    assert "真实订单路由：关闭" in reply["text"]
 
 
 def test_outbox_retry_and_one_use_expiry_bound_control() -> None:

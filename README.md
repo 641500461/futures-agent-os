@@ -12,6 +12,7 @@
 uv sync --locked
 uv run futures-agent-os health
 uv run futures-agent-os trial --at 2026-09-14T01:00:00Z
+uv run futures-agent-os research --limit 1
 uv run pytest
 ```
 
@@ -22,6 +23,10 @@ make check
 ```
 
 `trial` 会在内存中运行一次完整的研究到模拟交易周期，输出确定性成交、保护、结算、复盘和 Decision Journal 结果。它不连接交易所、不发送真实订单，也不需要外部凭据；省略 `--at` 时使用当前 UTC 时间，传入固定时间可重复结果。
+
+`research` 默认只生成绑定当前 manifest 的 SHFE AG/CU 研究运行计划；增加 `--execute` 才调用配置的研究模型。该入口不读取 CZCE 数据，不产生 Order、Fill、Position 或账本副作用。
+
+飞书长连接以 `uv run futures-agent-os gateway run` 启动。正式入口会处理“状态”“运行模拟”“复盘”三个有界文本命令，并将最近一次合成模拟 artifact 保存在 `.runtime/operator/` 供重启后复盘；暂停、撤销和 Kill Switch 不能通过自由文本触发，只能使用系统预签发的一次性控制卡片。
 
 质量门禁的本地命令与 CI 完全相同：`make lock format lint type scan schema`，以及
 `make test-unit`、`make test-property`、`make test-contract`。真实 PostgreSQL 验收使用
