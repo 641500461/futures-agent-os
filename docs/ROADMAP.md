@@ -1,7 +1,7 @@
 # 绿地版本路线图与可勾选任务
 
 版本：`3.0-proposed`<br>
-最后更新：2026-09-08
+最后更新：2026-09-16
 任务状态唯一来源：本文件
 
 ## 状态约定
@@ -13,7 +13,7 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1–V5 Exit 均已通过；`MVP-R-001` 至 `MVP-R-004` 的停止/Pivot 与历史 Evidence 均保留，`MVP-R-005` Research Decision Brief 已通过 correction-v5 独立功能复核。2026-09-04 最小 MVP Closure Acceptance 得出 `MVP_ACCEPTED`：核心 end-to-end 闭环成立，关键安全边界成立，没有明确产品 blocker。Formal Eval v1/v2 的失败记录转入质量 backlog，不再阻塞产品结束。2026-09-14 的 `LOCAL-001` 已完成：新增 `futures-agent-os trial` 本地完整研究到模拟交易试运行入口，复用现有确定性 owner、保护、结算和 Journal 边界；证据见 `evidence/local-001/local-trial-2026-09-14.json`。当前下一步是按已批准 SHFE AG/CU 研究范围试运行，不是重做 MVP。HA/DR、30 天稳定运行和完整非空业务状态 PITR 按操作者决定保留为后续扩展，不阻塞本地试运行。
+当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1–V5 Exit 均已通过；`MVP-R-001` 至 `MVP-R-004` 的停止/Pivot 与历史 Evidence 均保留，`MVP-R-005` Research Decision Brief 已通过 correction-v5 独立功能复核。2026-09-04 最小 MVP Closure Acceptance 得出 `MVP_ACCEPTED`：核心 end-to-end 闭环成立，关键安全边界成立，没有明确产品 blocker。Formal Eval v1/v2 的失败记录转入质量 backlog，不再阻塞产品结束。`LOCAL-001` 本地完整研究到模拟交易试运行与 `LOCAL-002` 飞书操作者命令纵切均已完成。当前下一步是按已批准 SHFE AG/CU 研究范围试运行，不是重做 MVP。HA/DR、30 天稳定运行和完整非空业务状态 PITR 按操作者决定保留为后续扩展，不阻塞本地试运行。
 
 ## LOCAL-001：本地完整试运行（2026-09-14）
 
@@ -23,13 +23,14 @@
 
 ## LOCAL-002：飞书操作者命令纵切（2026-09-16）
 
-- [ ] 将已验证的飞书长连接、durable inbox/outbox 与本地受限模拟入口组装成仓库内可复现的操作者命令纵切。
-  Status: IN_PROGRESS；负责人：Codex；工作区：`codex/v5`；开始日期：2026-09-16；实现模型/推理强度：当前宿主未暴露，Evidence 记录 `NOT_EXPOSED`。
+- [x] 将已验证的飞书长连接、durable inbox/outbox 与本地受限模拟入口组装成仓库内可复现的操作者命令纵切。
+  Status: COMPLETE；负责人：Codex；工作区：`codex/v5`；完成日期：2026-09-16；实现模型/推理强度：当前宿主未暴露，Evidence 记录 `NOT_EXPOSED`。
   Scope：只支持状态、运行一次合成确定性模拟、查看最近一次模拟复盘和帮助；文本命令不能执行 pause/revoke/Kill Switch，控制动作继续要求预签发、对象/version/hash/expiry 绑定的一次性回调。本任务不接入真实交易，不扩大 SHFE AG/CU 研究 manifest，不启用 CZCE、Paper/L5 或真实行情决策。
   Acceptance：飞书事件先经 PostgreSQL inbox 去重并由带 fencing 的 `gateway.inbound` worker 领取；同一事件最多产生一个模拟 artifact 和一个 outbox 回复；进程重启后可从本地 artifact 查看最近复盘；未知/畸形命令安全返回帮助；操作者命令处理失败显式 fail closed；`gateway run` 正式装配该 worker；SHFE 受限研究 CLI 的双品种 scope 保持显式且具有回归测试；定向测试与完整 `make check` 通过并形成可复核 Evidence。
   Design：[`TECHNICAL-DESIGN.md` §2.2、§5、§11.1、§16](./TECHNICAL-DESIGN.md)，[`PRD.md` §11.13、§11.14、§14、§16.7](./PRD.md)。
+  Evidence：[`evidence/local-002/implementation-2026-09-16.json`](../evidence/local-002/implementation-2026-09-16.json)。
 
-当前 V3 状态：`V3-003` 至 `V3-015` 的 Acceptance 已完成并各自具备实现 Evidence；V3 Exit 尚未通过，下一步按 `DEVELOPMENT-MODEL-POLICY.md` 由未主导 V3 实现的独立执行身份进行审查。
+当前 V3 状态：`V3-001` 至 `V3-015` 及 V3 Exit 均已完成；历史实现过程与独立审查 Evidence 保留在对应任务和 `evidence/v3-exit/`。
 
 ## MVP Closure：`MVP_ACCEPTED`（2026-09-04）
 
