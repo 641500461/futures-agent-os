@@ -1,0 +1,37 @@
+{
+  "schema_version": "local-003.implementation-evidence.v1",
+  "task_id": "LOCAL-003",
+  "status": "IMPLEMENTED_WITH_RUNTIME_QUEUE_ACTION_REQUIRED",
+  "recorded_on": "2026-09-17",
+  "implementation": {
+    "model": "NOT_EXPOSED",
+    "reasoning_effort": "NOT_EXPOSED",
+    "upgrade_triggered": false
+  },
+  "scope": {
+    "read_only_gateway_doctor": true,
+    "single_process_wrapper": true,
+    "sdk_unexpected_exit_is_fail_closed": true,
+    "real_money_or_order_routing": false,
+    "control_handler_wired": false
+  },
+  "verification": [
+    {
+      "command": "uv run pytest tests/contract/test_gateway_readiness.py tests/contract/test_local_gateway_runtime.py -q",
+      "result": "12 passed"
+    },
+    {
+      "command": "make check",
+      "result": "PASS; 954 contract, 20 property, 2 schema, 1 unit; ruff, mypy (174 source files), secret scan, and health passed"
+    },
+    {
+      "command": "uv run futures-agent-os gateway doctor --config <existing-local-feishu-config>",
+      "result": "Configuration, database, migration and identity mapping pass; transport remains UNKNOWN; inbound FAILED and outbox DEAD are reported as QUEUE_DEGRADED"
+    }
+  ],
+  "operator_action_required": [
+    "Do not delete or rewrite existing inbox/outbox audit rows automatically.",
+    "Review the existing local_002 FAILED/DEAD rows and decide whether to retain, retry, or archive them under a separate operator-approved procedure.",
+    "After queue disposition, rerun gateway doctor; a clean runtime requires zero FAILED inbound tasks and zero DEAD outbox rows."
+  ]
+}

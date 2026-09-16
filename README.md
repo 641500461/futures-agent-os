@@ -28,6 +28,8 @@ make check
 
 飞书长连接以 `uv run futures-agent-os gateway run` 启动。正式入口会处理“状态”“运行模拟”“复盘”三个有界文本命令，并将最近一次合成模拟 artifact 保存在 `.runtime/operator/` 供重启后复盘；暂停、撤销和 Kill Switch 不能通过自由文本触发，只能使用系统预签发的一次性控制卡片。
 
+启动前可用 `uv run futures-agent-os gateway doctor --config /absolute/path/to/local-config.toml` 做只读检查。它会核对 PostgreSQL 可达性、migration head、Feishu 身份映射和 inbound/outbox 队列；transport 连通性仍需看网关运行日志或已有连接确认，不会被配置存在误报为在线。长期运行可使用 `scripts/run_local_gateway.py --config ... --state-dir ...`，它提供单实例锁、信号收尾和稳定错误码，适合交给本机进程托管器。
+
 质量门禁的本地命令与 CI 完全相同：`make lock format lint type scan schema`，以及
 `make test-unit`、`make test-property`、`make test-contract`。真实 PostgreSQL 验收使用
 隔离数据库，例如：

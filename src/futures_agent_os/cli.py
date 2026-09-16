@@ -24,6 +24,7 @@ from futures_agent_os.decision import Order, OrderStatus, StopPolicy, TradeDirec
 from futures_agent_os.execution_simulation import L1Bar, run_manual_shadow_episode
 from futures_agent_os.shared_kernel import EntityId, RecordedAt, canonical_sha256
 from futures_agent_os.channel_gateway.config import GatewayConfig
+from futures_agent_os.channel_gateway.readiness import diagnose_gateway_file
 from futures_agent_os.channel_gateway.runtime import GatewayRuntime
 from futures_agent_os.local_trial import run_local_trial
 
@@ -53,6 +54,8 @@ def build_parser() -> argparse.ArgumentParser:
         default=".runtime/operator",
         help="local directory for restart-safe operator review artifacts",
     )
+    gateway_doctor = gateway_subcommands.add_parser("doctor", help="run read-only gateway startup diagnostics")
+    gateway_doctor.add_argument("--config", required=True, help="JSON or TOML gateway config")
     manual = subcommands.add_parser("manual-test", help="simulation-only manual PlanApproval lifecycle")
     manual.add_argument("action", choices=("request", "grant", "reject", "expire", "consume", "shadow", "report"))
     manual.add_argument("--state", required=True, help="durable local state file")
@@ -368,6 +371,10 @@ def main(argv: Sequence[str] | None = None) -> int:
             command.append("--execute")
         return subprocess.run(command, check=False).returncode
     if args.command == "gateway":
+        if args.gateway_action == "doctor":
+            payload = diagnose_gateway_file(args.config)
+            print(json.dumps(payload, ensure_ascii=False, sort_keys=True))
+            return 0 if payload["static_ready"] is True else 1
         config = GatewayConfig.from_file(args.config) if args.config else GatewayConfig.from_env()
         if args.dry_run:
             config.validate()
