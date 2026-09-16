@@ -1,0 +1,119 @@
+{
+  "capacity_backpressure_rate_limit": {
+    "background_admitted": 48,
+    "background_ceiling": 48,
+    "background_overflow_decision": "DEFER",
+    "background_overflow_reason": "CRITICAL_RESERVE",
+    "backlog_overflow_decision": "SHED",
+    "backlog_overflow_reason": "BACKLOG_LIMIT",
+    "control_decision_elapsed_ms": "0.092792",
+    "critical_reserved_admitted": 16,
+    "profile_id": "single-host-simulation:v1",
+    "rate_overflow_decision": "DEFER",
+    "rate_overflow_reason": "RATE_LIMIT",
+    "rate_retry_after_ms": 500,
+    "status": "PASS"
+  },
+  "dependency_circuit_breaker": {
+    "dependency_id": "paper-connector",
+    "failure_threshold": 3,
+    "fallback": "deterministic protection continues; new risk fails closed",
+    "final_state": "CLOSED",
+    "half_open_probe_limit": 1,
+    "open_call_allowed": false,
+    "status": "PASS"
+  },
+  "digest": "7af8d90750923eb4e85120698d14ab99f750823e7bfcf7218cdf07fcd89dce9e",
+  "recorded_at": "2026-09-10T20:15:03.575600Z",
+  "schema": "futures-agent-os.v5-010.control-drills.v1",
+  "slo_alert": {
+    "alerts": [
+      {
+        "impact_scope": [
+          "gateway-ingress"
+        ],
+        "metric_name": "gateway_ack_ms",
+        "objective_id": "gateway-ack-p95",
+        "observed": "2001",
+        "runbook_ref": "runbook://v5-010/gateway-ack-p95",
+        "status": "ALERT",
+        "threshold": "2000",
+        "window_digest": "143f80764f475e9d21223fea82274592c7e55d24b9898158fc41193c87ab2c03"
+      },
+      {
+        "impact_scope": [
+          "risk-budget"
+        ],
+        "metric_name": "risk_reservation_ms",
+        "objective_id": "risk-reservation-p95",
+        "observed": "201",
+        "runbook_ref": "runbook://v5-010/risk-reservation-p95",
+        "status": "ALERT",
+        "threshold": "200",
+        "window_digest": "73793da51305f09e93eeb3a1e5268666e8b5b7179b44ca835da629bbe17ab936"
+      },
+      {
+        "impact_scope": [
+          "new-risk"
+        ],
+        "metric_name": "final_receipt_gate_ms",
+        "objective_id": "final-gate-p95",
+        "observed": "101",
+        "runbook_ref": "runbook://v5-010/final-gate-p95",
+        "status": "ALERT",
+        "threshold": "100",
+        "window_digest": "45091629ee4aebf46734d06a11cbaac95c11eaa984ac6bcd0294889bd412b05a"
+      },
+      {
+        "impact_scope": [
+          "risk-decision"
+        ],
+        "metric_name": "risk_constitution_ms",
+        "objective_id": "risk-constitution-p95",
+        "observed": "201",
+        "runbook_ref": "runbook://v5-010/risk-constitution-p95",
+        "status": "ALERT",
+        "threshold": "200",
+        "window_digest": "75f8266413f36d28cd2dd581baa11d7c1386bffe6f922867cb4907713dcd09e9"
+      },
+      {
+        "impact_scope": [
+          "open-positions"
+        ],
+        "metric_name": "protection_loop_ms",
+        "objective_id": "protection-loop-p99",
+        "observed": "1001",
+        "runbook_ref": "runbook://v5-010/protection-loop-p99",
+        "status": "ALERT",
+        "threshold": "1000",
+        "window_digest": "c9a9f0ed63e0213dd67e4acf0bb381aa894523960f76e4f9faf1bfe48f8d7efb"
+      },
+      {
+        "impact_scope": [
+          "operator-notifications"
+        ],
+        "metric_name": "critical_outbox_write_ms",
+        "objective_id": "outbox-write-p95",
+        "observed": "2001",
+        "runbook_ref": "runbook://v5-010/outbox-write-p95",
+        "status": "ALERT",
+        "threshold": "2000",
+        "window_digest": "5670984554c00685cd69a38fb065e0bbe4c6272be4ae01803487d0571cd4b598"
+      },
+      {
+        "impact_scope": [
+          "simulation-ledger"
+        ],
+        "metric_name": "ledger_reconciliation_difference",
+        "objective_id": "ledger-difference-max",
+        "observed": "1",
+        "runbook_ref": "runbook://v5-010/ledger-difference-max",
+        "status": "ALERT",
+        "threshold": "0",
+        "window_digest": "c795d29fbe24637045c906c06efefa78870baaa20e71efa7b74a6658406a687b"
+      }
+    ],
+    "status": "PASS"
+  },
+  "status": "PASS"
+}

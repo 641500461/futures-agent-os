@@ -13,13 +13,19 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SECRET_BASELINE = PROJECT_ROOT / ".secrets.baseline"
-# MVP-R keeps governed datasets, local trust roots, and content-addressed run
-# artifacts under an ignored local-only directory. They must never enter source
-# control and their expected hashes/signatures are not source-code findings.
+# MVP-R and V5-011 keep governed datasets, local trust roots, and
+# content-addressed run artifacts under local-only directories. They must never
+# enter source control and their expected hashes/signatures are not source-code
+# findings. Final V5-011 evidence is intentionally committed, but remains a
+# generated hash-bearing artifact rather than executable configuration.
 EXCLUDED_PATHS = (
     r"(^|/)(\.git|\.venv|\.pytest_cache|\.mypy_cache|\.ruff_cache|__pycache__)(/|$)"
     r"|^\.secrets\.baseline$"
     r"|^datasets/mvp-r-001/"
+    r"|^\.runtime/v5-011/"
+    r"|^evidence/v5-011/"
+    r"|^evidence/v5-012/"
+    r"|^evidence/restricted-shfe/"
 )
 
 

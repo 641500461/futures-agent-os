@@ -1,0 +1,32 @@
+{
+  "task": "V5-004",
+  "status": "COMPLETE",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "reviewer_model": "NOT_EXPOSED",
+  "reviewer_reasoning_effort": "NOT_EXPOSED",
+  "independent_version_exit_review": false,
+  "upgrade": false,
+  "commit": "3613c1a",
+  "implementation": "Implemented TWAP, volume-profile VWAP, capped Iceberg, explicit-weight batched entry and batched exit; added versioned specs, human-only activation, activation-bound proposal-only recommendations, and a deterministic planner that owns quantities and child schedules.",
+  "tests": {
+    "targeted": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v5_004_algorithms.py tests/property/test_v5_004_execution_algorithm_properties.py -q",
+    "targeted_result": "10 passed",
+    "v5_regression": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v5_001_tick_replay.py tests/contract/test_v5_002_order_book.py tests/contract/test_v5_003_paper_adapter.py tests/contract/test_v5_004_algorithms.py tests/contract/test_v5_005_exposure.py tests/contract/test_v5_006_calibration.py -q",
+    "v5_regression_result": "46 passed",
+    "full_gate": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+    "full_gate_result": "lock, format, ruff, mypy, secret scan, 2 schema, 1 unit, 13 property, 874 contract, and health passed"
+  },
+  "acceptance_mapping": {
+    "registered_only": "AlgorithmSpec versions must be registered and human-activated; recommendation checks the immutable activation snapshot and deterministic planning rechecks the current registry digest/version.",
+    "proposal_only_agent": "AdvancedExecutionRecommendation contains algorithm, version, activation digest, intent and rationale, but no quantity, child order, submit method or execution authority.",
+    "deterministic_owner": "AdvancedExecutionPlanner validates intent and slice bounds, then creates content-addressed DeterministicExecutionPlan children.",
+    "quantity_conservation": "TWAP/VWAP/batched schedules use deterministic whole-lot largest-remainder allocation; Iceberg caps displayed children and refuses insufficient capacity. Property tests cover randomized parent quantities, slice counts and volume profiles.",
+    "algorithm_coverage": "Contract tests cover TWAP timing, VWAP profile allocation, Iceberg display limits, batched entry/exit, stale activation, wrong intent and non-human activation."
+  },
+  "limitations": [
+    "Plans are simulation execution plans and never route real orders.",
+    "Venue-specific fill quality remains governed by the selected L1-L5 matching model and V5-006 calibration."
+  ],
+  "model_output_not_authoritative": "Agent output remains a recommendation; registry state and deterministic planner tests decide executable schedules."
+}

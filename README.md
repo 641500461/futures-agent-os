@@ -2,7 +2,7 @@
 
 一个完全独立的期货智能研究与模拟交易绿地项目。系统目标是让受约束的 Agent 自主发现机会、研究、模拟交易、盯盘与复盘；交易真值和风险许可始终由确定性内核掌握。
 
-当前阶段：V1 自主研究与机会雷达；已完成 `V1-010`，`MVP-R-001` 与 `MVP-R-002` 均已在 Gate 停止。`MVP-R-003` v1 记为测量方案失败，不是多 Agent 产品失败。当前任务为 `MVP-R-004`（canary `CANARY_PASS`，discovery `DISCOVERY_PASS`，用户盲评未开始）；正式 MVP-R 取得 `GO` 前不进入 `V1-011`。
+当前阶段：V5 受限研究模拟；V0–V5 Exit 均已通过，MVP Closure 为 `MVP_ACCEPTED`。当前允许 SHFE AG/CU 研究范围的本地模拟运行，CZCE、Q3/Q4 决策数据、Paper/L5 和真实交易仍关闭。
 
 ## 本地开始
 
@@ -11,6 +11,8 @@
 ```bash
 uv sync --locked
 uv run futures-agent-os health
+uv run futures-agent-os trial --at 2026-09-14T01:00:00Z
+uv run futures-agent-os research --limit 1
 uv run pytest
 ```
 
@@ -19,6 +21,12 @@ uv run pytest
 ```bash
 make check
 ```
+
+`trial` 会在内存中运行一次完整的研究到模拟交易周期，输出确定性成交、保护、结算、复盘和 Decision Journal 结果。它不连接交易所、不发送真实订单，也不需要外部凭据；省略 `--at` 时使用当前 UTC 时间，传入固定时间可重复结果。
+
+`research` 默认只生成绑定当前 manifest 的 SHFE AG/CU 研究运行计划；增加 `--execute` 才调用配置的研究模型。该入口不读取 CZCE 数据，不产生 Order、Fill、Position 或账本副作用。
+
+飞书长连接以 `uv run futures-agent-os gateway run` 启动。正式入口会处理“状态”“运行模拟”“复盘”三个有界文本命令，并将最近一次合成模拟 artifact 保存在 `.runtime/operator/` 供重启后复盘；暂停、撤销和 Kill Switch 不能通过自由文本触发，只能使用系统预签发的一次性控制卡片。
 
 质量门禁的本地命令与 CI 完全相同：`make lock format lint type scan schema`，以及
 `make test-unit`、`make test-property`、`make test-contract`。真实 PostgreSQL 验收使用

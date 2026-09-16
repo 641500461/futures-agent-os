@@ -1,0 +1,43 @@
+{
+  "accepted_command_rpo_objective_seconds": 0,
+  "active_receipts_after_restore": 0,
+  "active_reservations_after_restore": 0,
+  "backup_manifest_sha256": "d4788f79bcf5284f8e56eee725b01a25fb78fe25ed47283efd1d81d9baeb5ff9",
+  "completed_reconciliations": [
+    "DATABASE",
+    "LEDGER",
+    "OPEN_ORDERS",
+    "POSITIONS",
+    "CONNECTOR"
+  ],
+  "database_rpo_objective_seconds": 300,
+  "drill_digest": "08f7ff9d1f805bfd69e05bedc661a1e7a262952c033f14d037a22cf90ce981a1",
+  "excluded_post_target_command_ids": [
+    "10000000-0000-0000-0000-000000000003"
+  ],
+  "isolation": "temporary PostgreSQL cluster; existing databases were not read or modified",
+  "pg_basebackup_version": "pg_basebackup (PostgreSQL) 17.11 (Homebrew)",
+  "postgresql_version": "postgres (PostgreSQL) 17.11 (Homebrew)",
+  "reconciliation_counts": {
+    "connector_commands": 0,
+    "ledger_facts": 0,
+    "open_order_commands": 0,
+    "position_projection_facts": 0
+  },
+  "reconciliation_scope": "EMPTY_TRADING_STATE",
+  "recovered_at": "2026-09-10T20:16:39.881181Z",
+  "recovered_mode": "PROTECT_ONLY",
+  "restored_command_ids": [
+    "10000000-0000-0000-0000-000000000001",
+    "10000000-0000-0000-0000-000000000002"
+  ],
+  "restored_schema_revision": "0011_v3_010_gate_hardening",
+  "rpo_seconds": "0",
+  "rto_objective_seconds": 3600,
+  "rto_seconds": "0.15122183365747333",
+  "schema": "futures-agent-os.v5-010.postgresql-pitr-drill.v1",
+  "started_at": "2026-09-10T20:16:37.773921Z",
+  "status": "PASS",
+  "target_command_recorded_at": "2026-09-11 04:16:39.305224+08",
+  "target_transaction_id": "750"
+}

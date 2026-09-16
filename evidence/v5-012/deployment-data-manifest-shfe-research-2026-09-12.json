@@ -1,0 +1,43 @@
+{
+  "schema": "v5-012.deployment-data-manifest.v1",
+  "manifest_id": "v5-012-shfe-research-2026-09-12",
+  "recorded_at": "2026-09-12T00:00:00Z",
+  "status": "ACTIVE_RESEARCH_ONLY",
+  "provider": "SHFE",
+  "source_terms_ref": "evidence/v5-012/source-terms-observation-2026-09-12.json",
+  "source_terms_url": "https://www.shfe.com.cn/disclaimer/",
+  "dataset": {
+    "dataset_id": "dataset_99333755-26e7-762e-9378-722d74c08001",
+    "content_hash": "sha256:be629ed4311ecc3a5a733c8d87985a0b7a987f9d45ccaf469c0e82b1a97ed91e",
+    "instrument_universe": [
+      "SHFE.AG.DOMINANT_OI",
+      "SHFE.CU.DOMINANT_OI"
+    ],
+    "coverage_start": "2026-01-05T07:00:00Z",
+    "coverage_end": "2026-08-27T07:00:00Z",
+    "record_count": 316,
+    "trading_days": 158,
+    "quality": "Q2_RESEARCH",
+    "as_of": "2026-08-28T04:01:01Z",
+    "acquired_at": "2026-08-28T04:01:01Z",
+    "lineage_ref": "evidence/v5-012/deployment-data-inventory-2026-09-12.json"
+  },
+  "allowed_use": "personal non-commercial internal research and simulation replay only",
+  "retention": "local host retention through 2027-09-12; operator may delete earlier; no external backup or redistribution",
+  "redistribution": "FORBIDDEN",
+  "decision_or_execution_use": false,
+  "real_money_or_order_routing": false,
+  "quality_boundary": "Q2_RESEARCH is not Q3/Q4 decision or execution evidence; unadjusted dominant-open-interest retrospective data only",
+  "excluded_sources": [
+    "CZCE MA/SR: excluded because official terms could not be observed without bypassing HTTP 412 challenge",
+    "all Paper/tick/order-book sources"
+  ],
+  "operator_governance_ref": "docs/MVP-R-001-DATA-SOURCE-EVIDENCE.md section 4 (2026-08-28 personal non-commercial internal research/simulation authorization)",
+  "review_expires_at": "2027-09-12T00:00:00Z",
+  "limitations": [
+    "Observed SHFE statement is not a broad perpetual data license",
+    "SHFE reserves statement modification and interpretation",
+    "no publication, resale, external dissemination, commercial use, or real trading"
+  ],
+  "evidence_digest": "07ece3340923fcd61e81986bd0e40f10135fb05b3d2fdb327ac0117ff9246e72"
+}

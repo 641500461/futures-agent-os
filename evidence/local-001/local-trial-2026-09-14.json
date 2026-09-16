@@ -1,0 +1,44 @@
+{
+  "task": "LOCAL-001",
+  "status": "COMPLETE",
+  "date": "2026-09-14",
+  "implementation": {
+    "model": "gpt-6-astra",
+    "reasoning_effort": "medium",
+    "reviewer": "deterministic tests and full repository gates"
+  },
+  "commit": "working-tree",
+  "scope": "single-user local research and simulation only",
+  "acceptance": {
+    "command": "uv run futures-agent-os trial --at 2026-09-14T01:00:00Z",
+    "status": "LOCAL_TRIAL_COMPLETED",
+    "outcome": "TRADE",
+    "steps": [
+      "SNAPSHOT",
+      "OPPORTUNITY_SCAN",
+      "STRATEGY_DELIBERATION",
+      "PRE_TRADE_CRITIQUE",
+      "AUTHORIZATION_BASIS",
+      "RISK_DECISION",
+      "SIMULATED_EXECUTION",
+      "POSITION_PROTECTION",
+      "IMPORTANT_NOTIFICATION",
+      "POST_TRADE_REVIEW"
+    ],
+    "journal_entries": 9,
+    "ending_cash": "994",
+    "real_market_or_order_side_effects": false,
+    "fixed_time_replay_equal": true
+  },
+  "validation": {
+    "targeted": "uv run pytest tests/contract/test_local_trial.py tests/contract/test_v3_remaining_contracts.py -q: 20 passed",
+    "full_gate": "make check: 937 contract, 20 property, 2 schema, 1 unit; ruff, mypy, secret scan and health passed",
+    "format_and_lint": "ruff format --check and ruff check passed",
+    "type_check": "mypy passed (172 source files)"
+  },
+  "deferred_by_operator": [
+    "HA/DR",
+    "30-day stability",
+    "full non-empty business-state PITR"
+  ]
+}

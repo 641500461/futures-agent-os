@@ -1,0 +1,159 @@
+{
+  "blocking_items": [
+    {
+      "closed_by": "evidence/v5-exit/independent-review-2026-09-12.json",
+      "description": "Independent V5 Exit review by a non-implementing Sol identity",
+      "id": "V5-012-B1",
+      "status": "CLOSED"
+    },
+    {
+      "description": "SHFE AG/CU is bound to a research-only manifest with observed non-commercial terms, local retention/no redistribution policy and exact dataset lineage; CZCE remains excluded.",
+      "id": "V5-012-B2",
+      "status": "CLOSED"
+    },
+    {
+      "description": "Paper/L5 is explicitly disabled for the current development-and-CI-only deployment; no Paper realism claim is made.",
+      "id": "V5-012-B3",
+      "status": "CLOSED"
+    },
+    {
+      "description": "Operator waives separate billable cost accounting for this single-user subscription deployment and will inspect Codex usage manually; Paper is disabled, so no Paper cost is incurred.",
+      "id": "V5-012-B4",
+      "status": "CLOSED"
+    }
+  ],
+  "capability_boundary": {
+    "allowed": [
+      "L1_L2_deterministic_simulation",
+      "L3_tick_quote_replay_with_authorized_data",
+      "L4_order_book_replay_for_research",
+      "proposal_only_agent_recommendations",
+      "deterministic_risk_execution_accounting_protection",
+      "OBSERVE_SHADOW_restricted_AUTONOMOUS_SIMULATION",
+      "low_dimensional_offline_rl_research_only"
+    ],
+    "forbidden": [
+      "real_order_routing",
+      "real_money_or_funding",
+      "unapproved_data_sources",
+      "agent_direct_order_or_ledger_write",
+      "automatic_strategy_model_prompt_tool_activation",
+      "unbounded_mandate_or_risk_expansion"
+    ]
+  },
+  "decision": "RESTRICTED_SIMULATION_ONLY",
+  "enablement_gate": "ALLOW_RESTRICTED_RESEARCH_SIMULATION",
+  "evidence_refs": [
+    "evidence/v5-001/implementation-2026-09-10.json",
+    "evidence/v5-002/implementation-2026-09-10.json",
+    "evidence/v5-003/implementation-2026-09-10.json",
+    "evidence/v5-006/implementation-2026-09-10.json",
+    "evidence/v5-008/implementation-2026-09-10.json",
+    "evidence/v5-009/implementation-2026-09-11.json",
+    "evidence/v5-010/implementation-2026-09-11.json",
+    "evidence/v5-011/stability-run-2026-09-12.json",
+    "evidence/v5-exit/independent-review-2026-09-12.json",
+    "docs/V5-012-SIMULATION-LAUNCH-REVIEW.md",
+    "evidence/v5-012/runtime-cost-baseline-2026-09-12.json",
+    "evidence/v5-012/deployment-data-inventory-2026-09-12.json",
+    "evidence/v5-012/paper-scope-decision-2026-09-12.json",
+    "evidence/v5-012/source-terms-observation-2026-09-12.json",
+    "evidence/v5-012/deployment-data-manifest-shfe-research-2026-09-12.json"
+  ],
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "independent_version_exit_review": true,
+  "kill_switch_and_rollback": {
+    "old_receipt_reuse": "FORBIDDEN",
+    "status": "PASS_CONTRACT_DRILL",
+    "steps": [
+      "human_or_policy_trigger_halts_new_risk",
+      "deterministic_protection_cancel_reduce_close_and_settlement_continue",
+      "mandate_mode_versioning_stales_basis_receipt_and_releases_reservation",
+      "five_recovery_gates_reconcile_database_ledger_orders_positions_connector",
+      "human_approval_rebinds_qualified_version_with_fresh_snapshot_basis_gate_and_risk_decision"
+    ]
+  },
+  "limitations": [
+    "This package does not authorize real trading or real money.",
+    "V5-010 PITR business-state drill is EMPTY_TRADING_STATE; V2 fault/replay evidence bounds non-empty recovery claims.",
+    "V5-011 one-day stability is not a 30-day, HA or production SLO claim.",
+    "Restricted research simulation is enabled for the bound SHFE scope; broader sim-prod remains denied until Q3/Q4 data and CZCE terms are available.",
+    "The independent V5 Exit review snapshot left B2-B4 open; subsequent operator scope decisions closed B3 and B4.",
+    "Current restricted policy is proposed and limited to development/CI; it is not runtime deployment enforcement.",
+    "Current cost control relies on manual Codex usage review; no billable API or Paper connector is enabled.",
+    "The current data manifest does not authorize Q3/Q4 decision or execution use."
+  ],
+  "model_output_not_authoritative": "All review conclusions are bounded by deterministic evidence and human gates; Agent proposals cannot close blockers or activate versions.",
+  "realism_levels": [
+    {
+      "level": "L1_L2",
+      "limitation": "simulation_only",
+      "status": "AVAILABLE"
+    },
+    {
+      "level": "L3",
+      "limitation": "authorized_representative_data_required",
+      "status": "AVAILABLE_RESEARCH"
+    },
+    {
+      "level": "L4",
+      "limitation": "synthetic_oracle_is_not_exchange_queue_calibration",
+      "status": "AVAILABLE_RESEARCH"
+    },
+    {
+      "level": "L5",
+      "limitation": "paper_credentials_external_reconciliation_and_calibration_required",
+      "status": "NOT_ENABLED"
+    }
+  ],
+  "research_and_simulation_only": true,
+  "review_date": "2026-09-12",
+  "review_domains": {
+    "architecture": {
+      "conclusion": "PASS",
+      "scope": "deterministic_truth_owners_and_protect_only_recovery"
+    },
+    "data": {
+      "conclusion": "PASS_RESEARCH_ONLY_CZCE_EXCLUDED",
+      "scope": "deployment_authorization_manifest"
+    },
+    "operations": {
+      "conclusion": "PASS_RESTRICTED_MANUAL_USAGE_REVIEW",
+      "scope": "one_day_single_host_simulation"
+    },
+    "product": {
+      "conclusion": "PASS_RESTRICTED",
+      "scope": "authorized_data_isolated_simulation_only"
+    },
+    "risk": {
+      "conclusion": "PASS_WITH_GATES",
+      "scope": "hard_invariants_and_kill_switch"
+    }
+  },
+  "reviewer_model": "gpt-5.6-sol",
+  "reviewer_reasoning_effort": "high",
+  "schema": "v5-012.simulation-launch-review.v1",
+  "source_commit": "3a99e32d09f3547770e3fb559dacd547d2a78ea7",
+  "status": "COMPLETE",
+  "task": "V5-012",
+  "validation": {
+    "cost_baseline": "evidence/v5-012/runtime-cost-baseline-2026-09-12.json: local make check wall=18.34s, user=41.94s, sys=4.09s; billable model/token/Paper cost unavailable.",
+    "full_gate": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+    "full_gate_result": "lock, format, ruff, mypy over 171 source files, audited secret scan, 2 schema, 1 unit, 20 property, 934 contract, and health passed",
+    "independent_exit_review": "evidence/v5-exit/independent-review-2026-09-12.json: historical PASS by /root/v5_exit_independent_sol using gpt-5.6-sol/high; B1 CLOSED at review time; subsequent scope decisions closed B3 and B4.",
+    "post_review_full_gate_result": "lock, format, ruff, mypy over 171 source files, audited secret scan, 2 schema, 1 unit, 20 property, 936 contract, and health passed",
+    "review_mapping": "Kill Switch, Mandate pause/revoke, rollback, recovery gates, operations reliability, one-day stability and package structure all passed.",
+    "targeted_command": "uv run pytest -q tests/contract/test_v2_002_risk_engine.py tests/contract/test_v2_007_protection.py tests/contract/test_v3_009_autonomy_mandate.py tests/contract/test_v5_008_model_evaluation_pipeline.py tests/contract/test_v5_010_operational_reliability.py tests/contract/test_v5_011_stability_run.py tests/contract/test_v5_012_release_review.py",
+    "targeted_result": "71 passed",
+    "data_manifest": "SHFE research-only manifest bound to exact dataset ID/hash; CZCE excluded pending official terms."
+  },
+  "paper_scope_decision": "PAPER_DISABLED_BY_SCOPE",
+  "data_inventory_ref": "evidence/v5-012/deployment-data-inventory-2026-09-12.json",
+  "cost_control_decision": "MANUAL_CODEX_USAGE_REVIEW",
+  "operator_budget_confirmation": "WAIVED_BY_OPERATOR_FOR_CURRENT_SINGLE_USER_SCOPE",
+  "data_scope_decision": "SHFE_RESEARCH_ONLY_CZCE_EXCLUDED",
+  "data_manifest_ref": "evidence/v5-012/deployment-data-manifest-shfe-research-2026-09-12.json",
+  "scope_expansion_gate": "DENY_UNTIL_Q3_Q4_DATA_AND_CZCE_TERMS",
+  "evidence_digest": "63ea8ff39d221c4262029eb6dfbf06308bb0e48a75b4354f18388d9a8f84b686"
+}

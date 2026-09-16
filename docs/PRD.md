@@ -1181,7 +1181,7 @@ Exit：至少一个 episode → review → experiment → governed activation �
 - L3 Tick/Quote replay 与成交路径重建。
 - L4 Order Book、L5 paper connector、队列/冲击与部分成交。
 - TWAP/VWAP/iceberg、分批进出、换月、多账户与高级相关性/资本配置。
-- HA/DR、正式容量阈值与 30 天稳定运行。
+- HA/DR、正式容量阈值与 30 天稳定运行（后续扩展项；不作为当前单用户本地研究模拟试运行的前置条件）。
 - 多账户/多 Mandate 自治调度、通知聚合和更高保真无人值守演练。
 - Governance Agent 的 Model/Policy Steward 工作模式。
 - 可选 SFT、offline preference learning 或低维执行研究，必须单独批准。

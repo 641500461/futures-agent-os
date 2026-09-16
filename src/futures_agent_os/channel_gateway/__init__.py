@@ -12,6 +12,7 @@ from .contracts import (
 from .feishu import FeishuAdapter, FeishuLongConnectionAdapter
 from .gateway import ChannelGateway
 from .supervision import SupervisionCard
+from .operator_commands import GatewayInboundWorker, LocalOperatorCommandHandler, OperatorCommandHandler
 from .durable import (
     ControlHandler,
     DurableWatchWorker,
@@ -37,6 +38,9 @@ __all__ = [
     "FeishuLongConnectionAdapter",
     "ChannelGateway",
     "SupervisionCard",
+    "GatewayInboundWorker",
+    "LocalOperatorCommandHandler",
+    "OperatorCommandHandler",
     "ChannelRegistry",
     "ControlHandler",
     "DurableWatchWorker",

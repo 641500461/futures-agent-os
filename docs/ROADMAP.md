@@ -1,7 +1,7 @@
 # 绿地版本路线图与可勾选任务
 
 版本：`3.0-proposed`<br>
-最后更新：2026-09-08
+最后更新：2026-09-16
 任务状态唯一来源：本文件
 
 ## 状态约定
@@ -13,9 +13,24 @@
 - 代码完成、合并、数据发布、策略晋升和运行启用必须分别记录。
 - donor 资产的可用性记录在 `LEGACY-ASSET-REUSE.md`，不在本文件中作为完成项打勾。
 
-当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1 已完成 `V1-001` 至 `V1-010`；`MVP-R-001` 与 `MVP-R-002` 均已在 Gate 停止。`MVP-R-003` v1 记为测量方案失败，Evidence 不得改写成通过。`MVP-R-004` 已 `STOP/PIVOT`。`MVP-R-005` Research Decision Brief 已通过 correction-v5 独立功能复核并完成。正式 MVP-R eval v1 与 v2 均保留 `FORMAL_DIAGNOSTIC_FAIL`，holdout/shadow 未启动；v2 采用产品模型 `gpt-5.6-sol/high`，诊断 13/30 完成后因 3 条失败达到停止条件。2026-09-04 最小 MVP Closure Acceptance 得出 `MVP_ACCEPTED`：核心 end-to-end 闭环成立，关键安全边界成立，没有明确产品 blocker。Formal Eval 不再阻塞 MVP 结束；formal evaluation reliability / quality improvement 转入后续 backlog。没有 `MVP-R-006`；`V1-011` 是下一项 Roadmap 任务，但等待用户确认后开始。
+当前状态：V0 已完成（`V0-001` 至 `V0-014`），V1–V5 Exit 均已通过；`MVP-R-001` 至 `MVP-R-004` 的停止/Pivot 与历史 Evidence 均保留，`MVP-R-005` Research Decision Brief 已通过 correction-v5 独立功能复核。2026-09-04 最小 MVP Closure Acceptance 得出 `MVP_ACCEPTED`：核心 end-to-end 闭环成立，关键安全边界成立，没有明确产品 blocker。Formal Eval v1/v2 的失败记录转入质量 backlog，不再阻塞产品结束。`LOCAL-001` 本地完整研究到模拟交易试运行与 `LOCAL-002` 飞书操作者命令纵切均已完成。当前下一步是按已批准 SHFE AG/CU 研究范围试运行，不是重做 MVP。HA/DR、30 天稳定运行和完整非空业务状态 PITR 按操作者决定保留为后续扩展，不阻塞本地试运行。
 
-当前 V3 状态：`V3-003` 至 `V3-015` 的 Acceptance 已完成并各自具备实现 Evidence；V3 Exit 尚未通过，下一步按 `DEVELOPMENT-MODEL-POLICY.md` 由未主导 V3 实现的独立执行身份进行审查。
+## LOCAL-001：本地完整试运行（2026-09-14）
+
+- [x] 新增 `uv run futures-agent-os trial [--at <UTC>] [--output <path>]`，串联 Snapshot、Opportunity、Strategy、Critic、Authorization Basis、Risk Decision、模拟成交、Position Protection、Notification、Review 和 Decision Journal。
+  Acceptance：固定时间输入可重复；输出明确为 `RESEARCH_AND_SIMULATION_ONLY`；完整周期必须有保护退出、结算和 9 条去重 Journal 记录；不连接交易所、不发送真实订单。
+  Evidence：[`evidence/local-001/local-trial-2026-09-14.json`](../evidence/local-001/local-trial-2026-09-14.json)。
+
+## LOCAL-002：飞书操作者命令纵切（2026-09-16）
+
+- [x] 将已验证的飞书长连接、durable inbox/outbox 与本地受限模拟入口组装成仓库内可复现的操作者命令纵切。
+  Status: COMPLETE；负责人：Codex；工作区：`codex/v5`；完成日期：2026-09-16；实现模型/推理强度：当前宿主未暴露，Evidence 记录 `NOT_EXPOSED`。
+  Scope：只支持状态、运行一次合成确定性模拟、查看最近一次模拟复盘和帮助；文本命令不能执行 pause/revoke/Kill Switch，控制动作继续要求预签发、对象/version/hash/expiry 绑定的一次性回调。本任务不接入真实交易，不扩大 SHFE AG/CU 研究 manifest，不启用 CZCE、Paper/L5 或真实行情决策。
+  Acceptance：飞书事件先经 PostgreSQL inbox 去重并由带 fencing 的 `gateway.inbound` worker 领取；同一事件最多产生一个模拟 artifact 和一个 outbox 回复；进程重启后可从本地 artifact 查看最近复盘；未知/畸形命令安全返回帮助；操作者命令处理失败显式 fail closed；`gateway run` 正式装配该 worker；SHFE 受限研究 CLI 的双品种 scope 保持显式且具有回归测试；定向测试与完整 `make check` 通过并形成可复核 Evidence。
+  Design：[`TECHNICAL-DESIGN.md` §2.2、§5、§11.1、§16](./TECHNICAL-DESIGN.md)，[`PRD.md` §11.13、§11.14、§14、§16.7](./PRD.md)。
+  Evidence：[`evidence/local-002/implementation-2026-09-16.json`](../evidence/local-002/implementation-2026-09-16.json)。
+
+当前 V3 状态：`V3-001` 至 `V3-015` 及 V3 Exit 均已完成；历史实现过程与独立审查 Evidence 保留在对应任务和 `evidence/v3-exit/`。
 
 ## MVP Closure：`MVP_ACCEPTED`（2026-09-04）
 
@@ -388,44 +403,56 @@ Exit：PASS（独立审查 Evidence：`evidence/v4-exit/independent-review-2026-
 
 目标：在数据允许时提高成交与组合真实性，建设受控离线模型增强和长期运营能力；仍不接真实交易。
 
-- [ ] `V5-001` 实现 L3 Quote/Trade Tick 顺序回放、成交序列和可校准滑点模型。  
+- [x] `V5-001` 实现 L3 Quote/Trade Tick 顺序回放、成交序列和可校准滑点模型。  
+  Status: COMPLETE（2026-09-10；确定性 Quote/Trade replay、逐笔 Fill、延迟、部分成交、滑点校准和异常门禁已实现）。  
+  Evidence: [`evidence/v5-001/implementation-2026-09-10.json`](../evidence/v5-001/implementation-2026-09-10.json)。
   Acceptance: 相同 tick 序列和配置产生相同 Fill；乱序、缺口和时钟异常有明确处理结果。  
-  Evidence: 待补。
-- [ ] `V5-002` 实现 L4（Level-2/Level-3 order book）回放、队列位置、流动性消耗、部分成交和市场冲击。  
+- [x] `V5-002` 实现 L4（Level-2/Level-3 order book）回放、队列位置、流动性消耗、部分成交和市场冲击。
+  Status: COMPLETE（2026-09-10；冻结订单簿快照/事件、价格时间队列模型、逐档深度消耗、规范 Fill、部分成交和可审计冲击已实现）。
   Acceptance: 队列/深度守恒、成交不超可用流动性，并用带真值样本验证队列与部分成交。  
-  Evidence: 待补。
-- [ ] `V5-003` 实现 L5 Paper Trading adapter，包括 TqSim/其他外部模拟源，并显式标注模型限制。  
+  Evidence: [`evidence/v5-002/implementation-2026-09-10.json`](../evidence/v5-002/implementation-2026-09-10.json)。
+- [x] `V5-003` 实现 L5 Paper Trading adapter，包括 TqSim/其他外部模拟源，并显式标注模型限制。
+  Status: COMPLETE（2026-09-10；connector-neutral 出站映射、规范 Fill 转换、双向对账、健康降级和版本化 TqSim 能力清单已实现）。
   Acceptance: 外部订单/成交与本地状态可双向对账；未知或不支持行为不会伪装为成功。  
-  Evidence: 待补。
-- [ ] `V5-004` 实现 TWAP、VWAP、Iceberg、分批建仓/退出和执行算法对比。  
+  Evidence: [`evidence/v5-003/implementation-2026-09-10.json`](../evidence/v5-003/implementation-2026-09-10.json)。
+- [x] `V5-004` 实现 TWAP、VWAP、Iceberg、分批建仓/退出和执行算法对比。
+  Status: COMPLETE（2026-09-10；版本化注册/人工激活、proposal-only 推荐和确定性整手子单计划已实现）。
   Acceptance: Agent 只选择或建议已注册算法；确定性系统执行。  
-  Evidence: 待补。
-- [ ] `V5-005` 实现多账户、多策略、相关性簇、板块/方向/期限暴露、跨期、换月成本和资本分配。  
+  Evidence: [`evidence/v5-004/implementation-2026-09-10.json`](../evidence/v5-004/implementation-2026-09-10.json)。
+- [x] `V5-005` 实现多账户、多策略、相关性簇、板块/方向/期限暴露、跨期、换月成本和资本分配。
+  Status: COMPLETE（2026-09-10；多维净/总暴露、跨期腿、换月成本、组合边界和资本分配已实现）。
   Acceptance: 子账户/策略暴露可汇总到组合；净额、相关性、换月和集中度边界有属性测试。  
-  Evidence: 待补。
-- [ ] `V5-006` 建立高保真校准：Backtest/Replay 与 Paper 的成交、滑点、PnL 和容量偏差评估。  
+  Evidence: [`evidence/v5-005/implementation-2026-09-10.json`](../evidence/v5-005/implementation-2026-09-10.json)。
+- [x] `V5-006` 建立高保真校准：Backtest/Replay 与 Paper 的成交、滑点、PnL 和容量偏差评估。
+  Status: COMPLETE（2026-09-10；FillModel/版本/范围绑定的四指标成对校准、误差区间、证据摘要和禁止外推 Registry 已实现）。
   Acceptance: 每个 FillModel 有校准数据、误差区间、适用范围和禁止外推范围。  
-  Evidence: 待补。
-- [ ] `V5-007` 扩展 Governance Agent 的 Model/Policy Steward 工作模式，只能基于评测提出 Prompt/Model/Strategy `ChangeProposal`。  
+  Evidence: [`evidence/v5-006/implementation-2026-09-10.json`](../evidence/v5-006/implementation-2026-09-10.json)。
+- [x] `V5-007` 扩展 Governance Agent 的 Model/Policy Steward 工作模式，只能基于评测提出 Prompt/Model/Strategy `ChangeProposal`。
+  Status: COMPLETE（2026-09-10；五维评测门禁、封闭变更目标、proposal-only 产物和只读工具面已实现）。
   Acceptance: Steward 无合并、晋升、启用或风险规则修改权限。  
-  Evidence: 待补。
-- [ ] `V5-008` 建立 shadow/canary/offline evaluation 流水线，并评估受控监督微调；模型变更与 Activation 分离。  
+  Evidence: [`evidence/v5-007/implementation-2026-09-10.json`](../evidence/v5-007/implementation-2026-09-10.json)。
+- [x] `V5-008` 建立 shadow/canary/offline evaluation 流水线，并评估受控监督微调；模型变更与 Activation 分离。
+  Status: COMPLETE（2026-09-10；顺序评测、人工批准、受限 canary、独立 Activation/rollback 和 SFT 数据资格审查已实现）。
   Acceptance: 候选模型不能自动进入活动流量；评测、人工批准、canary 和回滚证据完整。  
-  Evidence: 待补。
-- [ ] `V5-009` 将 Offline RL 限定为低维、可重复模块的独立研究项，例如执行、组合配置或仓位调整；不得替代高层 Agent。  
+  Evidence: [`evidence/v5-008/implementation-2026-09-10.json`](../evidence/v5-008/implementation-2026-09-10.json)。
+- [x] `V5-009` 将 Offline RL 限定为低维、可重复模块的独立研究项，例如执行、组合配置或仓位调整；不得替代高层 Agent。
+  Status: COMPLETE（2026-09-11；封闭三类低维模块、冻结研究计划、离线评测、独立研究评审、治理批准和人工 Activation 门禁已实现）。
   Acceptance: 未经单独研究评审和治理批准，不进入默认运行路径。  
-  Evidence: 待补。
-- [ ] `V5-010` 完成 SLO、容量、背压、限流、熔断、备份、恢复、灾难演练和 runbook；多用户权限审计与对抗性安全演练不在当前范围。
+  Evidence: [`evidence/v5-009/implementation-2026-09-11.json`](../evidence/v5-009/implementation-2026-09-11.json)。
+- [x] `V5-010` 完成 SLO、容量、背压、限流、熔断、备份、恢复、灾难演练和 runbook；多用户权限审计与对抗性安全演练不在当前范围。
+  Status: COMPLETE（2026-09-11；正式 SLO/容量与恢复 policy、并发安全控制器、故障注入、真实隔离 PostgreSQL PITR 和主要故障 runbook 已完成）。
   Acceptance: 关键 SLO 有测量与告警；RTO/RPO、备份恢复和主要故障 runbook 均完成演练。  
-  Evidence: 待补。
-- [ ] `V5-011` 完成 30 天稳定性运行和故障演练。  
+  Evidence: [`evidence/v5-010/implementation-2026-09-11.json`](../evidence/v5-010/implementation-2026-09-11.json)。
+- [x] `V5-011` 完成 1 天稳定性运行和故障演练。
+  Status: COMPLETE（2026-09-12；冻结提交上的真实墙钟运行已达到 `minimum_end_at`，85 次 hash-chain 心跳和每次隔离模拟不变量探针均通过；6 个超过 cadence 的间隔均有内联事故报告，累计 gap 6465.484496 秒未超过 21600 秒预算）。
   Acceptance: 无未解释重复交易、无无保护持仓、无审计链断点；全部事故可恢复并有报告。  
-  Evidence: 待补。
-- [ ] `V5-012` 形成模拟系统上线评审包：能力边界、真实性级别、剩余风险、数据授权、运行成本、回滚和 Kill Switch 演练。  
-  Acceptance: 产品、架构、风险、数据和运营评审结论已记录；未解决阻断项不得启用。  
-  Evidence: 待补。
+  Evidence: [`evidence/v5-011/stability-run-2026-09-12.json`](../evidence/v5-011/stability-run-2026-09-12.json)；操作与失败门禁见 [`V5-011-STABILITY-RUNBOOK.md`](./V5-011-STABILITY-RUNBOOK.md)。
+- [x] `V5-012` 形成模拟系统上线评审包：能力边界、真实性级别、剩余风险、数据授权、运行成本、回滚和 Kill Switch 演练。
+  Status: COMPLETE（2026-09-12；评审包覆盖产品、架构、风险、数据和运营结论，明确 `RESTRICTED_SIMULATION_ONLY` 与 `DENY_UNTIL_BLOCKERS_CLOSED`；未解决阻断项不会被启用）。
+  Acceptance: 产品、架构、风险、数据和运营评审结论已记录；未解决阻断项不得启用。
+  Evidence: [`evidence/v5-012/release-review-2026-09-12.json`](../evidence/v5-012/release-review-2026-09-12.json)、[`V5-012-SIMULATION-LAUNCH-REVIEW.md`](./V5-012-SIMULATION-LAUNCH-REVIEW.md)。
 
-Exit：高保真与 Paper 偏差被量化；组合风险、离线增强和运营控制可审计；系统仍明确标识为研究与模拟产品。
+Exit：PASS（独立 `gpt-5.6-sol/high` 审查 Evidence：[`evidence/v5-exit/independent-review-2026-09-12.json`](../evidence/v5-exit/independent-review-2026-09-12.json)）。高保真语义及校准边界、组合风险、离线增强和运营控制已按 Roadmap Acceptance 通过复核；系统仍明确标识为研究与模拟产品。SHFE AG/CU 研究范围已绑定数据 manifest，CZCE 被排除；Paper/L5 已关闭，B4 改为手动查看 Codex 用量。受限研究模拟已允许；更广泛 `sim-prod` 仍保持 `DENY_UNTIL_Q3_Q4_DATA_AND_CZCE_TERMS`，因为 Q2 数据不能作为 Q3/Q4 决策/执行证据。
 
 ## 明确不在本路线图内
 

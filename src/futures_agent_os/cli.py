@@ -2,6 +2,8 @@
 
 import argparse
 import json
+import subprocess
+import sys
 from pathlib import Path
 from typing import Any
 from collections.abc import Sequence
@@ -23,17 +25,34 @@ from futures_agent_os.execution_simulation import L1Bar, run_manual_shadow_episo
 from futures_agent_os.shared_kernel import EntityId, RecordedAt, canonical_sha256
 from futures_agent_os.channel_gateway.config import GatewayConfig
 from futures_agent_os.channel_gateway.runtime import GatewayRuntime
+from futures_agent_os.local_trial import run_local_trial
 
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="futures-agent-os")
     subcommands = parser.add_subparsers(dest="command", required=True)
     subcommands.add_parser("health", help="print the local health contract")
+    trial = subcommands.add_parser("trial", help="run a complete local simulation-only trial")
+    trial.add_argument("--at", default=None, help="UTC ISO-8601 timestamp for a repeatable run")
+    trial.add_argument("--output", default=None, help="optional JSON output path")
+    research = subcommands.add_parser("research", help="run the authorized SHFE AG/CU research lane")
+    research.add_argument("--episode", default=None, help="frozen SHFE episode id")
+    research.add_argument("--limit", type=int, default=1, help="number of frozen SHFE episodes")
+    research.add_argument("--execute", action="store_true", help="invoke the configured research model")
+    research.add_argument("--model", default="gpt-5.6-terra")
+    research.add_argument("--effort", choices=("medium", "high", "xhigh"), default="high")
+    research.add_argument("--provider", default="custom")
+    research.add_argument("--timeout-seconds", type=int, default=300)
     gateway = subcommands.add_parser("gateway", help="run the channel gateway")
     gateway_subcommands = gateway.add_subparsers(dest="gateway_action", required=True)
     gateway_run = gateway_subcommands.add_parser("run", help="run the Feishu long-connection gateway")
     gateway_run.add_argument("--config", help="JSON or TOML gateway config; defaults to environment")
     gateway_run.add_argument("--dry-run", action="store_true", help="validate config and print a redacted summary")
+    gateway_run.add_argument(
+        "--operator-state-dir",
+        default=".runtime/operator",
+        help="local directory for restart-safe operator review artifacts",
+    )
     manual = subcommands.add_parser("manual-test", help="simulation-only manual PlanApproval lifecycle")
     manual.add_argument("action", choices=("request", "grant", "reject", "expire", "consume", "shadow", "report"))
     manual.add_argument("--state", required=True, help="durable local state file")
@@ -314,13 +333,47 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.command == "health":
         print(json.dumps(get_health_status().as_dict(), ensure_ascii=False, sort_keys=True))
         return 0
+    if args.command == "trial":
+        trial_at = RecordedAt.parse(args.at).value if args.at else None
+        payload = run_local_trial(trial_at).as_dict()
+        encoded = json.dumps(payload, ensure_ascii=False, sort_keys=True, indent=2)
+        if args.output:
+            output = Path(args.output)
+            output.parent.mkdir(parents=True, exist_ok=True)
+            output.write_text(encoded + "\n", encoding="utf-8")
+        print(encoded)
+        return 0
+    if args.command == "research":
+        if args.limit < 1:
+            raise ValueError("--limit must be positive")
+        script = Path(__file__).resolve().parents[2] / "scripts" / "run_restricted_research.py"
+        command = [
+            sys.executable,
+            str(script),
+            "--limit",
+            str(args.limit),
+            "--model",
+            args.model,
+            "--effort",
+            args.effort,
+            "--provider",
+            args.provider,
+        ]
+        if args.episode:
+            command.extend(("--episode", args.episode))
+        if args.timeout_seconds < 1:
+            raise ValueError("--timeout-seconds must be positive")
+        command.extend(("--timeout-seconds", str(args.timeout_seconds)))
+        if args.execute:
+            command.append("--execute")
+        return subprocess.run(command, check=False).returncode
     if args.command == "gateway":
         config = GatewayConfig.from_file(args.config) if args.config else GatewayConfig.from_env()
         if args.dry_run:
             config.validate()
             print(json.dumps(config.public_summary(), ensure_ascii=False, sort_keys=True))
             return 0
-        GatewayRuntime(config).run()
+        GatewayRuntime(config, operator_state_directory=Path(args.operator_state_dir)).run()
         return 0
     if args.command == "manual-test":
         return _manual_command(args)

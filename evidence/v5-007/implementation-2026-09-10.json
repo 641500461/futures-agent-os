@@ -1,0 +1,33 @@
+{
+  "task": "V5-007",
+  "status": "COMPLETE",
+  "implementation_model": "NOT_EXPOSED",
+  "implementation_reasoning_effort": "NOT_EXPOSED",
+  "reviewer_model": "NOT_EXPOSED",
+  "reviewer_reasoning_effort": "NOT_EXPOSED",
+  "independent_version_exit_review": false,
+  "upgrade": false,
+  "commit": "bc74c36",
+  "implementation": "Implemented a read-only Governance Steward mode that accepts complete evaluation bundles and emits content-addressed Prompt, Model or Strategy ChangeProposal facts. Evaluation outcomes constrain adoption, rejection, additional evaluation and rollback proposals, while all registry and activation actions remain independent human-governed steps.",
+  "tests": {
+    "targeted": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v4_012_013_governance.py tests/contract/test_v5_007_governance_steward.py -q",
+    "targeted_result": "8 passed (6 V5-007 plus 2 V4 governance regressions)",
+    "v5_regression": "UV_CACHE_DIR=/tmp/fao-uv-cache uv run pytest tests/contract/test_v5_001_tick_replay.py tests/contract/test_v5_002_order_book.py tests/contract/test_v5_003_paper_adapter.py tests/contract/test_v5_004_algorithms.py tests/contract/test_v5_005_exposure.py tests/contract/test_v5_006_calibration.py tests/contract/test_v5_007_governance_steward.py -q",
+    "v5_regression_result": "67 passed",
+    "full_gate": "UV_CACHE_DIR=/tmp/fao-uv-cache make check",
+    "full_gate_result": "lock, format, ruff, mypy over 166 source files, secret scan, 2 schema, 1 unit, 18 property, 895 contract, and health passed"
+  },
+  "acceptance_mapping": {
+    "evaluation_only": "Every bundle must cover quality, boundary compliance, regression, cost/latency and rollback readiness in canonical order with unique evidence references.",
+    "closed_targets": "StewardSubjectKind contains only PROMPT, MODEL and STRATEGY; Risk Policy is not a constructible target.",
+    "outcome_consistency": "ADOPT requires all PASS, REJECT/ROLLBACK requires FAIL, and RUN_MORE_EVALUATION requires UNKNOWN.",
+    "proposal_only": "ChangeProposal contains evidence, risk, rationale and required governance steps but no approval, merge, activation or registry mutation state.",
+    "no_authority": "GovernanceSteward exposes only read/query tools and no merge, promote, activate, rollback, modify-risk or write-registry operation.",
+    "separation": "Every proposal requires human change approval, independent Registry action, independent Activation and rollback planning."
+  },
+  "limitations": [
+    "V5-008 owns shadow/canary execution and activation lifecycle; this task only proposes changes.",
+    "The Steward cannot modify Risk Constitution, trading truth, registry state or active traffic."
+  ],
+  "model_output_not_authoritative": "Evaluation contracts and independent governance services, not Steward text, decide any state change."
+}

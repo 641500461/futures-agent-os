@@ -534,6 +534,7 @@ class EvaluationSuite:
     holdout_episode_count: int
     shadow_task_count: int
     maximum_iterations: int
+    restricted_research_scope: bool = False
 
     def __post_init__(self) -> None:
         if type(self.suite_id) is not EntityId or self.suite_id.namespace != "evaluation_suite":
@@ -552,10 +553,15 @@ class EvaluationSuite:
             raise ValueError("evaluation suite requires authorized real dataset evidence")
         if len({ref.dataset_id for ref in self.dataset_refs}) != len(self.dataset_refs):
             raise ValueError("evaluation suite dataset evidence must be unique")
-        if not 3 <= len(self.instrument_universe) <= 4 or len(set(self.instrument_universe)) != len(
+        minimum_instruments = 2 if self.restricted_research_scope else 3
+        if not minimum_instruments <= len(self.instrument_universe) <= 4 or len(set(self.instrument_universe)) != len(
             self.instrument_universe
         ):
-            raise ValueError("evaluation suite requires 3-4 unique pre-registered instruments")
+            raise ValueError(
+                "restricted research suite requires 2-4 unique instruments"
+                if self.restricted_research_scope
+                else "evaluation suite requires 3-4 unique pre-registered instruments"
+            )
         if any(not value.strip() for value in self.instrument_universe):
             raise ValueError("evaluation instruments must be non-empty")
         available_instruments = {instrument for ref in self.dataset_refs for instrument in ref.instrument_universe}
@@ -574,27 +580,28 @@ class EvaluationSuite:
 
     @property
     def content_sha256(self) -> str:
-        return canonical_sha256(
-            {
-                "version": self.version,
-                "model_config_sha256": self.model_config_sha256,
-                "prompt_sha256": self.prompt_sha256,
-                "tool_specs_sha256": self.tool_specs_sha256,
-                "runtime_sha256": self.runtime_sha256,
-                "dataset_authority_id": self.dataset_authority_id,
-                "evaluator_authority_id": self.evaluator_authority_id,
-                "dataset_refs": tuple(ref.to_dict() for ref in self.dataset_refs),
-                "instrument_universe": self.instrument_universe,
-                "episode_selection_rule": self.episode_selection_rule,
-                "primary_metric": self.primary_metric,
-                "secondary_metrics": self.secondary_metrics,
-                "baseline_ids": self.baseline_ids,
-                "diagnostic_episode_count": self.diagnostic_episode_count,
-                "holdout_episode_count": self.holdout_episode_count,
-                "shadow_task_count": self.shadow_task_count,
-                "maximum_iterations": self.maximum_iterations,
-            }
-        )
+        payload = {
+            "version": self.version,
+            "model_config_sha256": self.model_config_sha256,
+            "prompt_sha256": self.prompt_sha256,
+            "tool_specs_sha256": self.tool_specs_sha256,
+            "runtime_sha256": self.runtime_sha256,
+            "dataset_authority_id": self.dataset_authority_id,
+            "evaluator_authority_id": self.evaluator_authority_id,
+            "dataset_refs": tuple(ref.to_dict() for ref in self.dataset_refs),
+            "instrument_universe": self.instrument_universe,
+            "episode_selection_rule": self.episode_selection_rule,
+            "primary_metric": self.primary_metric,
+            "secondary_metrics": self.secondary_metrics,
+            "baseline_ids": self.baseline_ids,
+            "diagnostic_episode_count": self.diagnostic_episode_count,
+            "holdout_episode_count": self.holdout_episode_count,
+            "shadow_task_count": self.shadow_task_count,
+            "maximum_iterations": self.maximum_iterations,
+        }
+        if self.restricted_research_scope:
+            payload["restricted_research_scope"] = True
+        return canonical_sha256(cast(JsonValue, payload))
 
 
 @dataclass(frozen=True, slots=True)

@@ -466,6 +466,9 @@ def test_phase_zero_suite_freezes_real_dataset_refs_baselines_and_counts() -> No
             10,
             1,
         )
+    restricted = replace(suite, instrument_universe=("AG", "CU"), restricted_research_scope=True)
+    assert restricted.instrument_universe == ("AG", "CU")
+    assert restricted.content_sha256 != suite.content_sha256
     with pytest.raises(ValueError, match="all frozen"):
         EvaluationSuite(
             EntityId.new("evaluation_suite"),

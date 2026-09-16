@@ -1,0 +1,76 @@
+{
+  "schema_version": "local-002.implementation-evidence.v1",
+  "task_id": "LOCAL-002",
+  "status": "COMPLETE",
+  "recorded_on": "2026-09-16",
+  "source_commit": "219581c",
+  "implementation": {
+    "model": "NOT_EXPOSED",
+    "reasoning_effort": "NOT_EXPOSED",
+    "upgrade_triggered": false
+  },
+  "review": {
+    "required": false,
+    "model": null,
+    "reasoning_effort": null
+  },
+  "scope": {
+    "commands": [
+      "status",
+      "run_synthetic_simulation",
+      "review_latest_simulation",
+      "help"
+    ],
+    "text_controls_allowed": false,
+    "signed_control_callbacks_preserved": true,
+    "research_instruments": [
+      "SHFE.AG.DOMINANT_OI",
+      "SHFE.CU.DOMINANT_OI"
+    ],
+    "real_money_or_order_routing": false,
+    "paper_or_l5_enabled": false
+  },
+  "acceptance": {
+    "durable_inbox_fenced_worker_outbox": "PASS",
+    "idempotent_reply_key": "PASS",
+    "restart_safe_review_artifact": "PASS",
+    "modified_artifact_fails_closed": "PASS",
+    "unknown_or_malformed_text_returns_help": "PASS",
+    "gateway_run_wires_inbound_worker": "PASS",
+    "restricted_shfe_two_instrument_scope": "PASS",
+    "restricted_research_plan_ready": "PASS",
+    "full_quality_gate": "PASS"
+  },
+  "verification": [
+    {
+      "command": "uv run pytest tests/contract/test_local_operator_commands.py tests/contract/test_local_trial.py tests/contract/test_mvp_r_validation_contracts.py -q",
+      "result": "43 passed"
+    },
+    {
+      "command": "uv run futures-agent-os research --limit 1",
+      "result": "PLAN_READY; SHFE AG/CU only; provider custom; timeout 300 seconds; research_only=true; real_money_or_order_routing=false"
+    },
+    {
+      "command": "FAO_DATABASE_URL=<disposable-local-postgresql-url> uv run pytest tests/integration/test_v3_001_gateway_postgresql.py::test_local_operator_command_flows_from_durable_inbox_to_outbox -q",
+      "result": "1 passed against disposable database fao_local002_root_20260916_01; database removed after success"
+    },
+    {
+      "command": "make check",
+      "result": "PASS; 942 contract, 20 property, 2 schema, 1 unit; ruff, mypy (173 source files), secret scan, and health passed"
+    },
+    {
+      "command": "git diff --check",
+      "result": "PASS"
+    }
+  ],
+  "deterministic_or_human_authority": [
+    "Free-form text cannot invoke pause, revoke, or Kill Switch; pre-issued bound callbacks remain mandatory.",
+    "The local trial uses synthetic deterministic market facts and does not prove live-data or strategy profitability.",
+    "Provider and timeout observations remain fail-closed model workload contracts rather than inferred success."
+  ],
+  "deferred": [
+    "Independent agent/research/trading/market-ingest/scheduler/outbox process supervision",
+    "Q3/Q4 decision-grade data activation",
+    "CZCE, Paper/L5, and any real trading"
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "sample_ref": "truth:v5-002:price-time-001",
+  "snapshot": {
+    "sequence": 10,
+    "recorded_at": "2026-01-01T00:00:00Z",
+    "bids": [["99", "2"], ["98", "3"]],
+    "asks": [["101", "1"], ["102", "2"]]
+  },
+  "events": [
+    {"sequence": 11, "recorded_at": "2026-01-01T00:00:01Z", "kind": "SET_DEPTH", "side": "BID", "price": "99", "quantity": "3"},
+    {"sequence": 12, "recorded_at": "2026-01-01T00:00:02Z", "kind": "TRADE", "side": "BID", "price": "99", "quantity": "1"},
+    {"sequence": 13, "recorded_at": "2026-01-01T00:00:03Z", "kind": "TRADE", "side": "BID", "price": "99", "quantity": "2"},
+    {"sequence": 14, "recorded_at": "2026-01-01T00:00:04Z", "kind": "SET_DEPTH", "side": "BID", "price": "99", "quantity": "1"},
+    {"sequence": 15, "recorded_at": "2026-01-01T00:00:05Z", "kind": "TRADE", "side": "BID", "price": "99", "quantity": "2"}
+  ],
+  "expected_resting": {
+    "order_quantity": "4",
+    "limit_price": "99",
+    "status": "PARTIAL",
+    "fill_quantities": ["1", "2"],
+    "remaining_quantity": "1",
+    "queue_ahead_after": ["1", "0", "0"]
+  }
+}
