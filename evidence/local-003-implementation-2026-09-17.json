@@ -3,6 +3,7 @@
   "task_id": "LOCAL-003",
   "status": "COMPLETE",
   "recorded_on": "2026-09-17",
+  "source_commits": ["4c39452", "a9c21a7", "6e2e0fa"],
   "implementation": {
     "model": "NOT_EXPOSED",
     "reasoning_effort": "NOT_EXPOSED",
