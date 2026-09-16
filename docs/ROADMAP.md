@@ -17,9 +17,9 @@
 
 ## LOCAL-003：本机运行就绪与生命周期收口（2026-09-17）
 
-- [x] 为已配置的 Feishu + PostgreSQL 网关提供只读 `gateway doctor`、队列/死信健康判定和单实例、可恢复的本机启动 wrapper；不改变研究与模拟边界，也不把 transport 连通性仅凭配置判为成功。
+- [x] 为已配置的 Feishu + PostgreSQL 网关提供只读 `gateway doctor`、队列/死信健康判定、单实例可恢复的本机启动 wrapper，以及只接受预签发控制回调的本地模拟 pause/resume/revoke/Kill Switch owner gate；不改变研究与模拟边界，也不把 transport 连通性仅凭配置判为成功。
   Status: COMPLETE；负责人：Codex；工作区：`codex/local-003-runtime`；开始日期：2026-09-17；完成日期：2026-09-17；提交：`4c39452`。
-  Scope：复用现有 Feishu 配置和身份映射；不重做连接、不发送测试消息、不接入真实交易；诊断不写数据库，生命周期异常以稳定错误码退出。旧 `local_002` 运行库保留为审计留档；已新建干净 `local_003` 库并切换网关，避免清理或改写历史死信。
+  Scope：复用现有 Feishu 配置和身份映射；不重做连接、不发送测试消息、不接入真实交易；诊断不写数据库，生命周期异常以稳定错误码退出。控制回调只改变合成模拟 gate，不能由普通文字触发；旧 `local_002` 运行库保留为审计留档；已新建干净 `local_003` 库并切换网关，避免清理或改写历史死信。
   Evidence：[`evidence/local-003-implementation-2026-09-17.json`](../evidence/local-003-implementation-2026-09-17.json)。
 
 ## LOCAL-001：本地完整试运行（2026-09-14）

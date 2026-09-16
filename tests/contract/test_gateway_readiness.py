@@ -98,7 +98,7 @@ def test_doctor_success_is_redacted_and_marks_transport_unknown() -> None:
     encoded = json.dumps(report, sort_keys=True)
     assert report["status"] == "STATIC_READY"
     assert report["checks"]["transport"] == {"status": "UNKNOWN", "code": "TRANSPORT_NOT_PROBED"}
-    assert report["checks"]["control_handler"] == {"status": "NOT_WIRED", "code": "CONTROL_HANDLER_NOT_WIRED"}
+    assert report["checks"]["control_handler"] == {"status": "PASS", "code": "LOCAL_SIMULATION_OWNER_WIRED"}
     assert report["checks"]["feishu_identity_mappings"]["active_count"] == 2
     assert report["checks"]["inbound_queue"]["counts_by_state"] == {"QUEUED": 3}
     assert report["checks"]["outbox"]["counts_by_state"] == {"DELIVERED": 1, "PENDING": 4}

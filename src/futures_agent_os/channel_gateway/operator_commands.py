@@ -21,6 +21,7 @@ from futures_agent_os.shared_kernel import canonical_json_text
 
 from .contracts import InboundEvent, OutboundNotification
 from .durable import GatewayTask, PostgresGatewayStore
+from .local_controls import LocalSimulationControlOwner
 
 
 class OperatorCommandHandler(Protocol):
@@ -32,6 +33,7 @@ class LocalOperatorCommandHandler:
     """Handle the minimal trusted-local operator command vocabulary."""
 
     state_directory: Path
+    control_owner: LocalSimulationControlOwner | None = None
 
     @property
     def latest_trial_path(self) -> Path:
@@ -41,8 +43,10 @@ class LocalOperatorCommandHandler:
         event = _hydrate_event(envelope)
         command = _command_text(event.payload)
         if command in {"状态", "status"}:
-            text = _status_text()
+            text = _status_text(self.control_owner)
         elif command in {"运行模拟", "模拟", "run simulation", "trial"}:
+            if self.control_owner is not None and not self.control_owner.permits_new_simulation():
+                raise RuntimeError("local simulation is paused by an issued control callback")
             record = self._run_trial(event)
             text = _trial_text(record)
         elif command in {"复盘", "review"}:
@@ -166,7 +170,8 @@ def _json_sha256(value: object) -> str:
     return hashlib.sha256(encoded.encode("utf-8")).hexdigest()
 
 
-def _status_text() -> str:
+def _status_text(control_owner: LocalSimulationControlOwner | None = None) -> str:
+    control_state = control_owner.state() if control_owner is not None else "RUNNING"
     return "\n".join(
         (
             "Futures Agent OS 已在线。",
@@ -174,6 +179,7 @@ def _status_text() -> str:
             "飞书：双向长连接。",
             "真实订单路由：关闭。",
             "当前范围：SHFE AG/CU 受限研究；本地演练使用合成确定性行情。",
+            f"本地模拟控制状态：{control_state}。",
         )
     )
 

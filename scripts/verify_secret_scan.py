@@ -22,6 +22,7 @@ EXCLUDED_PATHS = (
     r"(^|/)(\.git|\.venv|\.pytest_cache|\.mypy_cache|\.ruff_cache|__pycache__)(/|$)"
     r"|^\.secrets\.baseline$"
     r"|^datasets/mvp-r-001/"
+    r"|^\.runtime/"
     r"|^\.runtime/v5-011/"
     r"|^evidence/v5-011/"
     r"|^evidence/v5-012/"

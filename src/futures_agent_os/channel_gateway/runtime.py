@@ -14,6 +14,7 @@ from .feishu import FeishuLongConnectionAdapter
 from .gateway import ChannelGateway
 from .durable import OutboxWorker, PostgresGatewayStore
 from .operator_commands import GatewayInboundWorker, LocalOperatorCommandHandler
+from .local_controls import LocalSimulationControlOwner
 
 
 class GatewayRuntimeFailure(RuntimeError):
@@ -63,14 +64,19 @@ class GatewayRuntime:
             )
         )
         self.gateway = ChannelGateway(self.store)
-        self.control_handler = control_handler
+        self.local_control_owner = (
+            LocalSimulationControlOwner(operator_state_directory) if operator_state_directory is not None else None
+        )
+        self.control_handler = control_handler or self.local_control_owner
         self.adapter.bind_sinks(
             event_sink=self.store.ingest,
             control_sink=self._dispatch_control if control_handler is not None else None,
         )
         self.outbox_worker = OutboxWorker(self.store, {self.adapter.channel: self.adapter}, "gateway-outbox")
         self.inbound_worker = (
-            GatewayInboundWorker(self.store, LocalOperatorCommandHandler(operator_state_directory))
+            GatewayInboundWorker(
+                self.store, LocalOperatorCommandHandler(operator_state_directory, self.local_control_owner)
+            )
             if operator_state_directory is not None
             else None
         )

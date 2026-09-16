@@ -13,6 +13,7 @@ from .feishu import FeishuAdapter, FeishuLongConnectionAdapter
 from .gateway import ChannelGateway
 from .supervision import SupervisionCard
 from .operator_commands import GatewayInboundWorker, LocalOperatorCommandHandler, OperatorCommandHandler
+from .local_controls import LocalSimulationControlOwner
 from .durable import (
     ControlHandler,
     DurableWatchWorker,
@@ -41,6 +42,7 @@ __all__ = [
     "GatewayInboundWorker",
     "LocalOperatorCommandHandler",
     "OperatorCommandHandler",
+    "LocalSimulationControlOwner",
     "ChannelRegistry",
     "ControlHandler",
     "DurableWatchWorker",

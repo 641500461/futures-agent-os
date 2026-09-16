@@ -12,17 +12,19 @@
     "read_only_gateway_doctor": true,
     "single_process_wrapper": true,
     "sdk_unexpected_exit_is_fail_closed": true,
+    "launchd_keepalive_installed": true,
+    "signed_local_control_owner_gate": true,
     "real_money_or_order_routing": false,
     "control_handler_wired": false
   },
   "verification": [
     {
       "command": "uv run pytest tests/contract/test_gateway_readiness.py tests/contract/test_local_gateway_runtime.py -q",
-      "result": "12 passed"
+      "result": "21 passed"
     },
     {
       "command": "make check",
-      "result": "PASS; 954 contract, 20 property, 2 schema, 1 unit; ruff, mypy (174 source files), secret scan, and health passed"
+      "result": "PASS; 956 contract, 20 property, 2 schema, 1 unit; ruff, mypy (175 source files), secret scan, and health passed"
     },
     {
       "command": "uv run futures-agent-os gateway doctor --config <existing-local-feishu-config>",
@@ -31,6 +33,7 @@
   ],
   "operator_action_required": [
     "The prior local_002 database retains the test FAILED/DEAD rows as audit history and is no longer the active gateway database.",
-    "The active local_003 database was migrated to 0011_v3_010_gate_hardening, seeded with one verified Feishu identity mapping, and has zero queued or dead rows at activation."
+    "The active local_003 database was migrated to 0011_v3_010_gate_hardening, seeded with one verified Feishu identity mapping, and has zero queued or dead rows at activation.",
+    "The local macOS launchd job keeps the wrapper alive; control callbacks are still required to be server-issued and target-bound."
   ]
 }

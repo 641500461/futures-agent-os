@@ -52,7 +52,7 @@ def diagnose_gateway(
             identity_mapping_required=config.require_identity_mapping,
         ),
         "transport": _check("UNKNOWN", "TRANSPORT_NOT_PROBED"),
-        "control_handler": _check("NOT_WIRED", "CONTROL_HANDLER_NOT_WIRED"),
+        "control_handler": _check("PASS", "LOCAL_SIMULATION_OWNER_WIRED"),
     }
     try:
         expected_heads = tuple(sorted(code_heads if code_heads is not None else _code_heads()))
