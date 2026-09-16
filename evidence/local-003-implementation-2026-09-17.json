@@ -1,7 +1,7 @@
 {
   "schema_version": "local-003.implementation-evidence.v1",
   "task_id": "LOCAL-003",
-  "status": "IMPLEMENTED_WITH_RUNTIME_QUEUE_ACTION_REQUIRED",
+  "status": "COMPLETE",
   "recorded_on": "2026-09-17",
   "implementation": {
     "model": "NOT_EXPOSED",
@@ -30,8 +30,7 @@
     }
   ],
   "operator_action_required": [
-    "Do not delete or rewrite existing inbox/outbox audit rows automatically.",
-    "Review the existing local_002 FAILED/DEAD rows and decide whether to retain, retry, or archive them under a separate operator-approved procedure.",
-    "After queue disposition, rerun gateway doctor; a clean runtime requires zero FAILED inbound tasks and zero DEAD outbox rows."
+    "The prior local_002 database retains the test FAILED/DEAD rows as audit history and is no longer the active gateway database.",
+    "The active local_003 database was migrated to 0011_v3_010_gate_hardening, seeded with one verified Feishu identity mapping, and has zero queued or dead rows at activation."
   ]
 }

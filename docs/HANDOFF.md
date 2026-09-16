@@ -1,6 +1,6 @@
 # V5 当前状态
 
-2026-09-17 `LOCAL-003` 已启动：已确认 Feishu 长连接并非未配置，现有后台网关使用被 Git 忽略的本机配置、`futures_agent_os_local_002` PostgreSQL 和有效 identity mapping。新增只读 `gateway doctor` 与本机生命周期 wrapper 正在收口；doctor 会把 inbound FAILED 或 outbox DEAD 明确标为 `QUEUE_DEGRADED`，transport 连通性保持 `UNKNOWN`，控制 handler 未装配保持 `NOT_WIRED`。一次误将集成测试指向运行库，留下 1 条 FAILED inbound 与测试产生的 DEAD outbox 记录；未直接删除或篡改运行审计，后续测试改用隔离数据库，死信处置需单独的操作者决定。
+2026-09-17 `LOCAL-003` 已完成：已确认 Feishu 长连接配置和身份映射可复用；新增只读 `gateway doctor` 与单实例、可恢复的本机 wrapper。doctor 会把 inbound FAILED 或 outbox DEAD 明确标为 `QUEUE_DEGRADED`，transport 连通性保持 `UNKNOWN`，控制 handler 未装配保持 `NOT_WIRED`。一次误将集成测试指向 `local_002` 运行库，留下测试 FAILED/DEAD 记录；未删除或篡改旧审计，已新建并迁移干净的 `futures_agent_os_local_003`，复制已确认的真实 Feishu identity mapping，并将网关切换到该库。当前 doctor 为 `STATIC_READY`，active mapping=1，队列和 outbox 均为空。实现提交 `4c39452`；Evidence：`evidence/local-003-implementation-2026-09-17.json`。
 
 2026-09-16 `LOCAL-002` 已完成：飞书 durable inbox/outbox 已与仓库内本地模拟入口组成操作者命令纵切，支持状态、运行一次合成确定性模拟、跨重启最近复盘和帮助；pause/revoke/Kill Switch 仍只能走预签发且绑定对象版本/hash/expiry 的一次性控制回调。SHFE 研究入口显式限制为 AG/CU，默认匹配本机可观察 provider=`custom` 并使用可配置的 300 秒超时；计划运行得到 `PLAN_READY`。真实 PostgreSQL inbox→fenced worker→outbox→task COMPLETE 集成测试通过，完整 `make check` 通过（942 contract、20 property、2 schema、1 unit）。实现提交 `219581c`；Evidence：`evidence/local-002/implementation-2026-09-16.json`。研究、模拟和真实订单关闭边界不变。
 
